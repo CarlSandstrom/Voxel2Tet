@@ -1,4 +1,4 @@
-set(files TestOptions)
+set(files TestOptions TestImporter TestArmadillo)
 
 foreach(file ${files})
   add_executable(${file} ${file}.cpp)

@@ -15,8 +15,6 @@ int main( int argc, char *argv[] )
 
     double d = O.GiveDoubleValue("IntVal");
     printf ("IntVal = %5.5f\n", d);
-
-
 }
 
 

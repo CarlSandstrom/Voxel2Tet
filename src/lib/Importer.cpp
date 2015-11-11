@@ -1,7 +1,11 @@
-#include "importer.h"
+#include "Importer.h"
+
+namespace voxel2tet {
 
 Importer::Importer()
 {
+
+}
 
 }
 
