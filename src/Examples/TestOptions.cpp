@@ -1,20 +1,22 @@
 #include <iostream>
 #include <string>
+#include <stdio.h>
 
-#ifndef H5_NO_NAMESPACE
-#ifndef H5_NO_STD
-    using std::cout;
-    using std::endl;
-#endif  // H5_NO_STD
-#endif
+#include "Options.h"
 
-#include "H5Cpp.h"
-#ifndef H5_NO_NAMESPACE
-    using namespace H5;
-#endif
-
-int main()
+int main( int argc, char *argv[] )
 {
-	H5File file( "./Test", H5F_ACC_RDONLY );
-	printf("Test\n");
+    std::map <std::string, std::string> DefaultOptions;
+    DefaultOptions["IntVal"] = "1999";
+    voxel2tet::Options O(argc, argv, DefaultOptions);
+
+    int v = O.GiveIntegerValue("IntVal");
+    printf ("IntVal = %u\n", v);
+
+    double d = O.GiveDoubleValue("IntVal");
+    printf ("IntVal = %5.5f\n", d);
+
+
 }
+
+

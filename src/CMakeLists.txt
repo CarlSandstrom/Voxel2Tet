@@ -1,6 +1,8 @@
 cmake_minimum_required (VERSION 2.6)
 project (Voxel2Tet)
 
+set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -Wall -ffloat-store")
+
 set(linkerlist Voxel2TetLib)
 include_directories(lib)
 add_subdirectory(lib)
