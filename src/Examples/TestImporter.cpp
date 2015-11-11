@@ -11,8 +11,8 @@ int main( int argc, char *argv[] )
     voxel2tet :: DoubleTriplet dt;
     DataReader.GiveSpacing(dt);
     for (int i=0; i<3; i++ ) {
-        printf("%f\n", dt[i]);
-        dt[i] = -9.1;
+        printf("%f\n", dt.c[i]);
+        dt.c[i] = -9.1;
     }
 
 }

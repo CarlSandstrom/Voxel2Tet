@@ -7,11 +7,13 @@ namespace voxel2tet {
 
 typedef int IntTriplet[3];
 
-typedef double DoubleTriplet[3];
+typedef struct {
+    double c[3];
+} DoubleTriplet;
 
 typedef struct {
-    DoubleTriplet maxvalues;
-    DoubleTriplet minvalues;
+    double maxvalues[3];
+    double minvalues[3];
 } BoundingBoxType;
 
 class Importer

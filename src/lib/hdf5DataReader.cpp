@@ -74,7 +74,7 @@ int hdf5DataReader :: GiveMaterialIDByIndex(int xi, int yi, int zi)
 
 void hdf5DataReader :: GiveSpacing(DoubleTriplet spacing)
 {
-    for (int i=0; i<3; i++) {spacing[i] = this->spacing_data[i];}
+    for (int i=0; i<3; i++) {spacing.c[i] = this->spacing_data[i];}
 }
 
 void hdf5DataReader :: GiveBoundingBox(BoundingBoxType BoundingBox)
@@ -92,14 +92,14 @@ void hdf5DataReader :: GiveDimensions(IntTriplet dimensions)
 
 void hdf5DataReader :: GiveCoordinateByIndices(int xi, int yi, int zi, DoubleTriplet Coordinate)
 {
-    Coordinate[0] = xi*this->spacing_data[0] + this->origin_data[0];
-    Coordinate[1] = yi*this->spacing_data[1] + this->origin_data[1];
-    Coordinate[2] = zi*this->spacing_data[2] + this->origin_data[2];
+    Coordinate.c[0] = xi*this->spacing_data[0] + this->origin_data[0];
+    Coordinate.c[1] = yi*this->spacing_data[1] + this->origin_data[1];
+    Coordinate.c[2] = zi*this->spacing_data[2] + this->origin_data[2];
 }
 
 void hdf5DataReader :: GiveOrigin(DoubleTriplet origin)
 {
-    for (int i=0; i<3; i++) {origin[i] = this->origin_data[i];}
+    for (int i=0; i<3; i++) {origin.c[i] = this->origin_data[i];}
 }
 
 }
