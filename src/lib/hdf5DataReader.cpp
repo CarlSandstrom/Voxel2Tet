@@ -35,9 +35,9 @@ void hdf5DataReader :: LoadFile(std::string FileName)
     GrainIdsData = (int*) malloc(sizeof(int)*dims[0]);
     GrainIds.read( GrainIdsData, H5::PredType::NATIVE_INT);
 
-    for (int i=0; i<dims[0]; i++) {
+/*    for (int i=0; i<dims[0]; i++) {
         printf("%u\n", GrainIdsData[i]);
-    }
+    } */
 
 }
 
