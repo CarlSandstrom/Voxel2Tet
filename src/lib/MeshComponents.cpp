@@ -1,7 +1,6 @@
 #include "MeshComponents.h"
 
-MeshComponents::MeshComponents()
+namespace voxel2tet
 {
 
 }
-

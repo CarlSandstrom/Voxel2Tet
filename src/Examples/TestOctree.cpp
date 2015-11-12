@@ -1,7 +1,7 @@
 #include<vector>
 
 #include<VertexOctreeNode.h>
-#include<Importer.h>
+#include<MeshComponents.h>
 
 int main()
 {
@@ -11,7 +11,7 @@ int main()
         bb.minvalues[i]=0.0;
     }
 
-    std::vector <voxel2tet::DoubleTriplet> VertexList;
+    std::vector <voxel2tet::VertexType*> VertexList;
     voxel2tet::VertexOctreeNode RootNode(bb, &VertexList, 0);
     RootNode.AddVertex(0.1, 0.1, 0.1);
     RootNode.AddVertex(0.11, 0.15, 0.1);

@@ -6,6 +6,7 @@ typedef double vertex[3];
 int testfunction(vertex v)
 {
     for (int i=0; i<3; i++) {printf("%f\n", v[i]);}
+    return 0;
 }
 
 int main()

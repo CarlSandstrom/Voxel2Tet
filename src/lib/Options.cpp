@@ -82,6 +82,7 @@ bool Options :: GiveBooleanValue(std::string keyname)
 int Options :: GiveIntegerList(std::string keyname)
 {
     // Not implemented
+    return 0;
 }
 
 
