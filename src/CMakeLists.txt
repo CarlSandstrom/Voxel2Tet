@@ -1,12 +1,15 @@
 cmake_minimum_required (VERSION 2.6)
 project (Voxel2Tet)
 
-set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -Wall -ffloat-store")
+set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -Wall -ffloat-store -std=c++11")
 
 set(linkerlist Voxel2TetLib)
 
 # Look for required libraries
-find_library(HDF5_CXX_LIB hdf5_cpp)
+
+#### hdf5 library
+
+#find_library(HDF5_CXX_LIB hdf5_cpp)
 find_package(HDF5)
 
 if (HDF5_FOUND)
@@ -28,11 +31,23 @@ if (WITH_HDF5)
   add_definitions(-DH5_NO_DEPRECATED_SYMBOLS)
 endif (WITH_HDF5)
 
+#### Armadillo library
+
 find_package(Armadillo REQUIRED)
 if (ARMADILLO_FOUND)
   include_directories(${ARMADILLO_INCLUDE_DIRS})
   set(linkerlist ${linkerlist} ${ARMADILLO_LIBRARIES})
 endif (ARMADILLO_FOUND)
+
+#### VTK
+
+find_package(VTK REQUIRED)
+if (VTK_FOUND)
+  include(${VTK_USE_FILE})
+  set(linkerlist ${linkerlist} ${VTK_LIBRARIES})
+endif (VTK_FOUND)
+
+#### Project files
 
 include_directories(lib)
 add_subdirectory(lib)

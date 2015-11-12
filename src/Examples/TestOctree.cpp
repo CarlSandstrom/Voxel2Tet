@@ -12,7 +12,7 @@ int main()
     }
 
     std::vector <voxel2tet::DoubleTriplet> VertexList;
-    voxel2tet::VertexOctreeNode RootNode(bb, VertexList, 0);
+    voxel2tet::VertexOctreeNode RootNode(bb, &VertexList, 0);
     RootNode.AddVertex(0.1, 0.1, 0.1);
     RootNode.AddVertex(0.11, 0.15, 0.1);
     RootNode.AddVertex(0.13, 0.15, 0.1);
