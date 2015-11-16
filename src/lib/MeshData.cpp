@@ -18,7 +18,6 @@ void MeshData :: ExportVTK(std::string FileName)
 
 EdgeType *MeshData :: AddEdge(std::vector<int> VertexIDs)
 {
-    printf("Create edge from Vertex IDs %u and %u\n", VertexIDs.at(0), VertexIDs.at(1));
 
     // Check if edge already exists
     int ThisVertexID = VertexIDs.at(0);
@@ -29,14 +28,22 @@ EdgeType *MeshData :: AddEdge(std::vector<int> VertexIDs)
     std::vector <EdgeType*> Edges = this->Vertices.at(ThisVertexID)->Edges;
     for (auto Edge: Edges) {
         if ( ( (Edge->Vertices[0] == ThisVertex) & (Edge->Vertices[1] == OtherVertex) ) | ( (Edge->Vertices[1] == ThisVertex) & (Edge->Vertices[0] == OtherVertex) )) {
+            printf("Edge %p already exists\n", Edge);
             return Edge;
         }
     }
 
     EdgeType *NewEdge = new EdgeType;
+    printf("Create edge from Vertex IDs %u and %u: %p\n", VertexIDs.at(0), VertexIDs.at(1), NewEdge);
+
+    // Update edge
     NewEdge->Vertices[0] = ThisVertex;
     NewEdge->Vertices[1] = OtherVertex;
     this->Edges.push_back(NewEdge);
+
+    // Update vertices
+    ThisVertex->AddEdge(NewEdge);
+    OtherVertex->AddEdge(NewEdge);
     return NewEdge;
 }
 
@@ -54,6 +61,7 @@ TriangleType *MeshData :: AddTriangle(std::vector<double> n0, std::vector<double
 
 TriangleType *MeshData :: AddTriangle(std::vector<int> VertexIDs)
 {
+    printf ("Create triangle from vertices (%u, %u, %u)\n", VertexIDs.at(0), VertexIDs.at(1), VertexIDs.at(2));
     TriangleType *NewTriangle = new TriangleType;
 
     for (int i=0; i<3; i++) {
