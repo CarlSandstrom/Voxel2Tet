@@ -1,9 +1,10 @@
 #include <stdio.h>
-#include "MeshData.h"
-
 #include <armadillo>
 
-void createmesh(int n)
+#include "MeshData.h"
+#include "VTKExporter.h"
+
+voxel2tet::MeshData *createmesh(int n)
 {
     // n is the number of vertices, i.e. n-1 is the number of boundary elements
     //
@@ -48,14 +49,18 @@ void createmesh(int n)
     BoundingBox.minvalues[1] = 0.0;
     BoundingBox.minvalues[2] = 0.0;
 
-    voxel2tet::MeshData Mesh(BoundingBox);
+    voxel2tet::MeshData *Mesh = new voxel2tet::MeshData(BoundingBox);
     for (unsigned int i=0; i<triangles.n_rows; i++) {
-        Mesh.AddTriangle({vertices(triangles(i,0), 0), vertices(triangles(i,0), 1), vertices(triangles(i,0), 2)},
+        Mesh->AddTriangle({vertices(triangles(i,0), 0), vertices(triangles(i,0), 1), vertices(triangles(i,0), 2)},
                          {vertices(triangles(i,1), 0), vertices(triangles(i,1), 1), vertices(triangles(i,1), 2)},
                          {vertices(triangles(i,2), 0), vertices(triangles(i,2), 1), vertices(triangles(i,2), 2)});
     }
+    return Mesh;
 }
 
 int main() {
-    createmesh(3);
+    voxel2tet::MeshData *mesh = createmesh(100);
+    voxel2tet::VTKExporter exporter(mesh);
+    exporter.WriteData("/tmp/testXYZ.vtp");
+
 }

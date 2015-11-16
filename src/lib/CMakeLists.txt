@@ -7,6 +7,7 @@ set(Voxel2TetLibList
     VTKExporter.cpp
     MeshData.cpp
     MeshComponents.cpp
+    MiscFunctions.cpp
 )
 
 add_library(Voxel2TetLib ${Voxel2TetLibList})

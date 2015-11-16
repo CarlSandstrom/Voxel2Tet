@@ -1,5 +1,6 @@
 #include <vector>
 #include "MeshData.h"
+#include "MiscFunctions.h"
 
 namespace voxel2tet
 {
@@ -28,13 +29,13 @@ EdgeType *MeshData :: AddEdge(std::vector<int> VertexIDs)
     std::vector <EdgeType*> Edges = this->Vertices.at(ThisVertexID)->Edges;
     for (auto Edge: Edges) {
         if ( ( (Edge->Vertices[0] == ThisVertex) & (Edge->Vertices[1] == OtherVertex) ) | ( (Edge->Vertices[1] == ThisVertex) & (Edge->Vertices[0] == OtherVertex) )) {
-            printf("Edge %p already exists\n", Edge);
+            log("Edge %p already exists\n", Edge);
             return Edge;
         }
     }
 
     EdgeType *NewEdge = new EdgeType;
-    printf("Create edge from Vertex IDs %u and %u: %p\n", VertexIDs.at(0), VertexIDs.at(1), NewEdge);
+    log("Create edge from Vertex IDs %u and %u: %p\n", VertexIDs.at(0), VertexIDs.at(1), NewEdge);
 
     // Update edge
     NewEdge->Vertices[0] = ThisVertex;
@@ -61,8 +62,10 @@ TriangleType *MeshData :: AddTriangle(std::vector<double> n0, std::vector<double
 
 TriangleType *MeshData :: AddTriangle(std::vector<int> VertexIDs)
 {
-    printf ("Create triangle from vertices (%u, %u, %u)\n", VertexIDs.at(0), VertexIDs.at(1), VertexIDs.at(2));
+
     TriangleType *NewTriangle = new TriangleType;
+    log ("Create triangle %p from vertices (%u, %u, %u)@(%p, %p, %p)\n", NewTriangle, VertexIDs.at(0), VertexIDs.at(1), VertexIDs.at(2),
+         this->Vertices.at(VertexIDs.at(0)), this->Vertices.at(VertexIDs.at(1)), this->Vertices.at(VertexIDs.at(2)));
 
     for (int i=0; i<3; i++) {
         if (i<2) {
@@ -72,8 +75,10 @@ TriangleType *MeshData :: AddTriangle(std::vector<int> VertexIDs)
         }
     }
 
+    // Update vertices and triangles with references to each other
     for (int i=0; i<3; i++) {
         this->Vertices.at(VertexIDs.at(i))->AddTriangle(NewTriangle);
+        NewTriangle->Vertices[i]=this->Vertices.at(VertexIDs.at(i));
     }
     this->Triangles.push_back(NewTriangle);
     return NewTriangle;
