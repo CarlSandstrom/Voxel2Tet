@@ -3,8 +3,6 @@
 #include <algorithm>
 #include <stdarg.h>
 
-#include "MeshComponents.h"
-
 namespace voxel2tet {
 
 void dolog(const char *functionname, const char *fmt, ...)

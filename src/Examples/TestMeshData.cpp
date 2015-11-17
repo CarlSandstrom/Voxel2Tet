@@ -61,8 +61,8 @@ voxel2tet::MeshData *createmesh(int n)
 }
 
 int main() {
-    voxel2tet::MeshData *mesh = createmesh(10);
-    voxel2tet::VTKExporter exporter(mesh);
-    exporter.WriteData("/tmp/testXYZ.vtp");
+    //voxel2tet::MeshData *mesh = createmesh(10);
+    //voxel2tet::VTKExporter exporter(mesh);
+    //exporter.WriteData("/tmp/testXYZ.vtp");
 
 }

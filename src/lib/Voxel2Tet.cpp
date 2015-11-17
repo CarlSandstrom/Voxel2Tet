@@ -12,6 +12,7 @@ Voxel2Tet::Voxel2Tet(Options *Opt)
 
 void Voxel2Tet::LoadFile(std::string Filename)
 {
+    STATUS ("Load file %s\n", Filename.c_str());
     hdf5DataReader *DataReader = new hdf5DataReader();
     DataReader->LoadFile(Filename);
     this->Imp = DataReader;
@@ -19,6 +20,8 @@ void Voxel2Tet::LoadFile(std::string Filename)
 
 void Voxel2Tet::FindSurfaces()
 {
+
+    STATUS("Find surfaces\n", 0);
 
     int dim[3];
     double spacing[3], origin[3];
@@ -44,11 +47,13 @@ void Voxel2Tet::FindSurfaces()
                     testdirections.push_back({-1,0,0});
                     vdirections.push_back({0,1,1});
                     vindex.push_back({1,2});
-                } else if (i==1) {
+                }
+                if (j==0) {
                     testdirections.push_back({0,-1,0});
                     vdirections.push_back({1,0,1});
                     vindex.push_back({0,2});
-                } else if (i==2) {
+                }
+                if (k==0) {
                     testdirections.push_back({0,0,-1});
                     vdirections.push_back({1,1,0});
                     vindex.push_back({0,1});
@@ -107,7 +112,7 @@ void Voxel2Tet::FindSurfaces()
                                 newvertex[vindex.at(m).at(1)] = newvertex[vindex.at(m).at(1)] + s2*delta[vindex.at(m)[1]];
 
                                 int id = Mesh->VertexOctreeRoot->AddVertex(newvertex[0], newvertex[1], newvertex[2]);
-                                log ("Corner (id=%u) at (%f, %f, %f)\n", id, newvertex[0], newvertex[1], newvertex[2]);
+                                LOG ("Corner (id=%u) at (%f, %f, %f)\n", id, newvertex[0], newvertex[1], newvertex[2]);
                                 VoxelIDs.push_back(id);
                             }
                         }
@@ -119,14 +124,42 @@ void Voxel2Tet::FindSurfaces()
     }
 }
 
+void Voxel2Tet :: FindEdges()
+{
+
+    STATUS ("Find edges\n", 0);
+
+    std::vector <VertexType*> SharedVertices;
+
+    // Find all vertices that are shared among the surfaces
+    for (auto surface1: this->Surfaces) {
+        for (auto surface2: this->Surfaces) {
+
+            if (surface1==surface2) break;
+
+            for (int i=0; i<2; i++) {
+                int mat1 = surface1->Phases[i];
+                for (int j=0; j<2; j++) {
+                    int mat2 = surface2->Phases[i];
+                    LOG("Surfaces %p and %p shares phases\n", surface1, surface2);
+                    LOG("   surface1->Phases = [%i, %i]\n", surface1->Phases[0], surface1->Phases[1]);
+                    LOG("   surface2->Phases = [%i, %i]\n", surface2->Phases[0], surface2->Phases[1]);
+                }
+            }
+        }
+    }
+}
+
 void Voxel2Tet :: AddSurfaceSquare(std::vector<int> VoxelIDs, std::vector<int> phases, int normalphase)
 {
     // Check is surface exists
     Surface *ThisSurface = NULL;
+    int SurfaceID;
     for (unsigned int i=0; i<this->Surfaces.size(); i++) {
         if ( ( (this->Surfaces.at(i)->Phases[0] == phases.at(0) ) & ( this->Surfaces.at(i)->Phases[1] == phases.at(1) ) ) |
              ( (this->Surfaces.at(i)->Phases[0] == phases.at(1) ) & ( this->Surfaces.at(i)->Phases[1] == phases.at(0) ) ) ) {
             ThisSurface = this->Surfaces.at(i);
+            SurfaceID = i;
             break;
         }
     }
@@ -135,17 +168,30 @@ void Voxel2Tet :: AddSurfaceSquare(std::vector<int> VoxelIDs, std::vector<int> p
     if (ThisSurface==NULL) {
         ThisSurface = new Surface(phases.at(0), phases.at(1));
         this->Surfaces.push_back(ThisSurface);
+        SurfaceID = this->Surfaces.size()-1;
     }
 
     // Create square (i.e. two triangles)
     TriangleType *triangle0, *triangle1;
     triangle0 = Mesh->AddTriangle({VoxelIDs.at(0), VoxelIDs.at(1), VoxelIDs.at(2)});
     triangle1 = Mesh->AddTriangle({VoxelIDs.at(1), VoxelIDs.at(3), VoxelIDs.at(2)});
+    triangle0->InterfaceID = SurfaceID;
+    triangle1->InterfaceID = SurfaceID;
+    triangle0->PosNormalMatID = normalphase;
+    triangle1->PosNormalMatID = normalphase;
+
+    // Update surface
+    ThisSurface->AddTriangle(triangle0);
+    ThisSurface->AddTriangle(triangle0);
+    for (int i=0; i<3; i++) {
+        ThisSurface->AddVertex(this->Mesh->Vertices.at(VoxelIDs.at(i)));
+    }
 
 }
 
 void Voxel2Tet::LoadData()
 {
+    STATUS ("Load data\n", 0);
     if (this->Opt->has_key("i")) {
         LoadFile(this->Opt->GiveStringValue("i"));
     }
@@ -164,8 +210,11 @@ void Voxel2Tet::LoadData()
 
 void Voxel2Tet::Process()
 {
-    log ("Proccess content\n", 0);
+    STATUS ("Proccess content\n", 0);
     this->FindSurfaces();
+
+    this->FindEdges();
+
 }
 
 }

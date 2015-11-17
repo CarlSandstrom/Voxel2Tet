@@ -1,5 +1,4 @@
 #include "Exporter.h"
-#include "MiscFunctions.h"
 
 namespace voxel2tet
 {
@@ -9,12 +8,12 @@ Exporter::Exporter()
 
 }
 
-Exporter::Exporter(MeshData *mesh)
+Exporter::Exporter(std::vector<TriangleType *> *Triangles, std::vector<VertexType *> *Vertices, std::vector<EdgeType *> *Edges)
 {
-    log("Create exporter for MeshData@%p\n", mesh);
-    this->Vertices = std::addressof( mesh->Vertices );
-    this->Edges = std::addressof( mesh->Edges );
-    this->Triangles = std::addressof( mesh->Triangles );
+    LOG("Create exporter for MeshData@%p\n", Triangles);
+    this->Vertices = Vertices;
+    this->Edges = Edges;
+    this->Triangles = Triangles;
 }
 
 }

@@ -15,7 +15,7 @@ hdf5DataReader::hdf5DataReader()
 
 void hdf5DataReader :: LoadFile(std::string FileName)
 {
-    log ("Open file %s\n", FileName.c_str());
+    LOG ("Open file %s\n", FileName.c_str());
     H5::H5File file( FileName, H5F_ACC_RDONLY );
     VoxelDataContainer = new H5 :: Group ( file.openGroup("VoxelDataContainer") );
 

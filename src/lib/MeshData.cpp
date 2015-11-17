@@ -14,7 +14,7 @@ MeshData::MeshData(BoundingBoxType BoundingBox)
 
 void MeshData :: ExportVTK(std::string FileName)
 {
-    voxel2tet::VTKExporter exporter(this);
+    voxel2tet::VTKExporter exporter(&this->Triangles, &this->Vertices, &this->Edges);
     exporter.WriteData(FileName);
 }
 
@@ -30,13 +30,13 @@ EdgeType *MeshData :: AddEdge(std::vector<int> VertexIDs)
     std::vector <EdgeType*> Edges = this->Vertices.at(ThisVertexID)->Edges;
     for (auto Edge: Edges) {
         if ( ( (Edge->Vertices[0] == ThisVertex) & (Edge->Vertices[1] == OtherVertex) ) | ( (Edge->Vertices[1] == ThisVertex) & (Edge->Vertices[0] == OtherVertex) )) {
-            log("Edge %p already exists\n", Edge);
+            LOG("Edge %p already exists\n", Edge);
             return Edge;
         }
     }
 
     EdgeType *NewEdge = new EdgeType;
-    log("Create edge from Vertex IDs %u and %u: %p\n", VertexIDs.at(0), VertexIDs.at(1), NewEdge);
+    LOG("Create edge from Vertex IDs %u and %u: %p\n", VertexIDs.at(0), VertexIDs.at(1), NewEdge);
 
     // Update edge
     NewEdge->Vertices[0] = ThisVertex;
@@ -65,7 +65,7 @@ TriangleType *MeshData :: AddTriangle(std::vector<int> VertexIDs)
 {
 
     TriangleType *NewTriangle = new TriangleType;
-    log ("Create triangle %p from vertices (%u, %u, %u)@(%p, %p, %p)\n", NewTriangle, VertexIDs.at(0), VertexIDs.at(1), VertexIDs.at(2),
+    LOG ("Create triangle %p from vertices (%u, %u, %u)@(%p, %p, %p)\n", NewTriangle, VertexIDs.at(0), VertexIDs.at(1), VertexIDs.at(2),
          this->Vertices.at(VertexIDs.at(0)), this->Vertices.at(VertexIDs.at(1)), this->Vertices.at(VertexIDs.at(2)));
 
     for (int i=0; i<3; i++) {

@@ -8,9 +8,10 @@ VTKExporter::VTKExporter()
 
 }
 
-VTKExporter::VTKExporter(MeshData *mesh) : Exporter (mesh)
+VTKExporter::VTKExporter(std :: vector <TriangleType*> *Triangles, std :: vector <VertexType*> *Vertices, std :: vector <EdgeType*> *Edges) :
+    Exporter (Triangles, Vertices, Edges)
 {
-    log("Create VTKExporter object\n",0);
+    LOG("Create VTKExporter object\n",0);
 }
 
 vtkPoints* VTKExporter :: SetupVertices()
@@ -29,13 +30,13 @@ vtkCellArray *VTKExporter::SetupTriangles()
 {
     vtkCellArray *Cells = vtkCellArray::New();
     for (unsigned int i=0; i<this->Triangles->size(); i++) {
-        log("Setup triangle %u@(%p)\n", i, this->Triangles->at(i));
+        LOG("Setup triangle %u@(%p)\n", i, this->Triangles->at(i));
         TriangleType *t=this->Triangles->at(i);
         vtkSmartPointer<vtkTriangle> triangle = vtkSmartPointer<vtkTriangle>::New();
         for (int j=0; j<3; j++) {
             VertexType *v=t->Vertices[j];
             int VertexId = this->VertexMap[v];
-            log("Add vertex %u@(%p) to triangle\n", VertexId, this->Vertices->at(VertexId));
+            LOG("Add vertex %u@(%p) to triangle\n", VertexId, this->Vertices->at(VertexId));
             triangle->GetPointIds()->SetId ( j, VertexId );
         }
         Cells->InsertNextCell(triangle);
@@ -86,3 +87,4 @@ void VTKExporter :: WriteData(std::string Filename)
 
 
 }
+

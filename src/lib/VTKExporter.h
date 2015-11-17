@@ -3,6 +3,11 @@
 
 #include <string>
 #include <map>
+
+#include "Exporter.h"
+#include "MeshComponents.h"
+#include "MiscFunctions.h"
+
 #include <vtkSmartPointer.h>
 #include <vtkTriangle.h>
 #include <vtkCellArray.h>
@@ -10,15 +15,9 @@
 #include <vtkPolyData.h>
 #include <vtkXMLPolyDataWriter.h>
 
-#include "Exporter.h"
-#include "MeshComponents.h"
-#include "MiscFunctions.h"
-
 
 namespace voxel2tet
 {
-
-//class MeshData;
 
 class VTKExporter : public Exporter
 {
@@ -30,7 +29,7 @@ private:
     vtkUnsignedCharArray *SetupInterfaceIDs();
 public:
     VTKExporter();
-    VTKExporter(MeshData *mesh);
+    VTKExporter(std :: vector <TriangleType*> *Triangles, std :: vector <VertexType*> *Vertices, std :: vector <EdgeType*> *Edges);
     void WriteData(std::string Filename);
 };
 

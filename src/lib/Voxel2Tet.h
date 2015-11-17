@@ -22,10 +22,12 @@ private:
     Importer *Imp;
     std::vector <Surface*> Surfaces;
     void FindSurfaces();
+    void FindEdges();
     void AddSurfaceSquare(std::vector<int> VoxelIDs, std::vector<int> phases, int normalphase);
 public:
-    MeshData *Mesh;
     Voxel2Tet(Options *Opt);
+    MeshData *Mesh;
+
     void LoadFile(std::string FileName);
     void LoadData();
     void Process();

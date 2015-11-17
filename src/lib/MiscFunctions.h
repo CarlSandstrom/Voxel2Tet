@@ -4,8 +4,8 @@
 #define LOGOUTPUT 1
 #define STATOUTPUT 1
 
-#define log(format, args...) dolog (__FUNCTION__, format, args)
-#define outputstat(format, args...) dooutputstat (format, args)
+#define LOG(format, args...) dolog (__FUNCTION__, format, args)
+#define STATUS(format, args...) dooutputstat (format, args)
 
 namespace voxel2tet
 {

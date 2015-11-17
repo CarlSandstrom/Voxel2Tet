@@ -4,20 +4,18 @@
 #include <vector>
 #include <string>
 
-//#include "MeshData.h"
 #include "MeshComponents.h"
+#include "MiscFunctions.h"
 
 namespace voxel2tet
 {
-
-class MeshData;
 
 class Exporter
 {
 private:
 public:
     Exporter();
-    Exporter(MeshData *mesh);
+    Exporter(std :: vector <TriangleType*> *Triangles, std :: vector <VertexType*> *Vertices, std :: vector <EdgeType*> *Edges);
     std :: vector <TriangleType*> *Triangles;
     std :: vector <VertexType*> *Vertices;
     std :: vector <EdgeType*> *Edges;
