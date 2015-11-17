@@ -8,6 +8,8 @@ set(Voxel2TetLibList
     MeshData.cpp
     MeshComponents.cpp
     MiscFunctions.cpp
+    Surface.cpp
+    Voxel2Tet.cpp
 )
 
 add_library(Voxel2TetLib ${Voxel2TetLibList})

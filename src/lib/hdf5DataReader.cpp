@@ -4,6 +4,7 @@
 #include<cmath>
 
 #include "hdf5DataReader.h"
+#include "MiscFunctions.h"
 
 namespace voxel2tet {
 
@@ -14,7 +15,7 @@ hdf5DataReader::hdf5DataReader()
 
 void hdf5DataReader :: LoadFile(std::string FileName)
 {
-    std :: cout << "Open file" << FileName << "\n";
+    log ("Open file %s\n", FileName.c_str());
     H5::H5File file( FileName, H5F_ACC_RDONLY );
     VoxelDataContainer = new H5 :: Group ( file.openGroup("VoxelDataContainer") );
 
@@ -72,20 +73,22 @@ int hdf5DataReader :: GiveMaterialIDByIndex(int xi, int yi, int zi)
 
 }
 
-void hdf5DataReader :: GiveSpacing(DoubleTriplet spacing)
+void hdf5DataReader :: GiveSpacing(double spacing[3])
 {
-    for (int i=0; i<3; i++) {spacing.c[i] = this->spacing_data[i];}
+    for (int i=0; i<3; i++) {spacing[i] = this->spacing_data[i];}
 }
 
-void hdf5DataReader :: GiveBoundingBox(BoundingBoxType BoundingBox)
+BoundingBoxType hdf5DataReader::GiveBoundingBox()
 {
+    BoundingBoxType BoundingBox;
     for (int i=0; i<3; i++) {
         BoundingBox.maxvalues[i] = this->BoundingBox.maxvalues[i];
         BoundingBox.minvalues[i] = this->BoundingBox.minvalues[i];
     };
+    return BoundingBox;
 }
 
-void hdf5DataReader :: GiveDimensions(IntTriplet dimensions)
+void hdf5DataReader :: GiveDimensions(int dimensions[3])
 {
     for (int i=0; i<3; i++) {dimensions[i] = this->dimensions_data[i];}
 }
@@ -97,9 +100,9 @@ void hdf5DataReader :: GiveCoordinateByIndices(int xi, int yi, int zi, DoubleTri
     Coordinate.c[2] = zi*this->spacing_data[2] + this->origin_data[2];
 }
 
-void hdf5DataReader :: GiveOrigin(DoubleTriplet origin)
+void hdf5DataReader :: GiveOrigin(double origin[3])
 {
-    for (int i=0; i<3; i++) {origin.c[i] = this->origin_data[i];}
+    for (int i=0; i<3; i++) {origin[i] = this->origin_data[i];}
 }
 
 }

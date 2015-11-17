@@ -8,11 +8,11 @@ int main( int argc, char *argv[] )
 {
     voxel2tet :: hdf5DataReader DataReader = voxel2tet :: hdf5DataReader();
     DataReader.LoadFile("/home/carl/dev/Voxel2Tet/ExampleInput/substructure.hdf5");
-    voxel2tet :: DoubleTriplet dt;
+    double dt[3];
     DataReader.GiveSpacing(dt);
     for (int i=0; i<3; i++ ) {
-        printf("%f\n", dt.c[i]);
-        dt.c[i] = -9.1;
+        printf("%f\n", dt[i]);
+        dt[i] = -9.1;
     }
 
 }

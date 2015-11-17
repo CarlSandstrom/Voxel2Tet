@@ -43,10 +43,17 @@ vtkCellArray *VTKExporter::SetupTriangles()
     return Cells;
 }
 
-void VTKExporter :: SetupInterfaceIDs()
+vtkUnsignedCharArray *VTKExporter :: SetupInterfaceIDs()
 
 {
-
+    vtkUnsignedCharArray *InterfaceIDs = vtkUnsignedCharArray::New();
+    InterfaceIDs->SetNumberOfComponents(1);
+    InterfaceIDs->SetName("Surface ID");
+    for (unsigned int i=0; i<this->Triangles->size(); i++) {
+        TriangleType *t=this->Triangles->at(i);
+        InterfaceIDs->InsertNextTuple1(t->InterfaceID);
+    }
+    return InterfaceIDs;
 }
 
 void VTKExporter :: WriteData(std::string Filename)
@@ -60,6 +67,11 @@ void VTKExporter :: WriteData(std::string Filename)
     vtkSmartPointer<vtkPolyData> PolyData = vtkSmartPointer<vtkPolyData>::New();
     PolyData->SetPoints (Points);
     PolyData->SetPolys( CellArrays );
+
+    vtkSmartPointer<vtkUnsignedCharArray> InterfaceID;
+    InterfaceID.TakeReference(this->SetupInterfaceIDs());
+    PolyData->GetCellData()->SetScalars(InterfaceID);
+    PolyData->Modified();
 
     vtkSmartPointer<vtkXMLPolyDataWriter> XMLWriter = vtkSmartPointer<vtkXMLPolyDataWriter>::New();
     XMLWriter->SetFileName(Filename.c_str());

@@ -35,9 +35,9 @@ void Voxel2Tet::FindSurfaces()
                 // Specifies directions in which we will look for different materials
                 std::vector <std::vector <double>> testdirections = {{1,0,0}, {0,1,0}, {0,0,1}};
                 // If we the adjacent material is of other type, we will create a square by varying the coordinates marked '1' in vdirections
-                std::vector <std::vector <double>> vdirections = {{1,0,0}, {0,1,0}, {0,0,1}};
+                std::vector <std::vector <double>> vdirections = {{0,1,1}, {1,0,1}, {1,1,0}};
                 // vindex is the indices of the coordinates
-                std::vector <std::vector <int>> vindex = {{1,2},{0,1},{0,1}};
+                std::vector <std::vector <int>> vindex = {{1,2},{0,2},{0,1}};
 
                 // If we are on a boundary, we need to check what is outside of that boundary
                 if (i==0) {
@@ -45,13 +45,13 @@ void Voxel2Tet::FindSurfaces()
                     vdirections.push_back({0,1,1});
                     vindex.push_back({1,2});
                 } else if (i==1) {
-                    testdirections.push_back({-1,0,0});
-                    vdirections.push_back({0,1,1});
-                    vindex.push_back({1,2});
+                    testdirections.push_back({0,-1,0});
+                    vdirections.push_back({1,0,1});
+                    vindex.push_back({0,2});
                 } else if (i==2) {
-                    testdirections.push_back({-1,0,0});
-                    vdirections.push_back({0,1,1});
-                    vindex.push_back({1,2});
+                    testdirections.push_back({0,0,-1});
+                    vdirections.push_back({1,1,0});
+                    vindex.push_back({0,1});
                 }
 
                 int ThisPhase = this->Imp->GiveMaterialIDByIndex(i, j, k);
@@ -87,7 +87,6 @@ void Voxel2Tet::FindSurfaces()
                         c[0] = (double(i) + double(testdirections.at(m).at(0))/2.0) * spacing[0] + origin[0] + spacing[0]/2.0;
                         c[1] = (double(j) + double(testdirections.at(m).at(1))/2.0) * spacing[1] + origin[1] + spacing[1]/2.0;
                         c[2] = (double(k) + double(testdirections.at(m).at(2))/2.0) * spacing[2] + origin[2] + spacing[2]/2.0;
-                        log("c=%f, %f, %f", c[0], c[1], c[2]);
 
                         // Compute coordinate of corner point
                         double delta[3];
@@ -103,12 +102,16 @@ void Voxel2Tet::FindSurfaces()
                                 newvertex[0] = c[0];
                                 newvertex[1] = c[1];
                                 newvertex[2] = c[2];
-                                for (int n=0; n<2; n++) {
-                                    newvertex[vindex.at(m).at(n)] = newvertex[vindex.at(m).at(n)] + ;
-                                }
-                                VoxelIDs.push_back(newvertex[0]);
+
+                                newvertex[vindex.at(m).at(0)] = newvertex[vindex.at(m).at(0)] + s1*delta[vindex.at(m)[0]];
+                                newvertex[vindex.at(m).at(1)] = newvertex[vindex.at(m).at(1)] + s2*delta[vindex.at(m)[1]];
+
+                                int id = Mesh->VertexOctreeRoot->AddVertex(newvertex[0], newvertex[1], newvertex[2]);
+                                log ("Corner (id=%u) at (%f, %f, %f)\n", id, newvertex[0], newvertex[1], newvertex[2]);
+                                VoxelIDs.push_back(id);
                             }
                         }
+                        AddSurfaceSquare(VoxelIDs, {ThisPhase, NeighboringPhase}, NeighboringPhase);
                     }
                 }
             }
@@ -116,11 +119,47 @@ void Voxel2Tet::FindSurfaces()
     }
 }
 
+void Voxel2Tet :: AddSurfaceSquare(std::vector<int> VoxelIDs, std::vector<int> phases, int normalphase)
+{
+    // Check is surface exists
+    Surface *ThisSurface = NULL;
+    for (unsigned int i=0; i<this->Surfaces.size(); i++) {
+        if ( ( (this->Surfaces.at(i)->Phases[0] == phases.at(0) ) & ( this->Surfaces.at(i)->Phases[1] == phases.at(1) ) ) |
+             ( (this->Surfaces.at(i)->Phases[0] == phases.at(1) ) & ( this->Surfaces.at(i)->Phases[1] == phases.at(0) ) ) ) {
+            ThisSurface = this->Surfaces.at(i);
+            break;
+        }
+    }
+
+    // If not, create it and add it to the list
+    if (ThisSurface==NULL) {
+        ThisSurface = new Surface(phases.at(0), phases.at(1));
+        this->Surfaces.push_back(ThisSurface);
+    }
+
+    // Create square (i.e. two triangles)
+    TriangleType *triangle0, *triangle1;
+    triangle0 = Mesh->AddTriangle({VoxelIDs.at(0), VoxelIDs.at(1), VoxelIDs.at(2)});
+    triangle1 = Mesh->AddTriangle({VoxelIDs.at(1), VoxelIDs.at(3), VoxelIDs.at(2)});
+
+}
+
 void Voxel2Tet::LoadData()
 {
     if (this->Opt->has_key("i")) {
         LoadFile(this->Opt->GiveStringValue("i"));
     }
+    BoundingBoxType bb;
+    double spacing[3];
+
+    bb = this->Imp->GiveBoundingBox();
+    this->Imp->GiveSpacing(spacing);
+
+    for (int i=0; i<3; i++) {
+        bb.maxvalues[i] = bb.maxvalues[i] + spacing[i];
+        bb.minvalues[i] = bb.minvalues[i] - spacing[i];
+    }
+    Mesh = new MeshData(bb);
 }
 
 void Voxel2Tet::Process()

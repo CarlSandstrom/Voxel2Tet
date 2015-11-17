@@ -6,6 +6,7 @@
 
 #include "MeshComponents.h"
 #include "VertexOctreeNode.h"
+#include "VTKExporter.h"
 
 namespace voxel2tet
 {

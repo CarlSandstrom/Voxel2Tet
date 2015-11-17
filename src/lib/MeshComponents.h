@@ -38,6 +38,9 @@ public:
 
 class TriangleType {
 public:
+    int InterfaceID;
+    int PosNormalMatID;
+    int NegNormalMatID;
     VertexType *Vertices[3];
 };
 

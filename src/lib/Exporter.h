@@ -4,11 +4,13 @@
 #include <vector>
 #include <string>
 
-#include "MeshData.h"
+//#include "MeshData.h"
 #include "MeshComponents.h"
 
 namespace voxel2tet
 {
+
+class MeshData;
 
 class Exporter
 {

@@ -6,17 +6,19 @@
 #include <vtkSmartPointer.h>
 #include <vtkTriangle.h>
 #include <vtkCellArray.h>
+#include <vtkCellData.h>
 #include <vtkPolyData.h>
 #include <vtkXMLPolyDataWriter.h>
 
 #include "Exporter.h"
-#include "MeshData.h"
 #include "MeshComponents.h"
 #include "MiscFunctions.h"
 
 
 namespace voxel2tet
 {
+
+//class MeshData;
 
 class VTKExporter : public Exporter
 {
@@ -25,7 +27,7 @@ private:
 
     vtkPoints* SetupVertices();
     vtkCellArray* SetupTriangles();
-    void SetupInterfaceIDs();
+    vtkUnsignedCharArray *SetupInterfaceIDs();
 public:
     VTKExporter();
     VTKExporter(MeshData *mesh);

@@ -14,7 +14,8 @@ MeshData::MeshData(BoundingBoxType BoundingBox)
 
 void MeshData :: ExportVTK(std::string FileName)
 {
-
+    voxel2tet::VTKExporter exporter(this);
+    exporter.WriteData(FileName);
 }
 
 EdgeType *MeshData :: AddEdge(std::vector<int> VertexIDs)

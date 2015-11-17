@@ -23,12 +23,12 @@ private:
 public:
     Importer();
     virtual int GiveMaterialIDByCoordinate(double x, double y, double z) = 0;
-    virtual int GiveMaterialIDByIndex(int xi, int yi, int zy) = 0;
-    virtual void GiveSpacing(DoubleTriplet spacing) = 0;
-    virtual void GiveBoundingBox(BoundingBoxType BoundingBox) = 0;
-    virtual void GiveDimensions(IntTriplet dimensions) = 0;
+    virtual int GiveMaterialIDByIndex(int xi, int yi, int zi) = 0;
+    virtual void GiveSpacing(double spacing[3]) = 0;
+    virtual BoundingBoxType GiveBoundingBox() = 0;
+    virtual void GiveDimensions(int dimensions[3]) = 0;
     virtual void GiveCoordinateByIndices(int xi, int yi, int zi, DoubleTriplet Coordinate) = 0;
-    virtual void GiveOrigin(DoubleTriplet origin) = 0;
+    virtual void GiveOrigin(double origin[3]) = 0;
 };
 
 }
