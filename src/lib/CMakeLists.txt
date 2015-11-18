@@ -10,6 +10,7 @@ set(Voxel2TetLibList
     MiscFunctions.cpp
     Surface.cpp
     Voxel2Tet.cpp
+    PhaseEdge.cpp
 )
 
 add_library(Voxel2TetLib ${Voxel2TetLibList})

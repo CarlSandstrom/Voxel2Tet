@@ -18,6 +18,25 @@ VertexOctreeNode::VertexOctreeNode(BoundingBoxType BoundingBox, std::vector <Ver
     this->eps=1e-12;
 }
 
+VertexType * VertexOctreeNode::FindVertexByCoords(double x, double y, double z)
+{
+    if (this->children.size() == 0) {
+        for (auto VertexID: this->VertexIds) {
+            double d = std :: sqrt ( std::pow( this->Vertices->at(VertexID)->c[0] - x,2) + std::pow( this->Vertices->at(VertexID)->c[1] - y, 2) + std::pow( this->Vertices->at(VertexID)->c[2] - z, 2) );
+            if (d < EPS) {
+                return this->Vertices->at(VertexID);
+            }
+        }
+    } else {
+        for (auto c: this->children) {
+            if (c->IsInBoundingBox(x, y, z)) {
+                return c->FindVertexByCoords(x, y, z);
+            }
+        }
+    }
+    return NULL;
+}
+
 int VertexOctreeNode :: AddVertex(double x, double y, double z)
 {
     int newvertexid = -1;

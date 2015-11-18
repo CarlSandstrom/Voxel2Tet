@@ -5,6 +5,7 @@
 
 #include<Importer.h>
 #include "MeshComponents.h"
+#include "MiscFunctions.h"
 
 namespace voxel2tet
 {
@@ -18,6 +19,7 @@ private:
     double eps;
 
     // List of indices pointing to this->Vertices contained within this node
+    // TODO: Is it neccessary to use indices? Why not pionters?
     std::vector <int> VertexIds;
 
     // Splits node into eight nodes
@@ -36,6 +38,9 @@ public:
 
     // List of child nodes
     std::vector <VertexOctreeNode*> children;
+
+    // Find vertex object by coordinates
+    VertexType *FindVertexByCoords(double x, double y, double z);
 
     void printself();
 };

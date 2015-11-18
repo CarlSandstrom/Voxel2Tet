@@ -47,7 +47,8 @@ int hdf5DataReader :: GiveMaterialIDByCoordinate(double x, double y, double z)
     double coords[3]={x, y, z};
     int indices[3];
     for (int i=0; i<3; i++) {
-        indices[i] =  floor(coords[i]-this->origin_data[i])/this->spacing_data[i];
+        double intcoord = (coords[i]-this->origin_data[i])/this->spacing_data[i];
+        indices[i] =  floor(intcoord);
     }
     return this->GiveMaterialIDByIndex(indices[0], indices[1], indices[2]);
 }

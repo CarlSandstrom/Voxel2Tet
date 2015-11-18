@@ -24,4 +24,19 @@ void dooutputstat(const char *fmt, ...)
         va_end(argp);
 }
 
+/*template <typename T>
+std::vector<int> FindSubsetIndices(std::vector<T> Container, std::vector<T> Subset)
+{
+    std::vector <int> Indices;
+    for (auto s: Subset) {
+        int pos = std::distance(Container.begin(), std::find(Container.begin(), Container.end(), s));
+        Indices.push_back(pos);
+    }
+    return Indices;
+}
+
+
+template typename T<int>; */
+
+
 }
