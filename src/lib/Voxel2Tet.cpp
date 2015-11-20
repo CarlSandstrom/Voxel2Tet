@@ -14,6 +14,20 @@ Voxel2Tet::Voxel2Tet(Options *Opt)
     this->Opt = Opt;
 }
 
+Voxel2Tet::~Voxel2Tet()
+{
+    for (unsigned int i=0; i<PhaseEdges.size(); i++) {
+        delete this->PhaseEdges.at(i);
+    }
+
+    for (auto s: this->Surfaces) {
+        delete s;
+    }
+
+    delete this->Mesh;
+
+}
+
 void Voxel2Tet::LoadFile(std::string Filename)
 {
     STATUS ("Load file %s\n", Filename.c_str());
@@ -142,7 +156,7 @@ std::vector<int> Voxel2Tet::FindSubsetIndices(std::vector<T> Container, std::vec
 void Voxel2Tet :: FindEdges()
 {
 
-    STATUS ("Find edges\n", 0);
+    STATUS ("Find edges\n\tIdentify vertices shared by surfaces...\n", 0);
 
     // Sort vertex vectors on all surfaces
     for(auto surface: this->Surfaces) {
@@ -191,6 +205,8 @@ void Voxel2Tet :: FindEdges()
             }
         }
     }
+
+    STATUS ("\tTrace edges...\n", 0);
 
     std::sort(EdgeVertices.begin(), EdgeVertices.end());
     EdgeVertices.erase( std::unique(EdgeVertices.begin(), EdgeVertices.end()), EdgeVertices.end());
@@ -256,6 +272,7 @@ void Voxel2Tet :: FindEdges()
         }
     }
 
+    STATUS ("\tSort and fix non-connected edges...\n", 0);
     LOG("Fix and sort edges\n", 0);
 
     // Ensure that only have inner connected edges. I.e. max two vertices not connected to any other vertex on the edge
@@ -268,29 +285,73 @@ void Voxel2Tet :: FindEdges()
         // Erase current PhaseEdge and replace it with the ones in FixedEdges
         this->PhaseEdges.erase(this->PhaseEdges.begin() + i);
         this->PhaseEdges.insert(this->PhaseEdges.begin() + i, FixedEdges->begin(), FixedEdges->end());
+
         i=i+FixedEdges->size();
+
+        // Cleanup
+        /*for (auto fe: *FixedEdges) {
+            delete fe;
+        }
+        delete FixedEdges;*/
+
     }
 
-    LOG("Split phase edges at shared points\n",0);
+    STATUS("\tSplit phase edges at shared points\n",0);
     // Split phase edges at shared points
+
     for (auto v: EdgeVertices) {
-        unsigned int i=0;
-        int count=0;
-        while (i<this->PhaseEdges.size()) {
-            std::vector<VertexType*> FlatList=this->PhaseEdges.at(i)->GetFlatListOfVertices();
+
+        unsigned int j=0;
+        std::vector <int> PhaseEdgeIDs;
+
+        while (j<this->PhaseEdges.size()) {
+            std::vector<VertexType*> FlatList=this->PhaseEdges.at(j)->GetFlatListOfVertices();
 
             bool VertexFound = std::find(FlatList.begin(), FlatList.end(), v)!=FlatList.end();
 
             if (VertexFound) {
-                count++;
-                if (count>1) {
-                    LOG("Vertex %p is a shared point\n", v);
-                }
+                PhaseEdgeIDs.push_back(j);
             }
 
-            i++;
+            j++;
+        }
+
+        if (PhaseEdgeIDs.size()>1) {
+            LOG("Vertex %p is a shared point\n", v);
+
+            // First, split all PhaseEdges at v and store them in vector NewPhaseEdges
+            std::vector<PhaseEdge*> NewPhaseEdges;
+
+            for (unsigned int j=0; j<PhaseEdgeIDs.size(); j++) {
+                PhaseEdge *pe = this->PhaseEdges.at(PhaseEdgeIDs.at(j));
+                LOG("Split PhaseEdge %p at vertex\n", pe);
+                pe->SplitAtVertex(v, &NewPhaseEdges);
+            }
+
+            // Then, remove old PhaseEdges
+            std::sort(PhaseEdgeIDs.begin(), PhaseEdgeIDs.end());
+
+            for (int j=PhaseEdgeIDs.size()-1; j>=0; j--) {
+                this->PhaseEdges.erase(this->PhaseEdges.begin()+PhaseEdgeIDs.at(j));
+            }
+
+            // Finally, add new PhaseEdges
+            for (auto pe: NewPhaseEdges) {
+                this->PhaseEdges.push_back(pe);
+            }
         }
     }
+}
+
+void Voxel2Tet :: SmoothEdges()
+{
+    for (auto e: this->PhaseEdges) {
+        e->Smooth();
+    }
+}
+
+void Voxel2Tet :: SmoothSurfaces()
+{
 
 }
 
@@ -385,9 +446,14 @@ void Voxel2Tet::LoadData()
 void Voxel2Tet::Process()
 {
     STATUS ("Proccess content\n", 0);
+
     this->FindSurfaces();
 
     this->FindEdges();
+
+    this->SmoothEdges();
+
+    this->SmoothSurfaces();
 
 }
 

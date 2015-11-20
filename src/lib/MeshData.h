@@ -25,6 +25,8 @@ public:
     // Either with all vertices or with a bounding box
     MeshData(BoundingBoxType BoundingBox);
 
+    ~MeshData();
+
     // Export mesh to VTK
     void ExportVTK(std::string FileName);
 

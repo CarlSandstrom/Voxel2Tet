@@ -17,9 +17,6 @@ namespace voxel2tet
 void dolog(const char *functionname, const char *fmt, ...);
 void dooutputstat(const char *fmt, ...);
 
-//template <typename T>
-//std::vector<int> FindSubsetIndices(std::vector<T> Container, std::vector<T> Subset);
-
 }
 
 #endif /* MISCFUNCTIONS_H_ */

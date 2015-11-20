@@ -29,6 +29,7 @@ private:
     bool IsInBoundingBox(double x, double y, double z);
 public:
     VertexOctreeNode(BoundingBoxType BoundingBox, std::vector <VertexType*> *Vertices, int level);
+    ~VertexOctreeNode();
 
     // Adds vertex to this node or somwhere down the hierarchy
     int AddVertex(double x, double y, double z);

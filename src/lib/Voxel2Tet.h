@@ -26,6 +26,10 @@ private:
     std::vector <PhaseEdge*> PhaseEdges;
     void FindSurfaces();
     void FindEdges();
+
+    void SmoothEdges();
+    void SmoothSurfaces();
+
     void AddSurfaceSquare(std::vector<int> VoxelIDs, std::vector<int> phases, int normalphase);
     void AddPhaseEdge(std::vector<VertexType*> EdgeSegment, std::vector<int> Phases);
 
@@ -34,6 +38,8 @@ private:
 
 public:
     Voxel2Tet(Options *Opt);
+    ~Voxel2Tet();
+
     MeshData *Mesh;
 
     void LoadFile(std::string FileName);

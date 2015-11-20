@@ -1,4 +1,5 @@
 #include "PhaseEdge.h"
+#include <array>
 
 namespace voxel2tet
 {
@@ -17,9 +18,39 @@ std::vector<VertexType*> PhaseEdge :: GetFlatListOfVertices()
         FlatList.push_back(e.at(1));
     }
 
-    // Uniquefy
+    // Uniquify
     FlatList.erase( std::unique(FlatList.begin(), FlatList.end()), FlatList.end());
     return FlatList;
+}
+
+void PhaseEdge :: SplitAtVertex(VertexType *Vertex, std::vector<PhaseEdge*> *SplitEdges)
+{
+    int EdgeStart = 0;
+    unsigned int i=0;
+
+    for (; i<this->EdgeSegments.size(); i++) {
+
+        std::vector<VertexType*> e;
+        e = EdgeSegments.at(i);
+
+        if ( (e.at(1)==Vertex) & (e.at(0)==Vertex)) {
+            PhaseEdge *NewPhaseEdge = new PhaseEdge;
+            NewPhaseEdge->Phases = this->Phases;
+
+            std::copy(this->EdgeSegments.begin()+EdgeStart, this->EdgeSegments.begin()+i, std::back_inserter( NewPhaseEdge->EdgeSegments ));
+
+            SplitEdges->push_back(NewPhaseEdge);
+            EdgeStart=i;
+        }
+    }
+
+    // Copy remaining part.
+    PhaseEdge *NewPhaseEdge = new PhaseEdge;
+    NewPhaseEdge->Phases = this->Phases;
+
+    std::copy(this->EdgeSegments.begin()+EdgeStart, this->EdgeSegments.begin()+i, std::back_inserter( NewPhaseEdge->EdgeSegments ));
+    SplitEdges->push_back(NewPhaseEdge);
+
 }
 
 void PhaseEdge :: SortAndFixBrokenEdge(std::vector<PhaseEdge*> *FixedEdges)
@@ -85,6 +116,31 @@ void PhaseEdge :: SortAndFixBrokenEdge(std::vector<PhaseEdge*> *FixedEdges)
             LOG("No items left. \n",0);
         }
     }
+}
+
+void PhaseEdge :: Smooth()
+{
+    if (this->EdgeSegments.size()==1) return;
+
+    // Push end vertices to FixedVertices.
+    this->FixedVertices.push_back( this->EdgeSegments.at(0).at(0) );
+    this->FixedVertices.push_back( this->EdgeSegments.at( this->EdgeSegments.size()-1 ).at(1) );
+
+    std::vector<std::array<double, 3>> CurrentPositions;
+    std::vector<std::array<double, 3>> PreviousPositions;
+    std::vector<VertexType *> FlatList = this->GetFlatListOfVertices();
+
+    for (unsigned int i=0; i<FlatList.size(); i++) {
+        LOG("C = (%f, %f, %f)\n", FlatList.at(i)->c[0], FlatList.at(i)->c[1], FlatList.at(i)->c[2]);
+        std::array<double, 3> cp;// = {FlatList.at(i)->c[0], FlatList.at(i)->c[1], FlatList.at(i)->c[2]};
+        std::array<double, 3> pp;
+        for (int j=0; j<3; j++) {
+            cp.at(j) = pp.at(j) = FlatList.at(i)->c[j];
+        }
+        CurrentPositions.push_back(cp);
+        PreviousPositions.push_back(pp);
+    }
+
 }
 
 }

@@ -18,6 +18,11 @@ VertexOctreeNode::VertexOctreeNode(BoundingBoxType BoundingBox, std::vector <Ver
     this->eps=1e-12;
 }
 
+VertexOctreeNode :: ~VertexOctreeNode()
+{
+    for (auto c: this->children) delete c;
+}
+
 VertexType * VertexOctreeNode::FindVertexByCoords(double x, double y, double z)
 {
     if (this->children.size() == 0) {

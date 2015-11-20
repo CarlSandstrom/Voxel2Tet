@@ -12,8 +12,24 @@ MeshData::MeshData(BoundingBoxType BoundingBox)
     this->VertexOctreeRoot = new VertexOctreeNode(this->BoundingBox, &this->Vertices, 0);
 }
 
+MeshData::~MeshData()
+{
+    for (unsigned int i=0; i<this->Edges.size(); i++) {
+        delete this->Edges.at(i);
+    }
+
+    for (auto t: this->Triangles) {
+        delete t;
+    }
+
+    for (auto v: this->Vertices) delete v;
+
+    delete this->VertexOctreeRoot;
+}
+
 void MeshData :: ExportVTK(std::string FileName)
 {
+    STATUS ("Export to %s\n", FileName.c_str());
     voxel2tet::VTKExporter exporter(&this->Triangles, &this->Vertices, &this->Edges);
     exporter.WriteData(FileName);
 }
