@@ -29,6 +29,10 @@ public:
 
     // Removes an edge from edge list
     void RemoveEdge(EdgeType *Edge);
+
+    // Finds all neighbouring vertices
+    std::vector <VertexType*> FetchNeighbouringVertices();
+
 };
 
 class EdgeType {

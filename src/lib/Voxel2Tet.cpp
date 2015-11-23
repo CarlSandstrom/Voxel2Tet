@@ -34,6 +34,14 @@ void Voxel2Tet::LoadFile(std::string Filename)
     hdf5DataReader *DataReader = new hdf5DataReader();
     DataReader->LoadFile(Filename);
     this->Imp = DataReader;
+
+    if (!this->Opt->has_key("spring_constant")) {
+        double cellspace[3];
+        this->Imp->GiveSpacing(cellspace);
+
+        Opt->AddDefaultMap("spring_const", std::to_string(cellspace[0]));
+    }
+
 }
 
 void Voxel2Tet::FindSurfaces()
@@ -142,16 +150,6 @@ void Voxel2Tet::FindSurfaces()
     }
 }
 
-template <typename T>
-std::vector<int> Voxel2Tet::FindSubsetIndices(std::vector<T> Container, std::vector<T> Subset)
-{
-    std::vector <int> Indices;
-    for (auto s: Subset) {
-        int pos = std::distance(Container.begin(), std::find(Container.begin(), Container.end(), s));
-        Indices.push_back(pos);
-    }
-    return Indices;
-}
 
 void Voxel2Tet :: FindEdges()
 {
@@ -172,7 +170,7 @@ void Voxel2Tet :: FindEdges()
 
     for (unsigned int s1=0; s1<this->Surfaces.size(); s1++) {
         Surface *surface1 = this->Surfaces.at(s1);
-
+        std::vector <VertexType*> SurfaceEdgeVertices;
         for (unsigned int s2=0; s2<this->Surfaces.size(); s2++) {
             Surface *surface2 = this->Surfaces.at(s2);
 
@@ -196,14 +194,25 @@ void Voxel2Tet :: FindEdges()
                         // If both sets of vertices has an intersection, that intersection is an edge
                         if (SharedVertices.size()>0) {
                             LOG ("Surfaces intersects\n",0);
-                            for (auto Vertex: SharedVertices) EdgeVertices.push_back(Vertex);
+                            for (auto Vertex: SharedVertices) {
+                                EdgeVertices.push_back(Vertex);
+                                SurfaceEdgeVertices.push_back(Vertex);
+                            }
                         }
                         break;
                     }
                 }
                 if (SharedPhaseFound) break;
             }
+
         }
+        std::sort(SurfaceEdgeVertices.begin(), SurfaceEdgeVertices.end());
+        SurfaceEdgeVertices.erase( std::unique(SurfaceEdgeVertices.begin(), SurfaceEdgeVertices.end()), SurfaceEdgeVertices.end());
+
+        for (auto v: SurfaceEdgeVertices) {
+            surface1->FixedVertices.push_back(v);
+        }
+
     }
 
     STATUS ("\tTrace edges...\n", 0);
@@ -341,10 +350,12 @@ void Voxel2Tet :: FindEdges()
             }
         }
     }
+
 }
 
 void Voxel2Tet :: SmoothEdges()
 {
+    STATUS("Smooth edges\n", 0);
     for (auto e: this->PhaseEdges) {
         e->Smooth();
     }
@@ -352,7 +363,10 @@ void Voxel2Tet :: SmoothEdges()
 
 void Voxel2Tet :: SmoothSurfaces()
 {
-
+    STATUS("Smooth surfaces\n", 0);
+    for (auto s: this->Surfaces) {
+        s->Smooth();
+    }
 }
 
 void Voxel2Tet :: AddPhaseEdge(std::vector<VertexType*> EdgeSegment, std::vector<int> Phases)
@@ -376,7 +390,7 @@ void Voxel2Tet :: AddPhaseEdge(std::vector<VertexType*> EdgeSegment, std::vector
 
     // If PhaseEdge does not exists, create it
     if (ThisPhaseEdge==NULL) {
-        ThisPhaseEdge = new PhaseEdge;
+        ThisPhaseEdge = new PhaseEdge(this->Opt);
         ThisPhaseEdge->Phases = Phases;
         this->PhaseEdges.push_back(ThisPhaseEdge);
     }
@@ -401,7 +415,7 @@ void Voxel2Tet :: AddSurfaceSquare(std::vector<int> VoxelIDs, std::vector<int> p
 
     // If not, create it and add it to the list
     if (ThisSurface==NULL) {
-        ThisSurface = new Surface(phases.at(0), phases.at(1));
+        ThisSurface = new Surface(phases.at(0), phases.at(1), this->Opt);
         this->Surfaces.push_back(ThisSurface);
         SurfaceID = this->Surfaces.size()-1;
     }

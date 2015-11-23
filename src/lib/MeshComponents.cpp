@@ -37,6 +37,18 @@ void VertexType :: RemoveEdge(EdgeType *Edge)
     this->Edges.erase(std::remove(this->Edges.begin(), this->Edges.end(), Edge), this->Edges.end());
 }
 
+std::vector <VertexType*> VertexType :: FetchNeighbouringVertices()
+{
+    std::vector<VertexType*> Neighbours;
 
+    for (auto e: this->Edges) {
+        for (auto v: e->Vertices) {
+            if (v!=this) {
+                Neighbours.push_back(v);
+            }
+        }
+    }
+    return Neighbours;
+}
 
 }

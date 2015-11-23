@@ -16,6 +16,9 @@ private:
     ValueMap DefaultMap;
 public:
     Options( int argc, char *argv[], ValueMap DefaultValues );
+
+    void AddDefaultMap(std::string keyname, std::string value);
+
     bool has_key(std::string keyname);
 
     std::string GiveStringValue(std::string keyname);

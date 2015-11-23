@@ -2,6 +2,7 @@
 #include <stdio.h>
 #include <algorithm>
 #include <stdarg.h>
+#include <MeshComponents.h>
 
 namespace voxel2tet {
 
@@ -23,5 +24,20 @@ void dooutputstat(const char *fmt, ...)
         vfprintf(stdout, fmt, argp);
         va_end(argp);
 }
+
+template <typename T>
+std::vector<int> FindSubsetIndices(std::vector<T> Container, std::vector<T> Subset)
+{
+    std::vector <int> Indices;
+    for (auto s: Subset) {
+        int pos = std::distance(Container.begin(), std::find(Container.begin(), Container.end(), s));
+        Indices.push_back(pos);
+    }
+    return Indices;
+}
+
+
+
+template std::vector<int> FindSubsetIndices(std::vector<VertexType*>, std::vector<VertexType*>);
 
 }

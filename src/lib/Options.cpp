@@ -39,6 +39,11 @@ Options :: Options( int argc, char *argv[], ValueMap DefaultValues )
     this->DefaultMap = DefaultValues;
 }
 
+void Options :: AddDefaultMap(std::string keyname, std::string value)
+{
+    this->DefaultMap[keyname] = value;
+}
+
 bool Options :: has_key(std::string keyname)
 {
     if (this->OptionMap.find(keyname) == this->OptionMap.end()) {

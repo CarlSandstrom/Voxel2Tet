@@ -4,9 +4,9 @@
 namespace voxel2tet
 {
 
-PhaseEdge::PhaseEdge()
+PhaseEdge::PhaseEdge(Options *Opt)
 {
-
+    this->Opt = Opt;
 }
 
 std::vector<VertexType*> PhaseEdge :: GetFlatListOfVertices()
@@ -34,7 +34,7 @@ void PhaseEdge :: SplitAtVertex(VertexType *Vertex, std::vector<PhaseEdge*> *Spl
         e = EdgeSegments.at(i);
 
         if ( (e.at(1)==Vertex) & (e.at(0)==Vertex)) {
-            PhaseEdge *NewPhaseEdge = new PhaseEdge;
+            PhaseEdge *NewPhaseEdge = new PhaseEdge(this->Opt);
             NewPhaseEdge->Phases = this->Phases;
 
             std::copy(this->EdgeSegments.begin()+EdgeStart, this->EdgeSegments.begin()+i, std::back_inserter( NewPhaseEdge->EdgeSegments ));
@@ -45,7 +45,7 @@ void PhaseEdge :: SplitAtVertex(VertexType *Vertex, std::vector<PhaseEdge*> *Spl
     }
 
     // Copy remaining part.
-    PhaseEdge *NewPhaseEdge = new PhaseEdge;
+    PhaseEdge *NewPhaseEdge = new PhaseEdge(this->Opt);
     NewPhaseEdge->Phases = this->Phases;
 
     std::copy(this->EdgeSegments.begin()+EdgeStart, this->EdgeSegments.begin()+i, std::back_inserter( NewPhaseEdge->EdgeSegments ));
@@ -62,7 +62,7 @@ void PhaseEdge :: SortAndFixBrokenEdge(std::vector<PhaseEdge*> *FixedEdges)
 
         LOG("Find connections for link (%p, %p)\n", ThisLink.at(0), ThisLink.at(1));
 
-        PhaseEdge *NewPhaseEdge=new PhaseEdge();
+        PhaseEdge *NewPhaseEdge=new PhaseEdge(this->Opt);
         NewPhaseEdge->Phases = this->Phases;
         NewPhaseEdge->EdgeSegments.push_back(ThisLink);
         FixedEdges->push_back(NewPhaseEdge);
@@ -121,24 +121,83 @@ void PhaseEdge :: SortAndFixBrokenEdge(std::vector<PhaseEdge*> *FixedEdges)
 void PhaseEdge :: Smooth()
 {
     if (this->EdgeSegments.size()==1) return;
+    double K = this->Opt->GiveDoubleValue("spring_const");
 
     // Push end vertices to FixedVertices.
-    this->FixedVertices.push_back( this->EdgeSegments.at(0).at(0) );
-    this->FixedVertices.push_back( this->EdgeSegments.at( this->EdgeSegments.size()-1 ).at(1) );
+    if (this->EdgeSegments.at(0).at(0) != this->EdgeSegments.at( this->EdgeSegments.size()-1 ).at(1)) {
+        this->FixedVertices.push_back( this->EdgeSegments.at(0).at(0) );
+        this->FixedVertices.push_back( this->EdgeSegments.at( this->EdgeSegments.size()-1 ).at(1) );
+    }
 
     std::vector<std::array<double, 3>> CurrentPositions;
     std::vector<std::array<double, 3>> PreviousPositions;
     std::vector<VertexType *> FlatList = this->GetFlatListOfVertices();
 
+    std::vector<int> FixedVerticesIndices = FindSubsetIndices(FlatList, this->FixedVertices);
+
     for (unsigned int i=0; i<FlatList.size(); i++) {
-        LOG("C = (%f, %f, %f)\n", FlatList.at(i)->c[0], FlatList.at(i)->c[1], FlatList.at(i)->c[2]);
-        std::array<double, 3> cp;// = {FlatList.at(i)->c[0], FlatList.at(i)->c[1], FlatList.at(i)->c[2]};
+        std::array<double, 3> cp;
         std::array<double, 3> pp;
         for (int j=0; j<3; j++) {
             cp.at(j) = pp.at(j) = FlatList.at(i)->c[j];
         }
         CurrentPositions.push_back(cp);
         PreviousPositions.push_back(pp);
+    }
+
+    int itercount = 0;
+    while (itercount < 100) {
+
+        for (unsigned int i=0; i<FlatList.size(); i++) {
+            // Move only if the vertex is not in the FixedVerticesIndecis list
+            int previndex = i-1;
+            int nextindex = i+1;
+            if ((previndex = -1)) previndex = FlatList.size()-1;
+            if ((nextindex = FlatList.size())) nextindex = 0;
+            if (std::find(FixedVerticesIndices.begin(), FixedVerticesIndices.end(), i)==FixedVerticesIndices.end()) {
+                // Laplace
+                for (int j=0; j<3; j++) {
+                    CurrentPositions.at(i)[j] = (PreviousPositions.at(previndex)[j] + PreviousPositions.at(nextindex)[j]) / 2.0;
+                }
+
+                // Pull back
+                std::array<double, 3> delta, unitdelta;
+                for (int j=0; j<3; j++) delta[j]=CurrentPositions.at(i)[j]-FlatList.at(i)->c[j];
+                double d0 = sqrt( pow(delta[0], 2) + pow(delta[1], 2) + pow(delta[2], 2) );
+
+                for (int j=0; j<3; j++) unitdelta[j] = delta[j]/d0;
+
+                double F = d0*1.0;
+                double d = d0;
+
+                double change=1e8;
+                while (change>1e-8) {
+                    double NewDelta = F*1.0/exp(pow(d , 2) / K);
+                    change = fabs(d-NewDelta);
+                    d = NewDelta;
+                }
+
+                for (int j=0; j<3; j++) CurrentPositions.at(i)[j] = FlatList.at(i)->c[j] + unitdelta[j]*d;
+
+            }
+        }
+
+
+
+
+        // Update previous positions
+        for (unsigned int j=0; j<PreviousPositions.size(); j++) {
+            PreviousPositions.at(j)=CurrentPositions.at(j);
+        }
+        itercount ++;
+
+    }
+    FlatList.size();
+    //Update vertices
+    for (unsigned int i=0; i<FlatList.size(); i++) {
+        for (int j=0; j<3; j++) {
+            FlatList.at(i)->c[j] =CurrentPositions.at(i)[j];
+        }
     }
 
 }
