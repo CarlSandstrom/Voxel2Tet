@@ -118,7 +118,7 @@ void Surface::Smooth()
 
     for (unsigned int i=0; i<this->Vertices.size(); i++) {
         for (int j=0; j<3; j++) {
-            this->Vertices.at(i)->c[j] =CurrentPositions.at(i)[j];
+            this->Vertices.at(i)->c[j] = CurrentPositions.at(i)[j];
         }
     }
 }
