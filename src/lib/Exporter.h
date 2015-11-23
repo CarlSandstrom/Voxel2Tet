@@ -19,7 +19,7 @@ public:
     std :: vector <TriangleType*> *Triangles;
     std :: vector <VertexType*> *Vertices;
     std :: vector <EdgeType*> *Edges;
-    virtual void WriteData(std::string Filename) {}
+    virtual void WriteData(std::string Filename) = 0;
 };
 
 }

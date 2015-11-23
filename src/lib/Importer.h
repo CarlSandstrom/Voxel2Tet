@@ -2,6 +2,7 @@
 #define IMPORTER_H
 
 #include <vector>
+#include <array>
 
 namespace voxel2tet {
 
@@ -12,8 +13,8 @@ typedef struct {
 } DoubleTriplet;
 
 typedef struct {
-    double maxvalues[3];
-    double minvalues[3];
+    std::array<double,3> maxvalues;
+    std::array<double,3> minvalues;
 } BoundingBoxType;
 
 class Importer

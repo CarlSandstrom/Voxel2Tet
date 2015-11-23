@@ -5,6 +5,7 @@
 #include "Voxel2Tet.h"
 #include "Importer.h"
 #include "hdf5DataReader.h"
+#include "CallbackImporter.h"
 
 namespace voxel2tet
 {
@@ -28,18 +29,51 @@ Voxel2Tet::~Voxel2Tet()
 
 }
 
+void Voxel2Tet::LoadCallback(cbMaterialIDByCoordinate MaterialIDByCoordinate, std::array<double,3> origin, std::array<double,3> spacing, std::array<int,3> dimensions)
+{
+    STATUS ("Setup callback functions\n", 0);
+    CallbackImporter *DataReader = new CallbackImporter(MaterialIDByCoordinate, origin, spacing, dimensions);
+    this->Imp = DataReader;
+    FinalizeLoad();
+}
+
 void Voxel2Tet::LoadFile(std::string Filename)
 {
     STATUS ("Load file %s\n", Filename.c_str());
     hdf5DataReader *DataReader = new hdf5DataReader();
     DataReader->LoadFile(Filename);
     this->Imp = DataReader;
+    FinalizeLoad();
 
-    if (!this->Opt->has_key("spring_constant")) {
+}
+
+void Voxel2Tet :: FinalizeLoad()
+{
+    if (!this->Opt->has_key("spring_const")) {
         double cellspace[3];
         this->Imp->GiveSpacing(cellspace);
-
         Opt->AddDefaultMap("spring_const", std::to_string(cellspace[0]));
+    }
+
+    BoundingBoxType bb;
+    double spacing[3];
+
+    bb = this->Imp->GiveBoundingBox();
+    this->Imp->GiveSpacing(spacing);
+
+    for (int i=0; i<3; i++) {
+        bb.maxvalues[i] = bb.maxvalues[i] + spacing[i];
+        bb.minvalues[i] = bb.minvalues[i] - spacing[i];
+    }
+    Mesh = new MeshData(bb);
+}
+
+void Voxel2Tet::LoadData()
+{
+    STATUS ("Load data\n", 0);
+
+    if (this->Opt->has_key("i")) {
+        LoadFile(this->Opt->GiveStringValue("i"));
     }
 
 }
@@ -439,25 +473,6 @@ void Voxel2Tet :: AddSurfaceSquare(std::vector<int> VoxelIDs, std::vector<int> p
 
 }
 
-void Voxel2Tet::LoadData()
-{
-    STATUS ("Load data\n", 0);
-    if (this->Opt->has_key("i")) {
-        LoadFile(this->Opt->GiveStringValue("i"));
-    }
-    BoundingBoxType bb;
-    double spacing[3];
-
-    bb = this->Imp->GiveBoundingBox();
-    this->Imp->GiveSpacing(spacing);
-
-    for (int i=0; i<3; i++) {
-        bb.maxvalues[i] = bb.maxvalues[i] + spacing[i];
-        bb.minvalues[i] = bb.minvalues[i] - spacing[i];
-    }
-    Mesh = new MeshData(bb);
-}
-
 void Voxel2Tet::Process()
 {
     STATUS ("Proccess content\n", 0);
@@ -470,15 +485,15 @@ void Voxel2Tet::Process()
         this->Mesh->Vertices.at(i)->ID = i;
     }
 
-    this->Mesh->ExportVTK("/tmp/test0.vtp");
+    this->Mesh->ExportVTK("/tmp/Voxeltest0.vtp");
 
     this->SmoothEdges();
 
-    this->Mesh->ExportVTK("/tmp/test1.vtp");
+    this->Mesh->ExportVTK("/tmp/Voxeltest1.vtp");
 
     this->SmoothSurfaces();
 
-    this->Mesh->ExportVTK("/tmp/test2.vtp");
+    this->Mesh->ExportVTK("/tmp/Voxeltest2.vtp");
 
 }
 

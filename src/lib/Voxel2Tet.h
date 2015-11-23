@@ -6,6 +6,7 @@
 
 #include "Options.h"
 #include "Importer.h"
+#include "CallbackImporter.h"
 #include "hdf5DataReader.h"
 #include "MiscFunctions.h"
 #include "MeshComponents.h"
@@ -33,6 +34,8 @@ private:
     void AddSurfaceSquare(std::vector<int> VoxelIDs, std::vector<int> phases, int normalphase);
     void AddPhaseEdge(std::vector<VertexType*> EdgeSegment, std::vector<int> Phases);
 
+    void FinalizeLoad();
+
     template <typename T>
     std::vector<int> FindSubsetIndices(std::vector<T> Container, std::vector<T> Subset);
 
@@ -43,6 +46,8 @@ public:
     MeshData *Mesh;
 
     void LoadFile(std::string FileName);
+    void LoadCallback(cbMaterialIDByCoordinate MaterialIDByCoordinate, std::array<double, 3> origin, std::array<double, 3> spacing, std::array<int, 3> dimensions);
+
     void LoadData();
     void Process();
 };
