@@ -83,24 +83,26 @@ void Surface::Smooth()
                 }
 
                 // Pull back
+
                 std::array<double, 3> delta, unitdelta;
                 for (int j=0; j<3; j++) delta[j]=CurrentPositions.at(i)[j]-this->Vertices.at(i)->c[j];
 
                 double d0 = sqrt( pow(delta[0], 2) + pow(delta[1], 2) + pow(delta[2], 2) );
-                for (int j=0; j<3; j++) unitdelta[j] = delta[j]/d0;
+                if (d0>1e-8) {
+                    for (int j=0; j<3; j++) unitdelta[j] = delta[j]/d0;
 
-                double F = d0*1.0;
-                double d = d0;
+                    double F = d0*1.0;
+                    double d = d0;
 
-                double change=1e8;
-                while (change>1e-8) {
-                    double NewDelta = F*1.0/exp(pow(d , 2) / K);
-                    change = fabs(d-NewDelta);
-                    d = NewDelta;
+                    double change=1e8;
+                    while (change>1e-8) {
+                        double NewDelta = F*1.0/exp(pow(d , 2) / K);
+                        change = fabs(d-NewDelta);
+                        d = NewDelta;
+                    }
+
+                    for (int j=0; j<3; j++) CurrentPositions.at(i)[j] = this->Vertices.at(i)->c[j] + unitdelta[j]*d;
                 }
-
-                for (int j=0; j<3; j++) CurrentPositions.at(i)[j] = this->Vertices.at(i)->c[j] + unitdelta[j]*d;
-
             }
         }
 
@@ -113,6 +115,7 @@ void Surface::Smooth()
     }
 
     //Update vertices
+
     for (unsigned int i=0; i<this->Vertices.size(); i++) {
         for (int j=0; j<3; j++) {
             this->Vertices.at(i)->c[j] =CurrentPositions.at(i)[j];

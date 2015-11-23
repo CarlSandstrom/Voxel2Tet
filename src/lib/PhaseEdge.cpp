@@ -152,8 +152,8 @@ void PhaseEdge :: Smooth()
             // Move only if the vertex is not in the FixedVerticesIndecis list
             int previndex = i-1;
             int nextindex = i+1;
-            if ((previndex = -1)) previndex = FlatList.size()-1;
-            if ((nextindex = FlatList.size())) nextindex = 0;
+            if ((previndex == -1)) previndex = FlatList.size()-1;
+            if ((nextindex == FlatList.size())) nextindex = 0;
             if (std::find(FixedVerticesIndices.begin(), FixedVerticesIndices.end(), i)==FixedVerticesIndices.end()) {
                 // Laplace
                 for (int j=0; j<3; j++) {
@@ -161,24 +161,26 @@ void PhaseEdge :: Smooth()
                 }
 
                 // Pull back
+
                 std::array<double, 3> delta, unitdelta;
                 for (int j=0; j<3; j++) delta[j]=CurrentPositions.at(i)[j]-FlatList.at(i)->c[j];
                 double d0 = sqrt( pow(delta[0], 2) + pow(delta[1], 2) + pow(delta[2], 2) );
 
-                for (int j=0; j<3; j++) unitdelta[j] = delta[j]/d0;
+                if (d0>1e-8) {
+                    for (int j=0; j<3; j++) unitdelta[j] = delta[j]/d0;
 
-                double F = d0*1.0;
-                double d = d0;
+                    double F = d0*1.0;
+                    double d = d0;
 
-                double change=1e8;
-                while (change>1e-8) {
-                    double NewDelta = F*1.0/exp(pow(d , 2) / K);
-                    change = fabs(d-NewDelta);
-                    d = NewDelta;
+                    double change=1e8;
+                    while (change>1e-8) {
+                        double NewDelta = F*1.0/exp(pow(d , 2) / K);
+                        change = fabs(d-NewDelta);
+                        d = NewDelta;
+                    }
+
+                    for (int j=0; j<3; j++) CurrentPositions.at(i)[j] = FlatList.at(i)->c[j] + unitdelta[j]*d;
                 }
-
-                for (int j=0; j<3; j++) CurrentPositions.at(i)[j] = FlatList.at(i)->c[j] + unitdelta[j]*d;
-
             }
         }
 
@@ -192,11 +194,11 @@ void PhaseEdge :: Smooth()
         itercount ++;
 
     }
-    FlatList.size();
+
     //Update vertices
     for (unsigned int i=0; i<FlatList.size(); i++) {
         for (int j=0; j<3; j++) {
-            FlatList.at(i)->c[j] =CurrentPositions.at(i)[j];
+            FlatList.at(i)->c[j] = CurrentPositions.at(i)[j];
         }
     }
 
