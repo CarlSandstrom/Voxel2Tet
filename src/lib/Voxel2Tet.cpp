@@ -292,6 +292,7 @@ void Voxel2Tet :: FindEdges()
         this->PhaseEdges.at(i)->SortAndFixBrokenEdge(FixedEdges);
 
         // Erase current PhaseEdge and replace it with the ones in FixedEdges
+        delete this->PhaseEdges.at(i);
         this->PhaseEdges.erase(this->PhaseEdges.begin() + i);
         this->PhaseEdges.insert(this->PhaseEdges.begin() + i, FixedEdges->begin(), FixedEdges->end());
 
@@ -308,48 +309,46 @@ void Voxel2Tet :: FindEdges()
     STATUS("\tSplit phase edges at shared points\n",0);
     // Split phase edges at shared points
 
-    for (auto v: EdgeVertices) {
+    // Add all vertices to a list from unique lists of vertices of each PhaseEdge
+    std::vector <VertexType *> VertexList;
+    for (auto e: this->PhaseEdges) {
+        std::vector <VertexType *> FlatList = e->GetFlatListOfVertices();
+        VertexList.insert(VertexList.end(), FlatList.begin(), FlatList.end());
+    }
 
-        unsigned int j=0;
-        std::vector <int> PhaseEdgeIDs;
+    // Count occurences of each vertex
+    std::map <VertexType*, int> Counter;
 
-        while (j<this->PhaseEdges.size()) {
-            std::vector<VertexType*> FlatList=this->PhaseEdges.at(j)->GetFlatListOfVertices();
-
-            bool VertexFound = std::find(FlatList.begin(), FlatList.end(), v)!=FlatList.end();
-
-            if (VertexFound) {
-                PhaseEdgeIDs.push_back(j);
-            }
-
-            j++;
-        }
-
-        if (PhaseEdgeIDs.size()>1) {
-            LOG("Vertex %p is a shared point\n", v);
-
-            // First, split all PhaseEdges at v and store them in vector NewPhaseEdges
-            std::vector<PhaseEdge*> NewPhaseEdges;
-
-            for (unsigned int j=0; j<PhaseEdgeIDs.size(); j++) {
-                PhaseEdge *pe = this->PhaseEdges.at(PhaseEdgeIDs.at(j));
-                LOG("Split PhaseEdge %p at vertex\n", pe);
-                pe->SplitAtVertex(v, &NewPhaseEdges);
-            }
-
-            // Then, remove old PhaseEdges
-            std::sort(PhaseEdgeIDs.begin(), PhaseEdgeIDs.end());
-
-            for (int j=PhaseEdgeIDs.size()-1; j>=0; j--) {
-                this->PhaseEdges.erase(this->PhaseEdges.begin()+PhaseEdgeIDs.at(j));
-            }
-
-            // Finally, add new PhaseEdges
-            for (auto pe: NewPhaseEdges) {
-                this->PhaseEdges.push_back(pe);
-            }
+    for (auto v: VertexList) {
+        if (Counter.find(v) == Counter.end()) {
+            Counter[v] = 1;
+        } else {
+            Counter[v] = Counter[v] + 1;
         }
     }
+
+    // Add vertices occuring more than once to a list
+    std::vector <VertexType *> SharedVertices;
+    for (auto v: Counter) {
+        if (v.second > 1) {
+            SharedVertices.push_back(v.first);
+        }
+    }
+
+    // Split edges at SharedVertices
+    for (auto v: SharedVertices) {
+        unsigned int i=0;
+        for (auto p: this->PhaseEdges) {
+            std::vector<PhaseEdge*> SplitEdges;
+            p->SplitAtVertex(v, &SplitEdges);
+            delete p;
+            this->PhaseEdges.insert(this->PhaseEdges.end(), SplitEdges.begin(), SplitEdges.end());
+            this->PhaseEdges.erase(this->PhaseEdges.begin()+i);
+            i++;
+        }
+    }
+
+    SharedVertices.clear();
 
 }
 

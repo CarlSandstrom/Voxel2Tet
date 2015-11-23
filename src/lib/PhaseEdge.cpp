@@ -135,11 +135,11 @@ void PhaseEdge :: Smooth()
 
     std::vector<std::array<bool,3>> FixedDirectionsList;
 
-
+    // Build connection matrix
     for (unsigned int i=0; i<FlatList.size(); i++) {
-        // Move only if the vertex is not in the FixedVerticesIndecis list
-        int previndex = i-1;
-        int nextindex = i+1;
+
+        unsigned int previndex = i-1;
+        unsigned int nextindex = i+1;
         if ((previndex == -1)) previndex = FlatList.size()-1;
         if ((nextindex == FlatList.size())) nextindex = 0;
 

@@ -68,7 +68,6 @@ void SpringSmooth(std::vector<VertexType*> Vertices, std::vector<std::array<bool
                 int VertexIndex = std::distance(Vertices.begin(), std::find(Vertices.begin(), Vertices.end(), MyConnections.at(k)));
 
                 for (int m=0; m<3; m++) {
-                    VertexType* cv = MyConnections.at(k);
                     NewCoords.at(m) = NewCoords.at(m) + CurrentPositions.at(VertexIndex)[m] / double(MyConnections.size());
                 }
             }
