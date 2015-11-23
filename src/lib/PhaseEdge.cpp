@@ -131,11 +131,6 @@ void PhaseEdge :: Smooth()
 
     std::vector<VertexType *> FlatList = this->GetFlatListOfVertices();
 
-    for (auto v: FlatList) {
-        printf("%u, ", v->ID);
-    }
-    printf("\n");
-
     std::vector<std::vector<VertexType *>> Connections;
 
     std::vector<std::array<bool,3>> FixedDirectionsList;

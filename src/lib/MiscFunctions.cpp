@@ -9,7 +9,7 @@ namespace voxel2tet {
 
 void dolog(const char *functionname, const char *fmt, ...)
 {
-#if LOGOUTPUT > -10
+#if LOGOUTPUT > 0
         va_list argp;
         va_start(argp, fmt);
         printf("%s:\t", functionname);
@@ -52,8 +52,12 @@ void SpringSmooth(std::vector<VertexType*> Vertices, std::vector<std::array<bool
         PreviousPositions.push_back(pp);
     }
 
-    int itercount =0;
-    while (itercount < 100) {
+    int itercount = 0;
+    double deltamax = 1e12;
+    while ((itercount < 1000) & (deltamax>1e-8)){
+
+        deltamax=0.0;
+
         for (unsigned int i=0; i<Vertices.size(); i++) {
             std::array<double, 3> NewCoords = {0,0,0};
 
@@ -75,16 +79,47 @@ void SpringSmooth(std::vector<VertexType*> Vertices, std::vector<std::array<bool
                 }
             }
 
+            // Pull back
+            std::array<double, 3> delta, unitdelta;
+            for (int j=0; j<3; j++) delta[j]=CurrentPositions.at(i)[j]-Vertices.at(i)->c[j];
+
+            double d0 = sqrt( pow(delta[0], 2) + pow(delta[1], 2) + pow(delta[2], 2) );
+            if ((d0>1e-8) & (K!=0.0)) {
+                for (int j=0; j<3; j++) unitdelta[j] = delta[j]/d0;
+
+                double F = d0*1.0;
+                double d = d0;
+
+                double change=1e8;
+                while (change>1e-8) {
+                    double NewDelta = F*1.0/exp(pow(d , 2) / K);
+
+                    change = fabs(d-NewDelta);
+                    d = NewDelta;
+                }
+
+                for (int j=0; j<3; j++) CurrentPositions.at(i)[j] = Vertices.at(i)->c[j] + unitdelta[j]*d;
+            }
+
+            // Compute difference from previous step
+            double d = sqrt( pow(CurrentPositions.at(i)[0]-PreviousPositions.at(i)[0],2) +
+                             pow(CurrentPositions.at(i)[1]-PreviousPositions.at(i)[1],2) +
+                             pow(CurrentPositions.at(i)[2]-PreviousPositions.at(i)[2],2) );
+            if (d>deltamax) deltamax=d;
+
             // Update previous positions
-            for (unsigned int j=0; j<PreviousPositions.size(); j++) {
+            for (unsigned int j=0; j<3; j++) {
                 if (!FixedDirections.at(i)[j]) {
-                    PreviousPositions.at(j)=CurrentPositions.at(j);
+                    PreviousPositions.at(i)[j]=CurrentPositions.at(i)[j];
                 }
             }
+
+
         }
         itercount ++;
     }
 
+    // Update vertices
     for (unsigned int i=0; i<Vertices.size(); i++) {
         for (int j=0; j<3; j++) {
             if (!FixedDirections.at(i)[j]) {
