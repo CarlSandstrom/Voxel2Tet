@@ -129,78 +129,39 @@ void PhaseEdge :: Smooth()
         this->FixedVertices.push_back( this->EdgeSegments.at( this->EdgeSegments.size()-1 ).at(1) );
     }
 
-    std::vector<std::array<double, 3>> CurrentPositions;
-    std::vector<std::array<double, 3>> PreviousPositions;
     std::vector<VertexType *> FlatList = this->GetFlatListOfVertices();
 
-    std::vector<int> FixedVerticesIndices = FindSubsetIndices(FlatList, this->FixedVertices);
+    std::vector<std::vector<VertexType *>> Connections;
+
+    std::vector<std::array<bool,3>> FixedDirectionsList;
+
 
     for (unsigned int i=0; i<FlatList.size(); i++) {
-        std::array<double, 3> cp;
-        std::array<double, 3> pp;
-        for (int j=0; j<3; j++) {
-            cp.at(j) = pp.at(j) = FlatList.at(i)->c[j];
+        // Move only if the vertex is not in the FixedVerticesIndecis list
+        int previndex = i-1;
+        int nextindex = i+1;
+        if ((previndex == -1)) previndex = FlatList.size()-1;
+        if ((nextindex == FlatList.size())) nextindex = 0;
+
+        std::vector<VertexType *> MyConnections;
+
+        MyConnections.push_back(FlatList.at(previndex));
+        MyConnections.push_back(FlatList.at(nextindex));
+
+        Connections.push_back(MyConnections);
+
+        std::array<bool,3> FixedDirections;
+        if ((i!=0) & (i!=(FlatList.size()-1))) {
+            FixedDirections = {false, false, false};
+        } else {
+            FixedDirections = {true, true, true};
         }
-        CurrentPositions.push_back(cp);
-        PreviousPositions.push_back(pp);
+
+
+        FixedDirectionsList.push_back(FixedDirections);
     }
 
-    int itercount = 0;
-    while (itercount < 100) {
-
-        for (unsigned int i=0; i<FlatList.size(); i++) {
-            // Move only if the vertex is not in the FixedVerticesIndecis list
-            int previndex = i-1;
-            int nextindex = i+1;
-            if ((previndex == -1)) previndex = FlatList.size()-1;
-            if ((nextindex == FlatList.size())) nextindex = 0;
-            if (std::find(FixedVerticesIndices.begin(), FixedVerticesIndices.end(), i)==FixedVerticesIndices.end()) {
-                // Laplace
-                for (int j=0; j<3; j++) {
-                    CurrentPositions.at(i)[j] = (PreviousPositions.at(previndex)[j] + PreviousPositions.at(nextindex)[j]) / 2.0;
-                }
-
-                // Pull back
-
-                std::array<double, 3> delta, unitdelta;
-                for (int j=0; j<3; j++) delta[j]=CurrentPositions.at(i)[j]-FlatList.at(i)->c[j];
-                double d0 = sqrt( pow(delta[0], 2) + pow(delta[1], 2) + pow(delta[2], 2) );
-
-                if (d0>1e-8) {
-                    for (int j=0; j<3; j++) unitdelta[j] = delta[j]/d0;
-
-                    double F = d0*1.0;
-                    double d = d0;
-
-                    double change=1e8;
-                    while (change>1e-8) {
-                        double NewDelta = F*1.0/exp(pow(d , 2) / K);
-                        change = fabs(d-NewDelta);
-                        d = NewDelta;
-                    }
-
-                    for (int j=0; j<3; j++) CurrentPositions.at(i)[j] = FlatList.at(i)->c[j] + unitdelta[j]*d;
-                }
-            }
-        }
-
-
-
-
-        // Update previous positions
-        for (unsigned int j=0; j<PreviousPositions.size(); j++) {
-            PreviousPositions.at(j)=CurrentPositions.at(j);
-        }
-        itercount ++;
-
-    }
-
-    //Update vertices
-    for (unsigned int i=0; i<FlatList.size(); i++) {
-        for (int j=0; j<3; j++) {
-            FlatList.at(i)->c[j] = CurrentPositions.at(i)[j];
-        }
-    }
+    SpringSmooth(FlatList, this->FixedVertices, FixedDirectionsList, Connections, K);
 
 }
 

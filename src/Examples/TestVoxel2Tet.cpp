@@ -14,5 +14,5 @@ int main( int argc, char *argv[] )
     v2t.LoadData();
     v2t.Process();
     v2t.Mesh->ExportVTK("/tmp/test0.vtp");
-    //v2t.Mesh->ExportVTK("/tmp/test1.vtp");
+    v2t.Mesh->ExportVTK("/tmp/test1.vtp");
 }
