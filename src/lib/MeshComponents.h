@@ -13,6 +13,8 @@ class VertexType {
 private:
 
 public:
+    int ID;
+
     VertexType (double x, double y, double z) {this->c[0] = x; this->c[1] = y; this->c[2] = z; }
     double c[3];
     std::vector <TriangleType*> Triangles;

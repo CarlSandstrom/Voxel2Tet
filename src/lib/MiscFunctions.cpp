@@ -37,13 +37,10 @@ std::vector<int> FindSubsetIndices(std::vector<T> Container, std::vector<T> Subs
     return Indices;
 }
 
-void SpringSmooth(std::vector<VertexType*> Vertices, std::vector<VertexType*> FixedVertices,
-                  std::vector<std::array<bool,3>> FixedDirections, std::vector<std::vector<VertexType*>> Connections, double K)
+void SpringSmooth(std::vector<VertexType*> Vertices, std::vector<std::array<bool,3>> FixedDirections, std::vector<std::vector<VertexType*>> Connections, double K)
 {
     std::vector<std::array<double, 3>> CurrentPositions;
     std::vector<std::array<double, 3>> PreviousPositions;
-
-    std::vector<int> FixedVerticesIndices = FindSubsetIndices(Vertices, FixedVertices);
 
     for (unsigned int i=0; i<Vertices.size(); i++) {
         std::array<double, 3> cp;
@@ -56,22 +53,34 @@ void SpringSmooth(std::vector<VertexType*> Vertices, std::vector<VertexType*> Fi
     }
 
     int itercount =0;
-    while (itercount < 10) {
+    while (itercount < 100) {
         for (unsigned int i=0; i<Vertices.size(); i++) {
             std::array<double, 3> NewCoords = {0,0,0};
 
             std::vector<VertexType*> MyConnections = Connections.at(i);
             for (unsigned int k=0; k<MyConnections.size(); k++) {
+                // We need the index of MyConnection such that we can use CurrentPosition (as CurrentPosition contains the updated coordinates)
+
+                int VertexIndex = std::distance(Vertices.begin(), std::find(Vertices.begin(), Vertices.end(), MyConnections.at(k)));
+
                 for (int m=0; m<3; m++) {
                     VertexType* cv = MyConnections.at(k);
-                    NewCoords.at(m) = NewCoords.at(m) + cv->c[m] / double(MyConnections.size());
+                    NewCoords.at(m) = NewCoords.at(m) + CurrentPositions.at(VertexIndex)[m] / double(MyConnections.size());
                 }
             }
 
             for (int j=0; j<3; j++) {
-                CurrentPositions.at(i)[j] = NewCoords[j];
+                if (!FixedDirections.at(i)[j]) {
+                    CurrentPositions.at(i)[j] = NewCoords[j];
+                }
             }
 
+            // Update previous positions
+            for (unsigned int j=0; j<PreviousPositions.size(); j++) {
+                if (!FixedDirections.at(i)[j]) {
+                    PreviousPositions.at(j)=CurrentPositions.at(j);
+                }
+            }
         }
         itercount ++;
     }

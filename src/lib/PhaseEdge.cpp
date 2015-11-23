@@ -131,6 +131,11 @@ void PhaseEdge :: Smooth()
 
     std::vector<VertexType *> FlatList = this->GetFlatListOfVertices();
 
+    for (auto v: FlatList) {
+        printf("%u, ", v->ID);
+    }
+    printf("\n");
+
     std::vector<std::vector<VertexType *>> Connections;
 
     std::vector<std::array<bool,3>> FixedDirectionsList;
@@ -151,17 +156,18 @@ void PhaseEdge :: Smooth()
         Connections.push_back(MyConnections);
 
         std::array<bool,3> FixedDirections;
-        if ((i!=0) & (i!=(FlatList.size()-1))) {
+
+
+        if (std::find(this->FixedVertices.begin(), this->FixedVertices.end(), FlatList.at(i))==this->FixedVertices.end()  ) {//if ((i!=0) & (i!=(FlatList.size()-1))) {
             FixedDirections = {false, false, false};
         } else {
             FixedDirections = {true, true, true};
         }
 
-
         FixedDirectionsList.push_back(FixedDirections);
     }
 
-    SpringSmooth(FlatList, this->FixedVertices, FixedDirectionsList, Connections, K);
+    SpringSmooth(FlatList, FixedDirectionsList, Connections, K);
 
 }
 

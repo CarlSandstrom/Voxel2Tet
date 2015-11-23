@@ -356,7 +356,9 @@ void Voxel2Tet :: FindEdges()
 void Voxel2Tet :: SmoothEdges()
 {
     STATUS("Smooth edges\n", 0);
-    for (auto e: this->PhaseEdges) {
+    for (unsigned int i=0; i<this->PhaseEdges.size(); i++) {
+        LOG ("Smooth edge %i\n", i);
+        PhaseEdge *e = this->PhaseEdges.at(i);
         e->Smooth();
     }
 }
@@ -465,9 +467,19 @@ void Voxel2Tet::Process()
 
     this->FindEdges();
 
+    for (unsigned int i=0; i<this->Mesh->Vertices.size(); i++) {
+        this->Mesh->Vertices.at(i)->ID = i;
+    }
+
+    this->Mesh->ExportVTK("/tmp/test0.vtp");
+
     this->SmoothEdges();
 
+    this->Mesh->ExportVTK("/tmp/test1.vtp");
+
     this->SmoothSurfaces();
+
+    this->Mesh->ExportVTK("/tmp/test2.vtp");
 
 }
 
