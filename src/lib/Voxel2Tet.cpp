@@ -78,6 +78,11 @@ void Voxel2Tet::LoadData()
 
 }
 
+void Voxel2Tet::ExportTetGenFile(std::string FileName)
+{
+    this->Mesh->ExportTetgen(FileName);
+}
+
 void Voxel2Tet::FindSurfaces()
 {
 

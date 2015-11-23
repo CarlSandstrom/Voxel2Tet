@@ -12,6 +12,7 @@ set(Voxel2TetLibList
     Voxel2Tet.cpp
     PhaseEdge.cpp
     CallbackImporter.cpp
+    TetGenExporter.cpp
 )
 
 add_library(Voxel2TetLib ${Voxel2TetLibList})

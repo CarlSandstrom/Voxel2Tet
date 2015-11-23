@@ -5,12 +5,13 @@
 #include "Options.h"
 #include "Voxel2Tet.h"
 #include "CallbackImporter.h"
+#include "TetGenExporter.h"
 
 int GiveMaterialIDByCoordinate(double x, double y, double z)
 {
 
     if (sqrt(pow(x-.5, 2) + pow(y-.5, 2) + pow(z, 2)) < .25) {
-        return 0;
+        return 1;
     } else {
         return 2;
     }
@@ -23,6 +24,9 @@ int main( int argc, char *argv[] )
     voxel2tet::Options *Options = new voxel2tet::Options(argc, argv, DefaultOptions);
 
     voxel2tet::Voxel2Tet v2t(Options);
-    v2t.LoadCallback(&GiveMaterialIDByCoordinate, {0,0,0}, {.1, .1, .1}, {10, 10, 1});
+    v2t.LoadCallback(&GiveMaterialIDByCoordinate, {0,0,0}, {.1, .1, .1}, {10, 10, 10});
     v2t.Process();
+    v2t.ExportTetGenFile("/tmp/TetGenTest.poly");
+
+
 }

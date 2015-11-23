@@ -14,5 +14,6 @@ int main( int argc, char *argv[] )
 
     v2t.LoadFile(Options->GiveStringValue("i"));
     v2t.Process();
+    v2t.ExportTetGenFile("/tmp/TetGenTest.poly");
 
 }

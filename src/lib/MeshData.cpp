@@ -1,6 +1,7 @@
 #include <vector>
 #include "MeshData.h"
 #include "MiscFunctions.h"
+#include "TetGenExporter.h"
 
 namespace voxel2tet
 {
@@ -30,7 +31,13 @@ MeshData::~MeshData()
 void MeshData :: ExportVTK(std::string FileName)
 {
     STATUS ("Export to %s\n", FileName.c_str());
-    voxel2tet::VTKExporter exporter(&this->Triangles, &this->Vertices, &this->Edges);
+    VTKExporter exporter(&this->Triangles, &this->Vertices, &this->Edges);
+    exporter.WriteData(FileName);
+}
+
+void MeshData::ExportTetgen(std::string FileName)
+{
+    TetGenExporter exporter(&this->Triangles, &this->Vertices, &this->Edges);
     exporter.WriteData(FileName);
 }
 
