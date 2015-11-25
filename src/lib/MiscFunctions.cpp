@@ -53,7 +53,7 @@ void SpringSmooth(std::vector<VertexType*> Vertices, std::vector<std::array<bool
     }
 
     int itercount = 0;
-    double deltamax = 1e12;
+    double deltamax = 1e8;
     while ((itercount < 1000) & (deltamax>1e-8)){
 
         deltamax=0.0;

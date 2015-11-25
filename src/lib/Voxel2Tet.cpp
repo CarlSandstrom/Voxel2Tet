@@ -409,6 +409,48 @@ void Voxel2Tet :: SmoothSurfaces()
     }
 }
 
+void Voxel2Tet :: SmoothAllAtOnce()
+{
+    STATUS("Smooth complete structure\n", 0);
+    double K = this->Opt->GiveDoubleValue("spring_const");
+
+    std::vector<std::vector<VertexType *>> Connections;
+    std::vector<std::array<bool,3>> FixedDirectionsList;
+
+    // Create connections matrix
+    for (unsigned int i=0; i<this->Mesh->Vertices.size(); i++) {
+        VertexType *ThisVertex = this->Mesh->Vertices.at(i);
+
+        // Find connected vertices
+        std::vector <VertexType*> NeighbouringVertices = ThisVertex->FetchNeighbouringVertices();
+        std::sort (NeighbouringVertices.begin(), NeighbouringVertices.end());
+        std::vector <VertexType*> ConnectedVertices;
+
+        // Create list of indices of connected vertices
+        std::set_intersection(NeighbouringVertices.begin(), NeighbouringVertices.end(),
+                              this->Mesh->Vertices.begin(), this->Mesh->Vertices.end(), back_inserter(ConnectedVertices));
+
+        Connections.push_back(ConnectedVertices);
+
+        std::array<bool,3> FixedDirections;
+        // Lock vertices on boundary surfaces such that they only move in the plane
+        FixedDirections = {false, false, false};
+        for (int j=0; j<3; j++) {
+            if (ThisVertex->c[j]>=(this->Imp->GiveBoundingBox().maxvalues[j])-eps) {
+                FixedDirections[j] = true;
+            }
+            if (ThisVertex->c[j]<=(this->Imp->GiveBoundingBox().minvalues[j])+eps) {
+                FixedDirections[j] = true;
+            }
+        }
+
+        FixedDirectionsList.push_back(FixedDirections);
+
+    }
+
+    SpringSmooth(this->Mesh->Vertices, FixedDirectionsList, Connections, K);
+}
+
 void Voxel2Tet :: AddPhaseEdge(std::vector<VertexType*> EdgeSegment, std::vector<int> Phases)
 {
     // Ensure that Phases argument is unique
@@ -484,19 +526,23 @@ void Voxel2Tet::Process()
 
     this->FindSurfaces();
 
-    this->FindEdges();
-
-    for (unsigned int i=0; i<this->Mesh->Vertices.size(); i++) {
-        this->Mesh->Vertices.at(i)->ID = i;
-    }
-
     this->Mesh->ExportVTK("/tmp/Voxeltest0.vtp");
 
-    this->SmoothEdges();
+    if (true) {  // Carl's suggestion
+        this->FindEdges();
 
-    this->Mesh->ExportVTK("/tmp/Voxeltest1.vtp");
+        for (unsigned int i=0; i<this->Mesh->Vertices.size(); i++) {
+            this->Mesh->Vertices.at(i)->ID = i;
+        }
 
-    this->SmoothSurfaces();
+        this->SmoothEdges();
+
+        this->Mesh->ExportVTK("/tmp/Voxeltest1.vtp");
+
+        this->SmoothSurfaces();
+    } else {  // Mikael's suggestions
+        this->SmoothAllAtOnce();
+    }
 
     this->Mesh->ExportVTK("/tmp/Voxeltest2.vtp");
 

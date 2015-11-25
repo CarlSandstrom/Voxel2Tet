@@ -30,6 +30,7 @@ private:
 
     void SmoothEdges();
     void SmoothSurfaces();
+    void SmoothAllAtOnce();
 
     void AddSurfaceSquare(std::vector<int> VoxelIDs, std::vector<int> phases, int normalphase);
     void AddPhaseEdge(std::vector<VertexType*> EdgeSegment, std::vector<int> Phases);
@@ -38,6 +39,8 @@ private:
 
     template <typename T>
     std::vector<int> FindSubsetIndices(std::vector<T> Container, std::vector<T> Subset);
+
+    double eps=1e-6;
 
 public:
     Voxel2Tet(Options *Opt);
