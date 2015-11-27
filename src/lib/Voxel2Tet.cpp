@@ -392,7 +392,34 @@ void Voxel2Tet :: FindEdges()
         }
     }
 
-    SharedVertices.clear();
+
+    // Add PhaseEdges to surfaces
+    // TODO: Performance can be increased by making sure that the verices in Surfaces and PhaseEdges are sorted. Also, save the sorted list in PhaseEdges
+    for (Surface* s: this->Surfaces) {
+        std::vector <VertexType *> SurfaceVertices = s->Vertices;
+        std::sort (SurfaceVertices.begin(), SurfaceVertices.end());
+        int SurfacePhases[2];
+        SurfacePhases[0] = s->Phases[0];
+        SurfacePhases[1] = s->Phases[1];
+        std::sort(SurfacePhases, SurfacePhases+2);
+
+        for (PhaseEdge *p: this->PhaseEdges) {
+
+            std::vector<int> PhaseEdgePhases = p->Phases;
+            std::sort(PhaseEdgePhases.begin(), PhaseEdgePhases.end());
+
+            // If the surface phases are a subset of the edges phases, they might be connected
+            if (std::includes(PhaseEdgePhases.begin(), PhaseEdgePhases.end(), SurfacePhases, SurfacePhases+2)) {
+                std::vector <VertexType *> PhaseEdgeVertices = p->GetFlatListOfVertices();
+                std::sort(PhaseEdgeVertices.begin(), PhaseEdgeVertices.end());
+
+                if (std::includes(s->Vertices.begin(), s->Vertices.end(),
+                                  PhaseEdgeVertices.begin(), PhaseEdgeVertices.end())) {
+                    s->PhaseEdges.push_back(p);
+                }
+            }
+        }
+    }
 
 }
 

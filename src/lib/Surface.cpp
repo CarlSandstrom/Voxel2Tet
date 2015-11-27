@@ -33,17 +33,90 @@ void Surface::AddTriangle(TriangleType *Triangle)
 
 void Surface :: MoveAsTrussStructure()
 {
-    // Find all nodes that has moved. These will constitute the set of fixed nodes
+    // Find all nodes on PhaseEdges. These will constitute the set of fixed nodes
     std::vector<VertexType*> FixedNodes;
 
-    for (auto v: this->Vertices) {
-        for (int i=0; i<3; i++) {
-            if (v->c[i]!=v->originalcoordinates[i]) {
-                FixedNodes.push_back(v);
-                break;
-            }
+    for (PhaseEdge* p: this->PhaseEdges) {
+        std::vector<VertexType*> PhaseEdgeVertices = p->GetFlatListOfVertices();
+        FixedNodes.insert(FixedNodes.end(), PhaseEdgeVertices.begin(), PhaseEdgeVertices.end());
+    }
+
+    std::sort(FixedNodes.begin(), FixedNodes.end());
+
+    // The complement to fixed nodes is all internal (free) nodes
+    std::sort(this->Vertices.begin(), this->Vertices.end()); // TODO: We can improve performance by sorting somewhere else and assume that this.Vertices is sorted
+    std::vector<VertexType*> FreeNodes;
+    std::set_difference(this->Vertices.begin(), this->Vertices.end(), FixedNodes.begin(), FixedNodes.end(), std::inserter(FreeNodes, FreeNodes.begin()));
+
+    // Setup solution vector
+    int sizeF=FreeNodes.size()*3;
+    double *uF = new double[sizeF];
+
+    // Setup prescribed vector
+    int sizeC=FixedNodes.size()*3;
+    double *uC = new double[sizeC];
+
+    // Set u to the difference between current and original position
+    for (unsigned int i=0; i<FixedNodes.size(); i++) {
+        for (int j=0; j<3; j++) {
+            double delta = FixedNodes.at(i)->c[j]-FixedNodes.at(i)->originalcoordinates[j];
+            uC[i*3+j] = delta;
+            printf("VertexID %u, pos %u: %f\n", i, j, delta);
         }
     }
+
+    printf("uC=[");
+    for (int i=0; i<sizeC; i++) {
+        printf("%f ", i, uC[i]);
+    }
+    printf("]\n");
+
+    // Setup stiffness matrices. Store all values contineously.
+    double k=1;
+    double *Kff;
+    Kff = new double [sizeF*sizeF];
+
+    for (int i=0; i<sizeF*sizeF; i++) {
+        Kff[i]=0.0;
+    }
+
+    double *Kfc;
+    Kfc = new double [sizeF*sizeC];
+
+    for (int i=0; i<sizeF*sizeC; i++) {
+        Kfc[i]=0.0;
+    }
+
+    for (int i=0; i<FreeNodes.size(); i++) {
+        VertexType *v=FreeNodes.at(i);
+
+        for (int j=0; j<3; j++) {
+            Kff[i*3+j]=k;
+        }
+
+        // Fetch connected vertices
+        std::vector<VertexType*> Connections = v->FetchNeighbouringVertices();
+
+        // Setup Kff
+        std::vector<int> FreeConnectionIndices = FindSubsetIndices(FreeNodes, Connections);
+
+        for (int freeid: FreeConnectionIndices) {
+            for (int j=0; j<3; j++) {
+                Kff[3*freeid+j] = Kff[3*freeid+j] - k;
+            }
+        }
+
+        // Setup Kfc
+        std::vector<int> FixedConnectionIndices = FindSubsetIndices(FixedNodes, Connections);
+
+
+        FreeConnectionIndices.clear();
+        FixedConnectionIndices.clear();
+    }
+
+    // Setup topology matrix
+
+    delete Kff;
 
 }
 

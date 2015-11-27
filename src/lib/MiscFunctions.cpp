@@ -32,7 +32,9 @@ std::vector<int> FindSubsetIndices(std::vector<T> Container, std::vector<T> Subs
     std::vector <int> Indices;
     for (auto s: Subset) {
         int pos = std::distance(Container.begin(), std::find(Container.begin(), Container.end(), s));
-        Indices.push_back(pos);
+        if (pos<Container.size()) {
+            Indices.push_back(pos);
+        }
     }
     return Indices;
 }

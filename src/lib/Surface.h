@@ -5,6 +5,7 @@
 
 #include "MeshComponents.h"
 #include "PhaseEdge.h"
+#include "MiscFunctions.h"
 
 namespace voxel2tet
 {
@@ -20,6 +21,7 @@ public:
     int Phases[2];
     std::vector <VertexType*> Vertices;
     std::vector <TriangleType*> Triangles;
+    std::vector <PhaseEdge*> PhaseEdges;
 
     /* Moves all internal nodes as if it were a truss structure. This is done in order
      * to prevent triangles from intersecting during the smoothing phase.
