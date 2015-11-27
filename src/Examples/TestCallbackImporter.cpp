@@ -6,6 +6,7 @@
 #include "Voxel2Tet.h"
 #include "CallbackImporter.h"
 #include "TetGenExporter.h"
+#include "OFFExporter.h"
 
 int GiveMaterialIDByCoordinate(double x, double y, double z)
 {
@@ -27,6 +28,7 @@ int main( int argc, char *argv[] )
     v2t.LoadCallback(&GiveMaterialIDByCoordinate, {0,0,0}, {.1, .1, .1}, {10, 10, 10});
     v2t.Process();
     v2t.ExportTetGenFile("/tmp/Voxel2Tet/TetGenTest.poly");
+    v2t.ExportOFF("/tmp/Voxel2Tet/TetGenTest.off");
 
 
 }

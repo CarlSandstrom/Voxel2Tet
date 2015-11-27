@@ -54,7 +54,7 @@ void SpringSmooth(std::vector<VertexType*> Vertices, std::vector<std::array<bool
 
     int itercount = 0;
     double deltamax = 1e8;
-    while ((itercount < 1000) & (deltamax>1e-8)){
+    while ((itercount < 1000) & (deltamax>1e-4)){
 
         deltamax=0.0;
 
@@ -90,12 +90,17 @@ void SpringSmooth(std::vector<VertexType*> Vertices, std::vector<std::array<bool
                 double d = d0;
 
                 double change=1e8;
-                while (change>1e-8) {
+                int FixedPointIterations = 0;
+
+                while ((change>1e-8)){// & (FixedPointIterations<100)) {
                     double NewDelta = F*1.0/exp(pow(d , 2) / K);
 
-                    change = fabs(d-NewDelta);
-                    d = NewDelta;
+                    change = fabs(NewDelta-d);
+                    d = d + 1 * (NewDelta-d);
+                    FixedPointIterations++;
                 }
+
+                if (FixedPointIterations == 100) d=0.0;
 
                 for (int j=0; j<3; j++) CurrentPositions.at(i)[j] = Vertices.at(i)->c[j] + unitdelta[j]*d;
             }

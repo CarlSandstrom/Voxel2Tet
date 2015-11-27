@@ -30,8 +30,11 @@ public:
     // Export mesh to VTK
     void ExportVTK(std::string FileName);
 
-    // Export mesh to VTK
+    // Export mesh to TetGen .poly format
     void ExportTetgen(std::string FileName);
+
+    // Export mesh to OFF
+    void ExportOFF(std::string FileName);
 
     // Adds an edge using vertex indices
     EdgeType *AddEdge(std::vector<int> VertexIDs);

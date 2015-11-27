@@ -2,6 +2,7 @@
 #include "MeshData.h"
 #include "MiscFunctions.h"
 #include "TetGenExporter.h"
+#include "OFFExporter.h"
 
 namespace voxel2tet
 {
@@ -38,6 +39,12 @@ void MeshData :: ExportVTK(std::string FileName)
 void MeshData::ExportTetgen(std::string FileName)
 {
     TetGenExporter exporter(&this->Triangles, &this->Vertices, &this->Edges);
+    exporter.WriteData(FileName);
+}
+
+void MeshData::ExportOFF(std::string FileName)
+{
+    OFFExporter exporter(&this->Triangles, &this->Vertices, &this->Edges);
     exporter.WriteData(FileName);
 }
 

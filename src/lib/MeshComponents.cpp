@@ -7,6 +7,16 @@ namespace voxel2tet
 
 // VertexType
 
+VertexType :: VertexType (double x, double y, double z)
+{
+    this->c[0] = x;
+    this->c[1] = y;
+    this->c[2] = z;
+    this->originalcoordinates[0] = x;
+    this->originalcoordinates[1] = y;
+    this->originalcoordinates[2] = z;
+}
+
 void VertexType :: AddTriangle(TriangleType *Triangle)
 {
     for (TriangleType *T: this->Triangles) {

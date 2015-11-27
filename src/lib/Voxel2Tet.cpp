@@ -83,6 +83,11 @@ void Voxel2Tet::ExportTetGenFile(std::string FileName)
     this->Mesh->ExportTetgen(FileName);
 }
 
+void Voxel2Tet::ExportOFF(std::string FileName)
+{
+    this->Mesh->ExportOFF(FileName);
+}
+
 void Voxel2Tet::FindSurfaces()
 {
 
@@ -429,8 +434,7 @@ void Voxel2Tet :: SmoothAllAtOnce()
         // Create list of indices of connected vertices
         std::set_intersection(NeighbouringVertices.begin(), NeighbouringVertices.end(),
                               this->Mesh->Vertices.begin(), this->Mesh->Vertices.end(), back_inserter(ConnectedVertices));
-
-        Connections.push_back(ConnectedVertices);
+        Connections.push_back(NeighbouringVertices);
 
         std::array<bool,3> FixedDirections;
         // Lock vertices on boundary surfaces such that they only move in the plane
@@ -539,8 +543,19 @@ void Voxel2Tet::Process()
 
         this->Mesh->ExportVTK("/tmp/Voxeltest1.vtp");
 
+        for (auto s: this->Surfaces) {
+            s->MoveAsTrussStructure();
+        }
+
         this->SmoothSurfaces();
+
     } else {  // Mikael's suggestions
+
+        this->FindEdges();
+
+        for (unsigned int i=0; i<this->Mesh->Vertices.size(); i++) {
+            this->Mesh->Vertices.at(i)->ID = i;
+        }
         this->SmoothAllAtOnce();
     }
 

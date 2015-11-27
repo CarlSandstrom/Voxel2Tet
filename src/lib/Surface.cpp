@@ -31,6 +31,23 @@ void Surface::AddTriangle(TriangleType *Triangle)
 
 }
 
+void Surface :: MoveAsTrussStructure()
+{
+    // Find all nodes that has moved. These will constitute the set of fixed nodes
+    std::vector<VertexType*> FixedNodes;
+
+    for (auto v: this->Vertices) {
+        for (int i=0; i<3; i++) {
+            if (v->c[i]!=v->originalcoordinates[i]) {
+                FixedNodes.push_back(v);
+                break;
+            }
+        }
+    }
+
+}
+
+
 void Surface::Smooth()
 {
 

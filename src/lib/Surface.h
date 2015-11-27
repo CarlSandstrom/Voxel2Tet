@@ -21,6 +21,11 @@ public:
     std::vector <VertexType*> Vertices;
     std::vector <TriangleType*> Triangles;
 
+    /* Moves all internal nodes as if it were a truss structure. This is done in order
+     * to prevent triangles from intersecting during the smoothing phase.
+     */
+    void MoveAsTrussStructure();
+
     void AddVertex(VertexType* Vertex);
     void AddTriangle(TriangleType* Triangle);
 

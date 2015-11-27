@@ -48,6 +48,7 @@ public:
 
     MeshData *Mesh;
     void ExportTetGenFile(std::string FileName);
+    void ExportOFF(std::string FileName);
 
     void LoadFile(std::string FileName);
     void LoadCallback(cbMaterialIDByCoordinate MaterialIDByCoordinate, std::array<double, 3> origin, std::array<double, 3> spacing, std::array<int, 3> dimensions);

@@ -15,8 +15,9 @@ private:
 public:
     int ID;
 
-    VertexType (double x, double y, double z) {this->c[0] = x; this->c[1] = y; this->c[2] = z; }
+    VertexType (double x, double y, double z);
     double c[3];
+    double originalcoordinates[3];
     std::vector <TriangleType*> Triangles;
     std::vector <EdgeType*> Edges;
 
