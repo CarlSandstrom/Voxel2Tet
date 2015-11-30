@@ -6,10 +6,18 @@
 #include "MeshComponents.h"
 #include "PhaseEdge.h"
 #include "MiscFunctions.h"
+#include "armadillo"
 
 namespace voxel2tet
 {
 
+extern "C" void dgesv_( int* n, int* nrhs, double* a, int* lda, int* ipiv,
+                double* b, int* ldb, int* info );
+
+extern "C" void dgemm_(char * transa, char * transb, int * m, int * n, int * k,
+              double * alpha, double * A, int * lda,
+              double * B, int * ldb, double * beta,
+              double *, int * ldc);
 class Surface
 {
 private:

@@ -574,7 +574,10 @@ void Voxel2Tet::Process()
             s->MoveAsTrussStructure();
         }
 
+        this->Mesh->ExportVTK("/tmp/Voxeltest2.vtp");
+
         this->SmoothSurfaces();
+
 
     } else {  // Mikael's suggestions
 
@@ -586,7 +589,7 @@ void Voxel2Tet::Process()
         this->SmoothAllAtOnce();
     }
 
-    this->Mesh->ExportVTK("/tmp/Voxeltest2.vtp");
+    this->Mesh->ExportVTK("/tmp/Voxeltest3.vtp");
 
 }
 
