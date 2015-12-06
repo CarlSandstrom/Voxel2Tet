@@ -52,50 +52,29 @@ void Surface :: MoveAsTrussStructure()
 
     // Setup solution vector
     int sizeF=FreeNodes.size()*3;
-    double *uF = new double[sizeF];
+    arma::mat uF(sizeF, 1);
 
     // Setup prescribed vector
     int sizeC=FixedNodes.size()*3;
-    double *uC = new double[sizeC];
-/*
-    // Set u to the difference between current and original position
+    arma::mat uC(sizeC, 1);
+
+    // Set u to the difference between current and original position on all fixed nodes
     for (unsigned int i=0; i<FixedNodes.size(); i++) {
-        printf("%u, ", i);
         for (int j=0; j<3; j++) {
             double delta = FixedNodes.at(i)->c[j]-FixedNodes.at(i)->originalcoordinates[j];
-            uC[i*3+j] = delta;
-            printf("VertexID %u, pos %u: %f\n", i, j, delta);
+            uC.at(i*3+j) = -delta;
         }
     }
+    //std::cout <<"uC=["<< uC<<"]\n";
 
-    printf("uC=[");
-    for (int i=0; i<sizeC; i++) {
-        printf("%f, ", uC[i]);
-    }
-    printf("]\n");
-*/
     // Setup stiffness matrices. Store all values contineously.
     double k=1;
-    double *Kff;
-    Kff = new double [sizeF*sizeF];
+    arma::mat Kff(sizeF, sizeF, arma::fill::zeros);
+    arma::mat Kfc(sizeF, sizeC, arma::fill::zeros);
 
-    for (int i=0; i<sizeF*sizeF; i++) {
-        Kff[i]=0.0;
-    }
-
-    double *Kfc;
-    Kfc = new double [sizeF*sizeC];
-
-    for (int i=0; i<sizeF*sizeC; i++) {
-        Kfc[i]=0.0;
-    }
 
     for (unsigned int i=0; i<FreeNodes.size(); i++) {
         VertexType *v=FreeNodes.at(i);
-
-        for (int j=0; j<3; j++) {
-            //Kff[(i*3+j)*sizeF+i*3+j]=Kff[(i*3+j)*sizeF+i*3+j] + k;
-        }
 
         // Fetch connected vertices
         std::vector<VertexType*> Connections = v->FetchNeighbouringVertices();
@@ -105,8 +84,8 @@ void Surface :: MoveAsTrussStructure()
 
         for (int freeid: FreeConnectionIndices) {
             for (int j=0; j<3; j++) {
-                Kff[(i*3+j) + (freeid*3 + j)*sizeF] = Kff[(i*3+j) + (freeid*3 + j)*sizeF] - k;
-                Kff[(i*3+j)*sizeF+i*3+j]=Kff[(i*3+j)*sizeF+i*3+j] + k;
+                Kff.at(i*3+j, freeid*3+j) = Kff.at(i*3+j, freeid*3+j) - k;
+                Kff.at(i*3+j, i*3+j) = Kff.at(i*3+j, i*3+j) + k;
             }
         }
 
@@ -114,100 +93,28 @@ void Surface :: MoveAsTrussStructure()
         std::vector<int> FixedConnectionIndices = FindSubsetIndices(FixedNodes, Connections);
         for (int FixedNode: FixedConnectionIndices) {
             for (int j=0; j<3; j++) {
-                Kfc[(i*3+j)+(FixedNode*3+j)*sizeF]=Kfc[(i*3+j)+(FixedNode*3+j)*sizeF]-k;
-                Kff[(i*3+j)*sizeF+i*3+j]=Kff[(i*3+j)*sizeF+i*3+j] + k;
+                Kfc.at(i*3+j, FixedNode*3+j) = Kfc.at(i*3+j, FixedNode*3+j) - k;
+                Kff.at(i*3+j, i*3+j) = Kff.at(i*3+j, i*3+j) + k;
             }
         }
 
         FreeConnectionIndices.clear();
         FixedConnectionIndices.clear();
     }
-    /*
 
-    // Log Kff
-    printf("Kff=[");
-    for (int i = 0; i< sizeF;i++) {
-        for (int j = 0; j< sizeF;j++) {
-            printf("%f, ", Kff[i*sizeF+j]);
-        }
-        printf("\n");
-    }
-    printf("]\n");
-
-    // Log Kfc
-    printf("Kfc=[");
-    for (int i = 0; i< sizeF;i++) {
-        for (int j = 0; j< sizeC;j++) {
-            printf("%f, ", Kfc[i*sizeC+j]);
-        }
-        printf("\n");
-    }
-    printf("]\n");
-*/
 
     // Compute RHS
-    double *KFCuC = new double[sizeF];
-    char *transA = "N";
-    char *transB = "N";
-    double onedbl = -1.0;
-    int oneint = 1;
-    double zerodbl = 0.0;
-    dgemm_(transA, transB, &sizeF, &oneint, &sizeC, &onedbl, Kfc, &sizeF, uC, &sizeC, &zerodbl, KFCuC, &sizeF);
-
-    // Solve linear system of equations
-
-    int *piv = new int[sizeF];
-    int info;
-
-    dgesv_(&sizeF, &oneint, Kff, &sizeF, piv, KFCuC, &sizeF, &info);
+    arma::mat KFCuC(sizeF, 1);
+    KFCuC = Kfc*uC;
+    uF = arma::solve(Kff, KFCuC);
 
     for (unsigned int i=0; i< FreeNodes.size(); i++) {
         VertexType *v = FreeNodes.at(i);
         for (int j=0; j<3; j++) {
-            v->c[j] = v->c[j] + KFCuC[3*i+j];
+            v->c[j] = v->c[j] + uF.at(3*i+j);
         }
     }
 
-    /*
-    printf("KFCuC=[");
-    for (int i=0; i<sizeF; i++) {
-        printf("%f, ", KFCuC[i]);
-    }
-    printf("]\n");
-
-    printf("nodes = np.array([[");
-    for (auto v: this->Vertices) {
-        for (int j=0; j<3; j++) {
-            printf("%f, ", v->originalcoordinates[j]);
-        }
-        printf("], [");
-    }
-    printf("]]\n");
-
-    printf("topology=np.array([[");
-    for (auto v: this->Vertices) {
-        std::vector<VertexType*> Connections = v->FetchNeighbouringVertices();
-        std::vector<int> indices = FindSubsetIndices(this->Vertices, Connections);
-        for (auto i: indices) {
-            printf("%i, ", i);
-        }
-        printf("],[");
-    }
-    printf("]]\n");
-
-    printf("dirichlet=[[");
-    std::vector<int> dnodes = FindSubsetIndices(this->Vertices, FixedNodes);
-    for (unsigned int i=0; i<FixedNodes.size(); i++) {
-        printf("%u, ", dnodes[i]);
-        for (int j=0; j<3; j++) {
-            printf("%f, ", FixedNodes.at(i)->c[j]-FixedNodes.at(i)->originalcoordinates[j] );
-        }
-        printf("],[");
-    }
-    printf("]]\n");
-
-    */
-    delete Kff;
 
 }
 
