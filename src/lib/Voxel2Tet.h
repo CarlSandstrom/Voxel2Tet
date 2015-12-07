@@ -10,7 +10,7 @@
 #include "hdf5DataReader.h"
 #include "MiscFunctions.h"
 #include "MeshComponents.h"
-#include "MeshData.h"
+#include "MeshManipulations.h"
 #include "Surface.h"
 #include "MiscFunctions.h"
 #include "PhaseEdge.h"
@@ -46,7 +46,7 @@ public:
     Voxel2Tet(Options *Opt);
     ~Voxel2Tet();
 
-    MeshData *Mesh;
+    MeshManipulations *Mesh;
     void ExportTetGenFile(std::string FileName);
     void ExportOFF(std::string FileName);
 

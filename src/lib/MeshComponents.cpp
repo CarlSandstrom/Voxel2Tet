@@ -61,4 +61,119 @@ std::vector <VertexType*> VertexType :: FetchNeighbouringVertices()
     return Neighbours;
 }
 
+// EdgeType
+
+std::vector<TriangleType *> EdgeType :: GiveTriangles()
+{
+    std::vector <TriangleType *> TriangleCollection;
+
+    std::set_intersection(this->Vertices[0]->Triangles.begin(), this->Vertices[0]->Triangles.end(),
+                          this->Vertices[1]->Triangles.begin(), this->Vertices[1]->Triangles.end(), std::back_inserter(TriangleCollection));
+
+    return TriangleCollection;
+
+}
+
+
+// TriangleType
+
+std::array<double, 3> TriangleType :: GiveVector(int node)
+{
+    std::array<double, 3> edgevector;
+
+    int nextnode = (node<2) ? (node+1) : (0);
+
+    for (int i=0; i<3; i++) {
+        edgevector[i] = this->Vertices[nextnode]->c[i]-this->Vertices[node]->c[i];
+    }
+
+    return edgevector;
+
+}
+
+double TriangleType :: GiveArea()
+{
+    double e1[3], e2[3], n[3];
+
+    // Compute two vectors with origin in vertex 0 describing the triangle
+    for (int i=0; i<3; i++) {
+        e1[i]=this->Vertices[1]->c[i]-this->Vertices[0]->c[i];
+        e2[i]=this->Vertices[2]->c[i]-this->Vertices[0]->c[i];
+    }
+
+    // Compute cross product of the two vectors
+    n[0]=e1[1]*e2[2]-e1[2]*e2[1];
+    n[1]=-e1[0]*e2[2]+e2[0]*e1[2];
+    n[2]=e1[0]*e2[1]-e2[0]*e1[1];
+
+    // Compute area
+    double Area = std::sqrt(n[0]*n[0]+n[1]*n[1]+n[2]*n[2]) / 2.0;
+    return Area;
+}
+
+double TriangleType :: GiveLargestAngle(int *index)
+{
+    std::array<std::array<double, 3>, 3> e;
+    std::array<double, 3> length;
+    std::array<double, 3> alpha;
+
+    for (int i=0; i<3; i++) {
+        e[i] = this->GiveVector(i);
+        length[i] = std::sqrt(e[i][0]*e[i][0] + e[i][1]*e[i][1] + e[i][2]*e[i][2] );
+    }
+
+    double LargestAngle = -1.0;
+
+    for (int node=0; node<3; node++) {
+
+        int prevnode = (node>0) ? (node-1) : (2);
+
+        alpha[node] = std::acos ( -(e[node][0]*e[prevnode][0] + e[node][1]*e[prevnode][1] + e[node][2]*e[prevnode][2])/(length[node]*length[prevnode]) );
+        if (alpha[node]>LargestAngle) {
+            LargestAngle = alpha[node];
+            if (index!=NULL) *index = node;
+        }
+
+    }
+
+    return LargestAngle;
+
+}
+
+std::array<EdgeType *, 3> TriangleType :: GiveEdges()
+{
+    std::vector<EdgeType *> EdgeCollection;
+
+    for (int i=0; i<3; i++) {
+        EdgeCollection.insert(EdgeCollection.end(), this->Vertices[i]->Edges.begin(), this->Vertices[i]->Edges.end());
+    }
+
+    std::sort( EdgeCollection.begin(), EdgeCollection.end() );
+    EdgeCollection.erase( std::unique(EdgeCollection.begin(), EdgeCollection.end()), EdgeCollection.end());
+
+    unsigned int item=0;
+    while (item<EdgeCollection.size()) {
+        // Check if current item contains two of my vertices
+        int vcount=0;
+        for (int i=0; i<3; i++) {
+            if ( (EdgeCollection.at(item)->Vertices[0] == this->Vertices[i]) | ((EdgeCollection.at(item)->Vertices[1] == this->Vertices[i]))) {
+                vcount++;
+            }
+        }
+
+        // If not, remove from EdgeCollection
+        if (vcount<2) {
+            EdgeCollection.erase(EdgeCollection.begin()+item);
+        } else {
+            item++;
+        }
+    }
+
+    std::array<EdgeType *, 3> Edges;
+    std::copy_n(EdgeCollection.begin(), 3, Edges.begin());
+
+    return Edges;
+
+}
+
 }

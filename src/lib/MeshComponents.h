@@ -2,6 +2,9 @@
 #define MESHCOMPONENTS_H
 
 #include<vector>
+#include<array>
+
+#include "math.h"
 
 namespace voxel2tet
 {
@@ -41,14 +44,25 @@ public:
 class EdgeType {
 public:
     VertexType *Vertices[2];
+
+    std::vector<TriangleType *> GiveTriangles();
 };
 
 class TriangleType {
+private:
+    std::array<double, 3> GiveVector(int node);
 public:
     int InterfaceID;
     int PosNormalMatID;
     int NegNormalMatID;
     VertexType *Vertices[3];
+
+    std::array<EdgeType *, 3> GiveEdges();
+
+    // Compute area of triangle
+    double GiveArea();
+
+    double GiveLargestAngle(int *index=NULL);
 };
 
 }

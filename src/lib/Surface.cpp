@@ -115,7 +115,6 @@ void Surface :: MoveAsTrussStructure()
         }
     }
 
-
 }
 
 

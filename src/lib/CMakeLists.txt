@@ -6,6 +6,7 @@ set(Voxel2TetLibList
     Exporter.cpp
     VTKExporter.cpp
     MeshData.cpp
+    MeshManipulations.cpp
     MeshComponents.cpp
     MiscFunctions.cpp
     Surface.cpp

@@ -65,7 +65,7 @@ void Voxel2Tet :: FinalizeLoad()
         bb.maxvalues[i] = bb.maxvalues[i] + spacing[i];
         bb.minvalues[i] = bb.minvalues[i] - spacing[i];
     }
-    Mesh = new MeshData(bb);
+    Mesh = new MeshManipulations(bb);
 }
 
 void Voxel2Tet::LoadData()
@@ -576,6 +576,12 @@ void Voxel2Tet::Process()
 
         this->Mesh->ExportVTK("/tmp/Voxeltest2.vtp");
 
+        this->Mesh->RemoveDegenerateTriangles();
+
+        return
+
+        this->Mesh->ExportVTK("/tmp/Voxeltest3.vtp");
+
         this->SmoothSurfaces();
 
 
@@ -589,7 +595,7 @@ void Voxel2Tet::Process()
         this->SmoothAllAtOnce();
     }
 
-    this->Mesh->ExportVTK("/tmp/Voxeltest3.vtp");
+    this->Mesh->ExportVTK("/tmp/Voxeltest4.vtp");
 
 }
 
