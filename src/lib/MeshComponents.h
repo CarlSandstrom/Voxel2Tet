@@ -41,12 +41,14 @@ public:
 
 };
 
+
 class EdgeType {
 public:
-    VertexType *Vertices[2];
+    std::array<VertexType *, 2> Vertices;
 
     std::vector<TriangleType *> GiveTriangles();
 };
+
 
 class TriangleType {
 private:
@@ -55,7 +57,7 @@ public:
     int InterfaceID;
     int PosNormalMatID;
     int NegNormalMatID;
-    VertexType *Vertices[3];
+    std::array<VertexType *, 3> Vertices;
 
     std::array<EdgeType *, 3> GiveEdges();
 

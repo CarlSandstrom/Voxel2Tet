@@ -1,6 +1,10 @@
 #ifndef MESHMANIPULATIONS_H
 #define MESHMANIPULATIONS_H
 
+#include <vector>
+#include <array>
+#include <algorithm>
+
 #include "MeshData.h"
 #include "MiscFunctions.h"
 #include "MeshComponents.h"
