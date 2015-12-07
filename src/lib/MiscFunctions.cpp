@@ -9,7 +9,7 @@ namespace voxel2tet {
 
 void dolog(const char *functionname, const char *fmt, ...)
 {
-#if LOGOUTPUT > -1
+#if LOGOUTPUT > 0
         va_list argp;
         va_start(argp, fmt);
         printf("%s:\t", functionname);

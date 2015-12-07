@@ -67,6 +67,8 @@ std::vector<TriangleType *> EdgeType :: GiveTriangles()
 {
     std::vector <TriangleType *> TriangleCollection;
 
+    for (int i: {0, 1}) std::sort(this->Vertices[i]->Triangles.begin(), this->Vertices[i]->Triangles.end());
+
     std::set_intersection(this->Vertices[0]->Triangles.begin(), this->Vertices[0]->Triangles.end(),
                           this->Vertices[1]->Triangles.begin(), this->Vertices[1]->Triangles.end(), std::back_inserter(TriangleCollection));
 

@@ -578,7 +578,7 @@ void Voxel2Tet::Process()
 
         this->Mesh->RemoveDegenerateTriangles();
 
-        return
+        //return
 
         this->Mesh->ExportVTK("/tmp/Voxeltest3.vtp");
 

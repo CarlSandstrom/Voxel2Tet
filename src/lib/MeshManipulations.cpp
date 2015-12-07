@@ -15,15 +15,16 @@ void MeshManipulations :: RemoveDegenerateTriangles()
     // Find triangles with zero-area
     for (unsigned int i=0; i<this->Triangles.size(); i++) {
         TriangleType *t = this->Triangles.at(i);
-        double Area=t->GiveArea();
-        LOG("Triangle %p (#%i) has area %f\n", t, i, Area);
-        if (Area<1e-3) {
+
+        int index;
+        double LargestAngle = t->GiveLargestAngle(&index);
+
+        LOG("Triangle #%i@%p  has largest angle %f\n", i, t, LargestAngle);
+        if (LargestAngle > 3) {
             // Note that this can occur by either a very small angle and/or two vertices located very close to each other
-            LOG("Triangle %p has a too small area\n", t);
+            LOG("Triangle #%i@%p has a too large largest angle\n", i, t);
 
             // Find largest angle and the associated index
-            int index;
-            t->GiveLargestAngle(&index);
 
             // Find opposite edge and flip that edge
             std::array<EdgeType *, 3> Edges = t->GiveEdges();
