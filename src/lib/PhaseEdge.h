@@ -6,6 +6,7 @@
 #include <MeshComponents.h>
 #include <MiscFunctions.h>
 #include "Options.h"
+#include "MeshData.h"
 
 namespace voxel2tet
 {
@@ -17,7 +18,7 @@ private:
 public:
     void SortAndFixBrokenEdge(std::vector<PhaseEdge*> *FixedEdges);
     void SplitAtVertex(VertexType *Vertex, std::vector<PhaseEdge*> *SplitEdges);
-    void Smooth();
+    void Smooth(MeshData *Mesh);
 
     std::vector<VertexType*> GetFlatListOfVertices();
 

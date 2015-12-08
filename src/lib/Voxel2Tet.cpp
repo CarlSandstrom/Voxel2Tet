@@ -423,14 +423,64 @@ void Voxel2Tet :: FindEdges()
 
 }
 
-void Voxel2Tet :: SmoothEdges()
+void Voxel2Tet :: SmoothEdgesIndividually()
 {
-    STATUS("Smooth edges\n", 0);
+    STATUS("Smooth edges (individually)\n", 0);
     for (unsigned int i=0; i<this->PhaseEdges.size(); i++) {
         LOG ("Smooth edge %i\n", i);
         PhaseEdge *e = this->PhaseEdges.at(i);
-        e->Smooth();
+        e->Smooth(this->Mesh);
     }
+}
+
+void Voxel2Tet :: SmoothEdgesSimultaneously()
+{
+    STATUS("Smooth edges (simultaneously)\n", 0);
+
+    double K = this->Opt->GiveDoubleValue("spring_const");
+
+    std::vector<VertexType *> FlatList;
+    std::vector<std::vector<VertexType *>> Connections;
+    std::vector<std::array<bool,3>> FixedDirectionsList;
+
+    // Collect all vertices on phase edges
+    for (PhaseEdge *p: this->PhaseEdges) {
+        std::vector<VertexType *> EdgeVertices = p->GetFlatListOfVertices();
+        FlatList.insert(FlatList.end(), EdgeVertices.begin(), EdgeVertices.end());
+    }
+
+    // Uniquify list
+    std::sort(FlatList.begin(), FlatList.end());
+    FlatList.erase( std::unique(FlatList.begin(), FlatList.end()), FlatList.end());
+
+    // Find connections and fix pertinent nodes to their respective locations
+    for (unsigned int i=0; i<FlatList.size(); i++) {
+        VertexType *v = FlatList.at(i);
+
+        // Find connections
+        std::vector<VertexType *> GlobalConnections = v->FetchNeighbouringVertices();
+        std::vector<VertexType *> PhaseEdgeConnections;
+
+        std::set_intersection(FlatList.begin(), FlatList.end(),
+                              GlobalConnections.begin(), GlobalConnections.end(), std::back_inserter(PhaseEdgeConnections));
+
+        Connections.push_back(PhaseEdgeConnections);
+
+        // Determine which directions are locked
+        std::array<bool,3> FixedDirections;
+        for (int j=0; j<3; j++) {
+            if ( (v->c[j] > (this->Imp->GiveBoundingBox().maxvalues[j]-eps)) | (v->c[j] < (this->Imp->GiveBoundingBox().minvalues[j]+eps))) {
+                FixedDirections[j]=true;
+            } else {
+                FixedDirections[j]=false;
+            }
+        }
+        FixedDirectionsList.push_back(FixedDirections);
+
+    }
+
+    SpringSmooth(FlatList, FixedDirectionsList, Connections, K, this->Mesh);
+
 }
 
 void Voxel2Tet :: SmoothSurfaces()
@@ -555,9 +605,14 @@ void Voxel2Tet::Process()
 {
     STATUS ("Proccess content\n", 0);
 
+    int outputindex = 0;
+
     this->FindSurfaces();
 
-    this->Mesh->ExportVTK("/tmp/Voxeltest0.vtp");
+    std::ostringstream FileName;
+
+    FileName << "/tmp/Voxeltest" << outputindex++ << ".vtp";
+    this->Mesh->ExportVTK( FileName.str() );
 
     if (true) {  // Carl's suggestion
         this->FindEdges();
@@ -566,21 +621,28 @@ void Voxel2Tet::Process()
             this->Mesh->Vertices.at(i)->ID = i;
         }
 
-        this->SmoothEdges();
+        this->SmoothEdgesSimultaneously();
+        //this->SmoothEdgesIndividually();
 
-        this->Mesh->ExportVTK("/tmp/Voxeltest1.vtp");
+        FileName.str(""); FileName.clear();
+        FileName << "/tmp/Voxeltest" << outputindex++ << ".vtp";
+        this->Mesh->ExportVTK(FileName.str());
 
         for (auto s: this->Surfaces) {
             s->MoveAsTrussStructure();
         }
 
-        this->Mesh->ExportVTK("/tmp/Voxeltest2.vtp");
+        FileName.str(""); FileName.clear();
+        FileName << "/tmp/Voxeltest" << outputindex++ << ".vtp";
+        this->Mesh->ExportVTK(FileName.str());
 
         this->Mesh->RemoveDegenerateTriangles();
 
         //return
 
-        this->Mesh->ExportVTK("/tmp/Voxeltest3.vtp");
+        FileName.str(""); FileName.clear();
+        FileName << "/tmp/Voxeltest" << outputindex++ << ".vtp";
+        this->Mesh->ExportVTK(FileName.str());
 
         this->SmoothSurfaces();
 
@@ -595,7 +657,9 @@ void Voxel2Tet::Process()
         this->SmoothAllAtOnce();
     }
 
-    this->Mesh->ExportVTK("/tmp/Voxeltest4.vtp");
+    FileName.str(""); FileName.clear();
+    FileName << "/tmp/Voxeltest" << outputindex++ << ".vtp";
+    this->Mesh->ExportVTK(FileName.str());
 
 }
 

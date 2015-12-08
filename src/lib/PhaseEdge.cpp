@@ -118,7 +118,7 @@ void PhaseEdge :: SortAndFixBrokenEdge(std::vector<PhaseEdge*> *FixedEdges)
     }
 }
 
-void PhaseEdge :: Smooth()
+void PhaseEdge :: Smooth(MeshData *Mesh)
 {
     if (this->EdgeSegments.size()==1) return;
     double K = this->Opt->GiveDoubleValue("spring_const");
@@ -162,7 +162,7 @@ void PhaseEdge :: Smooth()
         FixedDirectionsList.push_back(FixedDirections);
     }
 
-    SpringSmooth(FlatList, FixedDirectionsList, Connections, K);
+    SpringSmooth(FlatList, FixedDirectionsList, Connections, K, Mesh);
 
 }
 

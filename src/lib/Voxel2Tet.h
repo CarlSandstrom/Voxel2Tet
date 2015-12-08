@@ -28,7 +28,8 @@ private:
     void FindSurfaces();
     void FindEdges();
 
-    void SmoothEdges();
+    void SmoothEdgesIndividually();
+    void SmoothEdgesSimultaneously();
     void SmoothSurfaces();
     void SmoothAllAtOnce();
 

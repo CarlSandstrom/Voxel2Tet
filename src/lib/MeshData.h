@@ -14,8 +14,8 @@ namespace voxel2tet
 class MeshData
 {
 private:
-    BoundingBoxType BoundingBox;
 public:
+    BoundingBoxType BoundingBox;
     std :: vector <TriangleType*> Triangles;
     std :: vector <VertexType*> Vertices;
     std :: vector <EdgeType*> Edges;
