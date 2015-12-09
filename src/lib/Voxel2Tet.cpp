@@ -621,8 +621,8 @@ void Voxel2Tet::Process()
             this->Mesh->Vertices.at(i)->ID = i;
         }
 
-        this->SmoothEdgesSimultaneously();
-        //this->SmoothEdgesIndividually();
+        //this->SmoothEdgesSimultaneously();
+        this->SmoothEdgesIndividually();
 
         FileName.str(""); FileName.clear();
         FileName << "/tmp/Voxeltest" << outputindex++ << ".vtp";

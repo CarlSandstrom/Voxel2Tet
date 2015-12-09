@@ -101,20 +101,21 @@ void SpringSmooth(std::vector<VertexType*> Vertices, std::vector<std::array<bool
                 for (int j=0; j<3; j++) unitdelta[j] = delta[j]/d0;
 
                 double F = d0*1.0;
-                d = d0;
 
-                double change=1e8;
-                int FixedPointIterations = 0;
+                int SolveIterations = 0;
 
-                while ((change>1e-8) & (FixedPointIterations<100)) {
-                    double NewDelta = F*1.0/exp(pow(d , 2) / (K));
+                d=0;
+                double fval=F-d*exp(d*d/K);
 
-                    change = fabs(NewDelta-d);
-                    d = d + 1 * (NewDelta-d);
-                    FixedPointIterations++;
+                while (std::fabs(fval)>1e-10) {
+
+                    double update = fval/(std::exp(d*d/K)*(1+2*d*d/K));
+                    d=d+update;
+                    fval=F-d*exp(d*d/K);
+                    SolveIterations++;
                 }
 
-                if (FixedPointIterations == 100) {
+                if (SolveIterations == 100) {
                     STATUS("WARNING: Fix point iterations did not converge\n", 0);
                     d=0.0;
                 }
