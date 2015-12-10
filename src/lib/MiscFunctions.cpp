@@ -62,8 +62,10 @@ void SpringSmooth(std::vector<VertexType*> Vertices, std::vector<std::array<bool
 
 #if EXPORT_SMOOTHING_ANIMATION == 1
     std::ostringstream FileName;
-    FileName << "/tmp/Smoothing" << itercount << ".vtp";
-    Mesh->ExportVTK( FileName.str() );
+    if (Mesh!=NULL) {
+        FileName << "/tmp/Smoothing" << itercount << ".vtp";
+        Mesh->ExportVTK( FileName.str() );
+    }
 #endif
 
     while ((itercount < 1000) & (deltamax>1e-4)){
@@ -108,12 +110,19 @@ void SpringSmooth(std::vector<VertexType*> Vertices, std::vector<std::array<bool
                 double fval=F-d*exp(d*d/K);
 
                 while (std::fabs(fval)>1e-10) {
-
                     double update = fval/(std::exp(d*d/K)*(1+2*d*d/K));
                     d=d+update;
                     fval=F-d*exp(d*d/K);
                     SolveIterations++;
                 }
+                /*
+                double change=1e8;
+                while ((change>1e-8) & (SolveIterations<100)) {
+                    double NewDelta = F*1.0/exp(pow(d , 2) / (K));
+                    change = fabs(NewDelta-d);
+                    d = d + 1 * (NewDelta-d);
+                    SolveIterations++;
+                 }*/
 
                 if (SolveIterations == 100) {
                     STATUS("WARNING: Fix point iterations did not converge\n", 0);
@@ -162,9 +171,11 @@ void SpringSmooth(std::vector<VertexType*> Vertices, std::vector<std::array<bool
                 }
             }
         }
-        FileName.str(""); FileName.clear();
-        FileName << "/tmp/Smoothing" << itercount++ << ".vtp";
-        Mesh->ExportVTK(FileName.str());
+        if (Mesh!=NULL) {
+            FileName.str(""); FileName.clear();
+            FileName << "/tmp/Smoothing" << itercount++ << ".vtp";
+            Mesh->ExportVTK(FileName.str());
+        }
         // ************************** /DEBUG STUFF
 #endif
     }

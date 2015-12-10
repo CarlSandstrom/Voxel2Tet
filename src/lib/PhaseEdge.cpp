@@ -13,6 +13,7 @@ std::vector<VertexType*> PhaseEdge :: GetFlatListOfVertices()
 {
     // TODO: If we assume that the lists are ordered, this can be optimized
     std::vector<VertexType*> FlatList;
+
     for (auto e: this->EdgeSegments) {
         FlatList.push_back(e.at(0));
         FlatList.push_back(e.at(1));
@@ -118,10 +119,15 @@ void PhaseEdge :: SortAndFixBrokenEdge(std::vector<PhaseEdge*> *FixedEdges)
     }
 }
 
-void PhaseEdge :: Smooth(MeshData *Mesh)
+bool PhaseEdge :: IsClosed()
 {
-    if (this->EdgeSegments.size()==1) return;
-    double K = this->Opt->GiveDoubleValue("spring_const");
+    return this->EdgeSegments.at(0).at(0) == this->EdgeSegments.at(this->EdgeSegments.size()-1).at(1);
+}
+
+void PhaseEdge :: GiveTopologyLists(std::vector<std::vector<VertexType *>> *Connections, std::vector<std::array<bool,3>> *FixedDirectionsList)
+{
+    Connections->clear();
+    FixedDirectionsList->clear();
 
     // Push end vertices to FixedVertices.
     if (this->EdgeSegments.at(0).at(0) != this->EdgeSegments.at( this->EdgeSegments.size()-1 ).at(1)) {
@@ -130,25 +136,33 @@ void PhaseEdge :: Smooth(MeshData *Mesh)
     }
 
     std::vector<VertexType *> FlatList = this->GetFlatListOfVertices();
-
-    std::vector<std::vector<VertexType *>> Connections;
-
-    std::vector<std::array<bool,3>> FixedDirectionsList;
+    bool closed = this->IsClosed();
 
     // Build connection matrix
     for (unsigned int i=0; i<FlatList.size(); i++) {
 
-        unsigned int previndex = i-1;
-        unsigned int nextindex = i+1;
-        if ((previndex == -1)) previndex = FlatList.size()-1;
-        if ((nextindex == FlatList.size())) nextindex = 0;
-
         std::vector<VertexType *> MyConnections;
 
-        MyConnections.push_back(FlatList.at(previndex));
-        MyConnections.push_back(FlatList.at(nextindex));
+        unsigned int previndex = i-1;
+        unsigned int nextindex = i+1;
 
-        Connections.push_back(MyConnections);
+        if (closed) {
+            if (i==0) {
+                previndex = FlatList.size()-1;
+                nextindex = i+1;
+            } else if (i==FlatList.size()-1) {
+                previndex = i-1;
+                nextindex = 0;
+            }
+        }
+
+        if (previndex!=-1) MyConnections.push_back(FlatList.at(previndex));
+        if (nextindex!=FlatList.size()) MyConnections.push_back(FlatList.at(nextindex));
+
+        // Ignore edges not aligned with the principal axes
+
+
+        Connections->push_back(MyConnections);
 
         std::array<bool,3> FixedDirections;
 
@@ -159,8 +173,22 @@ void PhaseEdge :: Smooth(MeshData *Mesh)
             FixedDirections = {true, true, true};
         }
 
-        FixedDirectionsList.push_back(FixedDirections);
+        FixedDirectionsList->push_back(FixedDirections);
     }
+
+}
+
+void PhaseEdge :: Smooth(MeshData *Mesh)
+{
+    if (this->EdgeSegments.size()==1) return;
+    double K = this->Opt->GiveDoubleValue("spring_const");
+
+    std::vector<VertexType *> FlatList = this->GetFlatListOfVertices();
+
+    std::vector<std::vector<VertexType *>> Connections;
+    std::vector<std::array<bool,3>> FixedDirectionsList;
+
+    this->GiveTopologyLists(&Connections, &FixedDirectionsList);
 
     SpringSmooth(FlatList, FixedDirectionsList, Connections, K, Mesh);
 

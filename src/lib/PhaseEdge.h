@@ -18,12 +18,15 @@ private:
 public:
     void SortAndFixBrokenEdge(std::vector<PhaseEdge*> *FixedEdges);
     void SplitAtVertex(VertexType *Vertex, std::vector<PhaseEdge*> *SplitEdges);
+    void GiveTopologyLists(std::vector<std::vector<VertexType *>> *Connections, std::vector<std::array<bool,3>> *FixedDirections);
     void Smooth(MeshData *Mesh);
+
+    bool IsClosed();
 
     std::vector<VertexType*> GetFlatListOfVertices();
 
     std::vector<VertexType*> FixedVertices;
-    std::vector<std::vector<VertexType*>> EdgeSegments;
+    std::vector<std::vector<VertexType*>> EdgeSegments; // TODO:Should be vector of arrays
     std::vector<int> Phases;
     PhaseEdge(Options *Opt);
 };

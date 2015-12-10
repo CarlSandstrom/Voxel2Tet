@@ -439,32 +439,78 @@ void Voxel2Tet :: SmoothEdgesSimultaneously()
 
     double K = this->Opt->GiveDoubleValue("spring_const");
 
-    std::vector<VertexType *> FlatList;
-    std::vector<std::vector<VertexType *>> Connections;
-    std::vector<std::array<bool,3>> FixedDirectionsList;
+    // We want to sort several lists according to one list. (http://stackoverflow.com/questions/1723066/c-stl-custom-sorting-one-vector-based-on-contents-of-another)
+    struct VertexConnectivity {
+        VertexType *v;
+        std::vector<VertexType *> Connections;
+        std::array<bool,3> FixedDirections;
+    };
+
+    struct by_vertexptr {
+        bool operator()(VertexConnectivity const &a, VertexConnectivity const &b) { return (a.v < b.v); }
+    };
+
+    std::vector<VertexConnectivity> VertexConnections;
 
     // Collect all vertices on phase edges
     for (PhaseEdge *p: this->PhaseEdges) {
+        std::vector<std::vector<VertexType *>> Connections;
+        std::vector<std::array<bool,3>> FixedDirectionsList;
+
         std::vector<VertexType *> EdgeVertices = p->GetFlatListOfVertices();
-        FlatList.insert(FlatList.end(), EdgeVertices.begin(), EdgeVertices.end());
+        p->GiveTopologyLists(&Connections, &FixedDirectionsList);
+
+        for (unsigned int i=0; i<EdgeVertices.size(); i++) {
+            VertexType *v = EdgeVertices.at(i);
+            VertexConnectivity vc;
+            vc.v = v;
+            vc.Connections.insert(vc.Connections.begin(), Connections.at(i).begin(), Connections.at(i).end());
+            vc.FixedDirections = FixedDirectionsList.at(i);
+            VertexConnections.push_back(vc);
+        }
+
     }
 
-    // Uniquify list
-    std::sort(FlatList.begin(), FlatList.end());
-    FlatList.erase( std::unique(FlatList.begin(), FlatList.end()), FlatList.end());
+    // Sort list by VertexType address and merge information of duplicate vertices
+    std::sort(VertexConnections.begin(), VertexConnections.end(), by_vertexptr());
 
-    // Find connections and fix pertinent nodes to their respective locations
-    for (unsigned int i=0; i<FlatList.size(); i++) {
-        VertexType *v = FlatList.at(i);
+    unsigned int i=0;
+    while (i<VertexConnections.size()) {
+        // Compare element i to element i+1. If the elements points to the same vertex, merge connections and remove element i+1
+        if (i<(VertexConnections.size()-1)) {
+            if (VertexConnections.at(i).v == VertexConnections.at(i+1).v) {
+                VertexConnectivity *thisvc = &VertexConnections.at(i);
+                VertexConnectivity *nextvc = &VertexConnections.at(i+1);
 
-        // Find connections
-        std::vector<VertexType *> GlobalConnections = v->FetchNeighbouringVertices();
-        std::vector<VertexType *> PhaseEdgeConnections;
+                thisvc->Connections.insert(thisvc->Connections.end(), nextvc->Connections.begin(), nextvc->Connections.end());
 
-        std::set_intersection(FlatList.begin(), FlatList.end(),
-                              GlobalConnections.begin(), GlobalConnections.end(), std::back_inserter(PhaseEdgeConnections));
+                // Uniqueify connections
+                std::sort(thisvc->Connections.begin(), thisvc->Connections.end());
+                std::vector<VertexType *>::iterator it;
+                it = std::unique(thisvc->Connections.begin(), thisvc->Connections.end());
+                if (it!=thisvc->Connections.end()) {
+                    thisvc->Connections.erase(it);
+                }
 
-        Connections.push_back(PhaseEdgeConnections);
+                // Erase next connection
+                VertexConnections.erase(VertexConnections.begin()+i+1);
+            } else {
+                i++;
+            }
+        } else i++;
+
+    }
+
+    // Build connectivity and FixedDirectionsLists
+    std::vector<VertexType *> VertexList;
+    std::vector<std::vector<VertexType *>> Connections;
+    std::vector<std::array<bool,3>> FixedDirectionsList;
+
+    for (unsigned int i=0; i<VertexConnections.size(); i++) {
+        VertexType *v = VertexConnections.at(i).v;
+
+        VertexList.push_back(v);
+        Connections.push_back(VertexConnections.at(i).Connections);
 
         // Determine which directions are locked
         std::array<bool,3> FixedDirections;
@@ -479,7 +525,7 @@ void Voxel2Tet :: SmoothEdgesSimultaneously()
 
     }
 
-    SpringSmooth(FlatList, FixedDirectionsList, Connections, K, this->Mesh);
+    SpringSmooth(VertexList, FixedDirectionsList, Connections, K, this->Mesh);
 
 }
 
@@ -621,20 +667,26 @@ void Voxel2Tet::Process()
             this->Mesh->Vertices.at(i)->ID = i;
         }
 
-        //this->SmoothEdgesSimultaneously();
+#if SMOOTH_EDGES_INDIVIDUALLY==1
         this->SmoothEdgesIndividually();
+#else
+        this->SmoothEdgesSimultaneously();
+#endif
+
 
         FileName.str(""); FileName.clear();
         FileName << "/tmp/Voxeltest" << outputindex++ << ".vtp";
         this->Mesh->ExportVTK(FileName.str());
 
-        for (auto s: this->Surfaces) {
+/*        for (auto s: this->Surfaces) {
             s->MoveAsTrussStructure();
         }
 
         FileName.str(""); FileName.clear();
         FileName << "/tmp/Voxeltest" << outputindex++ << ".vtp";
-        this->Mesh->ExportVTK(FileName.str());
+        this->Mesh->ExportVTK(FileName.str());*/
+
+        this->Mesh->ExportOFF("/tmp/Voxel2Tet/OnlyEdges.off");
 
         this->Mesh->RemoveDegenerateTriangles();
 

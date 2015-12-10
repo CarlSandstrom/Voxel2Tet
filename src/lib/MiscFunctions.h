@@ -6,6 +6,8 @@
 
 #define EXPORT_SMOOTHING_ANIMATION 0
 
+#define SMOOTH_EDGES_INDIVIDUALLY 0
+
 #define LOG(format, args...) dolog (__FUNCTION__, format, args)
 #define STATUS(format, args...) dooutputstat (format, args)
 
