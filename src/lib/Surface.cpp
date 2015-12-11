@@ -61,7 +61,7 @@ void Surface :: MoveAsTrussStructure()
     // Set u to the difference between current and original position on all fixed nodes
     for (unsigned int i=0; i<FixedNodes.size(); i++) {
         for (int j=0; j<3; j++) {
-            double delta = FixedNodes.at(i)->c[j]-FixedNodes.at(i)->originalcoordinates[j];
+            double delta = FixedNodes.at(i)->get_c(j)-FixedNodes.at(i)->originalcoordinates[j];
             uC.at(i*3+j) = -delta;
         }
     }
@@ -111,7 +111,7 @@ void Surface :: MoveAsTrussStructure()
     for (unsigned int i=0; i< FreeNodes.size(); i++) {
         VertexType *v = FreeNodes.at(i);
         for (int j=0; j<3; j++) {
-            v->c[j] = v->c[j] + uF.at(3*i+j);
+            v->set_c( v->get_c(j) + uF.at(3*i+j), j); //TODO: Use array instead of scalars to improve performance
         }
     }
 

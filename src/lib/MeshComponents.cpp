@@ -17,6 +17,29 @@ VertexType :: VertexType (double x, double y, double z)
     this->originalcoordinates[2] = z;
 }
 
+void VertexType :: set_c(std::array<double,3> newc)
+{
+    this->c = newc;
+    for (TriangleType *t: this->Triangles) t->UpdateNormal();
+}
+
+void VertexType :: set_c(double c, int index)
+{
+    this->c[index] = c;
+    for (TriangleType *t: this->Triangles) t->UpdateNormal();
+}
+
+std::array<double, 3> VertexType :: get_c()
+{
+    return this->c;
+}
+
+double VertexType :: get_c(int index)
+{
+    return this->c[index];
+}
+
+
 void VertexType :: AddTriangle(TriangleType *Triangle)
 {
     for (TriangleType *T: this->Triangles) {
@@ -79,14 +102,14 @@ std::vector<TriangleType *> EdgeType :: GiveTriangles()
 
 // TriangleType
 
-std::array<double, 3> TriangleType :: GiveVector(int node)
+std::array<double, 3> TriangleType :: GiveEdgeVector(int node)
 {
     std::array<double, 3> edgevector;
 
     int nextnode = (node<2) ? (node+1) : (0);
 
     for (int i=0; i<3; i++) {
-        edgevector[i] = this->Vertices[nextnode]->c[i]-this->Vertices[node]->c[i];
+        edgevector[i] = this->Vertices[nextnode]->get_c(i)-this->Vertices[node]->get_c(i);
     }
 
     return edgevector;
@@ -99,8 +122,8 @@ double TriangleType :: GiveArea()
 
     // Compute two vectors with origin in vertex 0 describing the triangle
     for (int i=0; i<3; i++) {
-        e1[i]=this->Vertices[1]->c[i]-this->Vertices[0]->c[i];
-        e2[i]=this->Vertices[2]->c[i]-this->Vertices[0]->c[i];
+        e1[i]=this->Vertices[1]->get_c(i)-this->Vertices[0]->get_c(i);
+        e2[i]=this->Vertices[2]->get_c(i)-this->Vertices[0]->get_c(i);
     }
 
     // Compute cross product of the two vectors
@@ -120,7 +143,7 @@ double TriangleType :: GiveLargestAngle(int *index)
     std::array<double, 3> alpha;
 
     for (int i=0; i<3; i++) {
-        e[i] = this->GiveVector(i);
+        e[i] = this->GiveEdgeVector(i);
         length[i] = std::sqrt(e[i][0]*e[i][0] + e[i][1]*e[i][1] + e[i][2]*e[i][2] );
     }
 
@@ -175,6 +198,18 @@ std::array<EdgeType *, 3> TriangleType :: GiveEdges()
     std::copy_n(EdgeCollection.begin(), 3, Edges.begin());
 
     return Edges;
+
+}
+
+void TriangleType :: UpdateNormal()
+{
+
+    std::array<double, 3> edge0=this->GiveEdgeVector(0);
+    std::array<double, 3> edge1=this->GiveEdgeVector(1);
+
+    this->Normal[0] = edge0[1]*edge1[2]-edge1[1]*edge0[2];
+    this->Normal[1] = -edge0[0]*edge1[2]+edge1[0]*edge0[2];
+    this->Normal[2] = edge0[0]*edge1[1]-edge1[0]*edge0[1];
 
 }
 

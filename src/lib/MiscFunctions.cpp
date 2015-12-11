@@ -51,7 +51,7 @@ void SpringSmooth(std::vector<VertexType*> Vertices, std::vector<std::array<bool
         std::array<double, 3> cp;
         std::array<double, 3> pp;
         for (int j=0; j<3; j++) {
-            cp.at(j) = pp.at(j) = Vertices.at(i)->c[j];
+            cp.at(j) = pp.at(j) = Vertices.at(i)->get_c(j);
         }
         CurrentPositions.push_back(cp);
         PreviousPositions.push_back(pp);
@@ -187,8 +187,9 @@ void SpringSmooth(std::vector<VertexType*> Vertices, std::vector<std::array<bool
     // Update vertices
     for (unsigned int i=0; i<Vertices.size(); i++) {
         for (int j=0; j<3; j++) {
+
             if (!FixedDirections.at(i)[j]) {
-                Vertices.at(i)->c[j] = CurrentPositions.at(i)[j];
+                Vertices.at(i)->set_c(CurrentPositions.at(i)[j], j); // TODO: Use array to improve performance
             }
         }
     }

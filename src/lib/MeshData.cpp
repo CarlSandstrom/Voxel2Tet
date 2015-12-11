@@ -111,6 +111,8 @@ TriangleType *MeshData :: AddTriangle(std::vector<int> VertexIDs)
         this->Vertices.at(VertexIDs.at(i))->AddTriangle(NewTriangle);
         NewTriangle->Vertices[i]=this->Vertices.at(VertexIDs.at(i));
     }
+    NewTriangle->UpdateNormal();
+
     this->Triangles.push_back(NewTriangle);
     return NewTriangle;
 

@@ -26,7 +26,7 @@ void TetGenExporter::WriteData(std::string Filename)
     TetGenFile << this->Vertices->size() << "\t3\t0\t0\n";
 
     for (auto v: *this->Vertices) {
-        TetGenFile << v->ID << "\t" << v->c[0]<< "\t" << v->c[1]<< "\t" << v->c[2] << "\n";
+        TetGenFile << v->ID << "\t" << v->get_c(0)<< "\t" << v->get_c(1)<< "\t" << v->get_c(2) << "\n";
     }
 
     TetGenFile << "\n # Facet list\n";

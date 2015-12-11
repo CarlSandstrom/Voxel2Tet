@@ -281,13 +281,13 @@ void Voxel2Tet :: FindEdges()
         for (int i=0; i<3; i++) {
             // Find neighbour
             double c[3];
-            for (int j=0; j<3; j++) c[j] = v->c[j] + testdirections.at(i).at(j)*spacing[j];
+            for (int j=0; j<3; j++) c[j] = v->get_c(j) + testdirections.at(i).at(j)*spacing[j];
             VertexType *Neighbour = this->Mesh->VertexOctreeRoot->FindVertexByCoords(c[0], c[1], c[2]);
 
             if (std::find(EdgeVertices.begin(), EdgeVertices.end(), Neighbour) != EdgeVertices.end()) {
                 LOG ("Found Neightbour %p for %p\n", Neighbour, v);
                 double cm[3];
-                for (int j=0; j<3; j++) cm[j]=v->c[j] + testdirections.at(i).at(j)*spacing[j]/2;
+                for (int j=0; j<3; j++) cm[j]=v->get_c(j) + testdirections.at(i).at(j)*spacing[j]/2;
 
                 // Check phases surrounding cm
                 double delta[3];
@@ -515,7 +515,7 @@ void Voxel2Tet :: SmoothEdgesSimultaneously()
         // Determine which directions are locked
         std::array<bool,3> FixedDirections;
         for (int j=0; j<3; j++) {
-            if ( (v->c[j] > (this->Imp->GiveBoundingBox().maxvalues[j]-eps)) | (v->c[j] < (this->Imp->GiveBoundingBox().minvalues[j]+eps))) {
+            if ( (v->get_c(j) > (this->Imp->GiveBoundingBox().maxvalues[j]-eps)) | (v->get_c(j) < (this->Imp->GiveBoundingBox().minvalues[j]+eps))) {
                 FixedDirections[j]=true;
             } else {
                 FixedDirections[j]=false;
@@ -563,10 +563,10 @@ void Voxel2Tet :: SmoothAllAtOnce()
         // Lock vertices on boundary surfaces such that they only move in the plane
         FixedDirections = {false, false, false};
         for (int j=0; j<3; j++) {
-            if (ThisVertex->c[j]>=(this->Imp->GiveBoundingBox().maxvalues[j])-eps) {
+            if (ThisVertex->get_c(j)>=(this->Imp->GiveBoundingBox().maxvalues[j])-eps) {
                 FixedDirections[j] = true;
             }
-            if (ThisVertex->c[j]<=(this->Imp->GiveBoundingBox().minvalues[j])+eps) {
+            if (ThisVertex->get_c(j)<=(this->Imp->GiveBoundingBox().minvalues[j])+eps) {
                 FixedDirections[j] = true;
             }
         }
@@ -688,13 +688,13 @@ void Voxel2Tet::Process()
 
         this->Mesh->ExportOFF("/tmp/Voxel2Tet/OnlyEdges.off");
 
-        /*this->Mesh->RemoveDegenerateTriangles();
+        this->Mesh->RemoveDegenerateTriangles();
 
         //return
 
         FileName.str(""); FileName.clear();
         FileName << "/tmp/Voxeltest" << outputindex++ << ".vtp";
-        this->Mesh->ExportVTK(FileName.str());*/
+        this->Mesh->ExportVTK(FileName.str());
 
         this->SmoothSurfaces();
 

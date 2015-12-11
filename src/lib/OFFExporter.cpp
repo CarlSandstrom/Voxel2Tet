@@ -28,7 +28,7 @@ void OFFExporter::WriteData(std::string Filename)
 
     // Write vertices
     for (auto v: *this->Vertices) {
-        OFFFile << std::setiosflags(std::ios::fixed) << std::setprecision(15) << v->c[0]<< " " << v->c[1] << " " << v->c[2] << "\n";
+        OFFFile << std::setiosflags(std::ios::fixed) << std::setprecision(15) << v->get_c(0)<< " " << v->get_c(1) << " " << v->get_c(2) << "\n";
     }
 
     // Write facets

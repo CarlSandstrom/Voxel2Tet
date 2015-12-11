@@ -21,7 +21,7 @@ vtkPoints* VTKExporter :: SetupVertices()
     for (unsigned int i=0; i<this->Vertices->size(); i++) {
         VertexType *v=this->Vertices->at(i);
         this->VertexMap[v]=i;
-        Points->InsertNextPoint(v->c[0], v->c[1], v->c[2] );
+        Points->InsertNextPoint(v->get_c(0), v->get_c(1), v->get_c(2) );
     }
     return Points;
 }

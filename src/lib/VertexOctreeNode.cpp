@@ -27,7 +27,7 @@ VertexType * VertexOctreeNode::FindVertexByCoords(double x, double y, double z)
 {
     if (this->children.size() == 0) {
         for (auto VertexID: this->VertexIds) {
-            double d = std :: sqrt ( std::pow( this->Vertices->at(VertexID)->c[0] - x,2) + std::pow( this->Vertices->at(VertexID)->c[1] - y, 2) + std::pow( this->Vertices->at(VertexID)->c[2] - z, 2) );
+            double d = std :: sqrt ( std::pow( this->Vertices->at(VertexID)->get_c(0) - x,2) + std::pow( this->Vertices->at(VertexID)->get_c(1) - y, 2) + std::pow( this->Vertices->at(VertexID)->get_c(2) - z, 2) );
             if (d < EPS) {
                 return this->Vertices->at(VertexID);
             }
@@ -49,7 +49,7 @@ int VertexOctreeNode :: AddVertex(double x, double y, double z)
     // If this is a leaf, locate the node and return the ID
     if (this->children.size() == 0) {
         for ( auto VertexID : this->VertexIds ) {
-            double d = std :: sqrt ( std::pow( this->Vertices->at(VertexID)->c[0] - x,2) + std::pow( this->Vertices->at(VertexID)->c[1] - y, 2) + std::pow( this->Vertices->at(VertexID)->c[2] - z, 2) );
+            double d = std :: sqrt ( std::pow( this->Vertices->at(VertexID)->get_c(0) - x,2) + std::pow( this->Vertices->at(VertexID)->get_c(1) - y, 2) + std::pow( this->Vertices->at(VertexID)->get_c(2) - z, 2) );
             if (d < this->eps) {
                 return VertexID;
             }
@@ -131,7 +131,7 @@ void VertexOctreeNode :: split ()
     for ( auto VertexID : this->VertexIds) {
         bool nodefound = false;
         for ( VertexOctreeNode* child : this->children) {
-            if (child->IsInBoundingBox(this->Vertices->at(VertexID)->c[0], this->Vertices->at(VertexID)->c[1], this->Vertices->at(VertexID)->c[2] ) ) {
+            if (child->IsInBoundingBox(this->Vertices->at(VertexID)->get_c(0), this->Vertices->at(VertexID)->get_c(1), this->Vertices->at(VertexID)->get_c(2) ) ) {
                 child->VertexIds.push_back(VertexID);
                 nodefound = true;
                 break;
@@ -173,7 +173,7 @@ void VertexOctreeNode :: printself()
         }
     } else {
         for ( auto VertexID: this->VertexIds) {
-           printf("%s\t#%u: (%f, %f, %f)\n", tab.c_str(), VertexID, this->Vertices->at(VertexID)->c[0], this->Vertices->at(VertexID)->c[1], this->Vertices->at(VertexID)->c[2]);
+           printf("%s\t#%u: (%f, %f, %f)\n", tab.c_str(), VertexID, this->Vertices->at(VertexID)->get_c(0), this->Vertices->at(VertexID)->get_c(1), this->Vertices->at(VertexID)->get_c(2));
         }
     }
 }
