@@ -79,6 +79,7 @@ public:
     double GiveLargestAngle(int *index=NULL);
 
     std::array<double, 3> GiveNormal() {return Normal;}
+    std::array<double, 3> GiveUnitNormal();
     void UpdateNormal();
 
 };

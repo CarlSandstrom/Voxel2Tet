@@ -116,6 +116,14 @@ std::array<double, 3> TriangleType :: GiveEdgeVector(int node)
 
 }
 
+std::array<double, 3> TriangleType :: GiveUnitNormal()
+{
+    double l = std::sqrt(this->Normal[0]*this->Normal[0] + this->Normal[1]*this->Normal[1] + this->Normal[2]*this->Normal[2] );
+    std::array<double, 3> NormalizedNormal = this->GiveNormal();
+    for (int i=0; i<3; i++) NormalizedNormal[i] = NormalizedNormal[i] / l;
+    return NormalizedNormal;
+}
+
 double TriangleType :: GiveArea()
 {
     double e1[3], e2[3], n[3];

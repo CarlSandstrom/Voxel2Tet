@@ -36,6 +36,10 @@ void MeshManipulations :: RemoveDegenerateTriangles()
                 }
             }
 
+            if (OppositeEdge==NULL) {
+                LOG ("Something unexpected occured\n", 0);
+            }
+
             if (!this->FlipEdge(OppositeEdge)) {
                 STATUS("The longest edge of triangle %u failed to flipped\n", i);
             }
@@ -43,51 +47,116 @@ void MeshManipulations :: RemoveDegenerateTriangles()
     }
 }
 
-bool MeshManipulations :: FlipEdge(EdgeType *Edge)
+bool MeshManipulations :: GetFlippedEdgeData(EdgeType *EdgeToFlip, EdgeType *NewEdge, std::array<TriangleType*, 2> *NewTriangles)
 {
-    LOG ("\tFlip edge %p\n", Edge);
+    LOG("Get flipped edge data for edge %p\n", EdgeToFlip);
 
-    std::vector<TriangleType *> EdgeTriangles = Edge->GiveTriangles();
+    std::vector<TriangleType *> EdgeTriangles = EdgeToFlip->GiveTriangles();
 
     if (EdgeTriangles.size()!=2) {
         LOG("Unable to flip edge. To many or only one triangle connected\n", 0);
         return false;
     }
 
-    std::vector<VertexType *> NewEdge;
-
     for (int i=0; i<2; i++) std::sort(EdgeTriangles.at(i)->Vertices.begin(), EdgeTriangles.at(i)->Vertices.end());
 
+    std::vector<VertexType *> NewEdgeVertices;
+
     std::set_symmetric_difference(EdgeTriangles.at(0)->Vertices.begin(), EdgeTriangles.at(0)->Vertices.end(),
-                                  EdgeTriangles.at(1)->Vertices.begin(), EdgeTriangles.at(1)->Vertices.end(), std::back_inserter(NewEdge));
+                                  EdgeTriangles.at(1)->Vertices.begin(), EdgeTriangles.at(1)->Vertices.end(), std::back_inserter(NewEdgeVertices));
+
+    // Create triangles
+    for (int i=0; i<2; i++) {
+        TriangleType* t=new TriangleType;
+        t->Vertices[0] = NewEdgeVertices[0];
+        t->Vertices[1] = NewEdgeVertices[1];
+        t->Vertices[2] = EdgeToFlip->Vertices[i];
+        t->InterfaceID = EdgeTriangles.at(0)->InterfaceID;
+        t->NegNormalMatID = -1; // TODO: Keep track of materials
+        t->PosNormalMatID = -1;
+        t->UpdateNormal();
+        NewTriangles->at(i) = t;
+    }
+
+    // Create edge
+    NewEdge->Vertices[0] = NewEdgeVertices[0];
+    NewEdge->Vertices[1] = NewEdgeVertices[1];
+
+    return true;
+
+}
+
+bool MeshManipulations :: FlipEdge(EdgeType *Edge)
+{
+    LOG ("\tFlip edge %p\n", Edge);
+
+    std::vector<TriangleType *> EdgeTriangles = Edge->GiveTriangles();
+    if (EdgeTriangles.size()!=2) {
+        LOG("Unable to flip edge. To many or only one triangle connected\n", 0);
+        return false;
+    }
+
+    std::array<TriangleType*, 2> NewTriangles;
+    EdgeType NewEdge;
+
+    this->GetFlippedEdgeData(Edge, &NewEdge, &NewTriangles);
+
+    if (!this->CheckFlipNormal(&EdgeTriangles, NewTriangles)) {
+        LOG("Changes in normal direction prevents flipping\n", 0);
+        for (TriangleType *t: NewTriangles) {
+            delete t;
+        }
+        return false;
+    }
+
+    // Update mesh data
 
     // Update triangles
     for (int i=0; i<2; i++) {
-        TriangleType *t = EdgeTriangles.at(i);
         for (int j=0; j<3; j++) {
-            t->Vertices[j]->RemoveTriangle(t);
+            EdgeTriangles.at(i)->Vertices[j] = NewTriangles.at(i)->Vertices[j];
         }
     }
 
-    for (int i=0; i<2; i++) {
-        TriangleType *t = EdgeTriangles.at(i);
-        t->Vertices[0] = NewEdge[0];
-        t->Vertices[1] = NewEdge[1];
-        t->Vertices[2] = Edge->Vertices[i];
-        for (int j=0; j<3; j++) {
-            t->Vertices[j]->AddTriangle(t);
-        }
-    }
-
-    // Update edge
+    // Remove edge from vertices
     for (int i: {0, 1}) Edge->Vertices[i]->RemoveEdge(Edge);
 
+    // Add new edge to vertices
     for (int i: {0, 1}) {
-        Edge->Vertices[i] = NewEdge[i];
-        NewEdge[i]->AddEdge(Edge);
+        Edge->Vertices[i] = NewEdge.Vertices[i];
+        Edge->Vertices[i]->AddEdge(Edge);
+    }
+
+    // 5. Free old triangles
+    for (TriangleType *t: NewTriangles) {
+        delete t;
     }
 
     return true;
+
+}
+
+bool MeshManipulations :: CheckFlipNormal(std::vector<TriangleType*> *OldTriangles, std::array<TriangleType *, 2> NewTriangles)
+{
+    double MaxAngle = 0.0;
+
+    for (TriangleType *OldTriangle: *OldTriangles) {
+        for (unsigned int j=0; j<NewTriangles.size(); j++) {
+            TriangleType *NewTriangle = NewTriangles.at(j);
+            std::array<double, 3> OldNormal = OldTriangle->GiveUnitNormal();
+            std::array<double, 3> NewNormal = NewTriangle->GiveUnitNormal();
+            double angle1 = std::acos( OldNormal[0]*NewNormal[0] + OldNormal[1]*NewNormal[1] + OldNormal[2]*NewNormal[2]);
+            double angle2 = std::acos( -(OldNormal[0]*NewNormal[0] + OldNormal[1]*NewNormal[1] + OldNormal[2]*NewNormal[2]) );
+            if (std::min(angle1, angle2)>MaxAngle) {
+                MaxAngle = std::min(angle1, angle2);
+            }
+        }
+    }
+
+    if (MaxAngle > (90*3.1415/360))
+        return false;
+    else
+        return true;
 
 }
 
