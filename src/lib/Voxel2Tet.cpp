@@ -688,15 +688,21 @@ void Voxel2Tet::Process()
 
         this->Mesh->ExportOFF("/tmp/Voxel2Tet/OnlyEdges.off");
 
-        this->Mesh->RemoveDegenerateTriangles();
+        /*this->Mesh->RemoveDegenerateTriangles();
 
         //return
 
         FileName.str(""); FileName.clear();
         FileName << "/tmp/Voxeltest" << outputindex++ << ".vtp";
-        this->Mesh->ExportVTK(FileName.str());
+        this->Mesh->ExportVTK(FileName.str());*/
 
         this->SmoothSurfaces();
+
+        FileName.str(""); FileName.clear();
+        FileName << "/tmp/Voxeltest" << outputindex++ << ".vtp";
+        this->Mesh->ExportVTK(FileName.str());
+
+        this->Mesh->RemoveDegenerateTriangles();
 
 
     } else {  // Mikael's suggestions

@@ -36,8 +36,9 @@ void MeshManipulations :: RemoveDegenerateTriangles()
                 }
             }
 
-            this->FlipEdge(OppositeEdge);
-
+            if (!this->FlipEdge(OppositeEdge)) {
+                STATUS("The longest edge of triangle %u failed to flipped\n", i);
+            }
         }
     }
 }
