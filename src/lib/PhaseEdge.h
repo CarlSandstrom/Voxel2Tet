@@ -1,6 +1,7 @@
 #ifndef PHASEEDGE_H
 #define PHASEEDGE_H
 #include <vector>
+#include <array>
 #include <algorithm>
 
 #include <MeshComponents.h>
@@ -26,7 +27,7 @@ public:
     std::vector<VertexType*> GetFlatListOfVertices();
 
     std::vector<VertexType*> FixedVertices;
-    std::vector<std::vector<VertexType*>> EdgeSegments; // TODO:Should be vector of arrays
+    std::vector<std::array<VertexType*, 2>> EdgeSegments; // TODO:Should be vector of arrays
     std::vector<int> Phases;
     PhaseEdge(Options *Opt);
 };

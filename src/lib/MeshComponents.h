@@ -11,6 +11,7 @@ namespace voxel2tet
 
 class TriangleType;
 class EdgeType;
+class PhaseEdge;
 
 class VertexType {
 private:
@@ -18,8 +19,10 @@ private:
 
 public:
     int ID;
-    bool FixedVertex;
-    bool EdgeVertex;
+    std::vector<PhaseEdge*> PhaseEdges;
+    void AddPhaseEdge(PhaseEdge*);
+    bool IsFixedVertex() {return PhaseEdges.size()>1;}
+    bool IsEdgeVertex() {return PhaseEdges.size()>0;}
 
     VertexType (double x, double y, double z);
     double originalcoordinates[3];

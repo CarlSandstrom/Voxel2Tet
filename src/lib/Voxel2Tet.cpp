@@ -239,7 +239,6 @@ void Voxel2Tet :: FindEdges()
                         if (SharedVertices.size()>0) {
                             LOG ("Surfaces intersects\n",0);
                             for (auto Vertex: SharedVertices) {
-                                Vertex->EdgeVertex=true; // TODO: Not tested
                                 EdgeVertices.push_back(Vertex);
                                 SurfaceEdgeVertices.push_back(Vertex);
                             }
@@ -318,7 +317,7 @@ void Voxel2Tet :: FindEdges()
                 Phases.erase( std::unique(Phases.begin(), Phases.end()), Phases.end());
 
                 if (Phases.size()>=3) {
-                    LOG ("PhaseEdge found\n", 0);
+                    LOG ("PhaseEdge found. Add it to the list and edd PhaseEdge to Vertex\n", 0);
                     AddPhaseEdge({v, Neighbour}, Phases);
                 }
 
@@ -382,7 +381,6 @@ void Voxel2Tet :: FindEdges()
 
     // Split edges at SharedVertices
     for (auto v: SharedVertices) {
-        v->FixedVertex = true; // TODO: Not tested. Should set all vertices joining edges to fixed
         unsigned int i=0;
         for (auto p: this->PhaseEdges) {
             std::vector<PhaseEdge*> SplitEdges;
@@ -580,7 +578,7 @@ void Voxel2Tet :: SmoothAllAtOnce()
     SpringSmooth(this->Mesh->Vertices, FixedDirectionsList, Connections, K);
 }
 
-void Voxel2Tet :: AddPhaseEdge(std::vector<VertexType*> EdgeSegment, std::vector<int> Phases)
+PhaseEdge* Voxel2Tet :: AddPhaseEdge(std::vector<VertexType*> EdgeSegment, std::vector<int> Phases)
 {
     // Ensure that Phases argument is unique
     std::sort(Phases.begin(), Phases.end());
@@ -606,7 +604,12 @@ void Voxel2Tet :: AddPhaseEdge(std::vector<VertexType*> EdgeSegment, std::vector
         this->PhaseEdges.push_back(ThisPhaseEdge);
     }
 
+    for (VertexType* v: EdgeSegment) {
+        v->AddPhaseEdge(ThisPhaseEdge);
+    }
+
     ThisPhaseEdge->EdgeSegments.push_back({EdgeSegment.at(0), EdgeSegment.at(1)});
+    return ThisPhaseEdge;
 
 }
 

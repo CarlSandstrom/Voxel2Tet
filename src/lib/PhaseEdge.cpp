@@ -31,7 +31,7 @@ void PhaseEdge :: SplitAtVertex(VertexType *Vertex, std::vector<PhaseEdge*> *Spl
 
     for (; i<this->EdgeSegments.size(); i++) {
 
-        std::vector<VertexType*> e;
+        std::array<VertexType*, 2> e;
         e = EdgeSegments.at(i);
 
         if ( (e.at(1)==Vertex) & (e.at(0)==Vertex)) {
@@ -58,7 +58,7 @@ void PhaseEdge :: SortAndFixBrokenEdge(std::vector<PhaseEdge*> *FixedEdges)
 {
 
     while (this->EdgeSegments.size()>0) {
-        std::vector<VertexType*> ThisLink = this->EdgeSegments.at(0);
+        std::array<VertexType*, 2> ThisLink = this->EdgeSegments.at(0);
         this->EdgeSegments.erase(this->EdgeSegments.begin(), this->EdgeSegments.begin()+1);
 
         LOG("Find connections for link (%p, %p)\n", ThisLink.at(0), ThisLink.at(1));
@@ -74,19 +74,21 @@ void PhaseEdge :: SortAndFixBrokenEdge(std::vector<PhaseEdge*> *FixedEdges)
             bool LastConnectionFound = false;
             while (!LastConnectionFound) {
 
-                std::vector<VertexType*> NextLink;
+                std::array<VertexType*, 2> NextLink;
+                bool NextLinkFound = false;
                 for (unsigned int j=0; j<this->EdgeSegments.size(); j++) {
                     if ((this->EdgeSegments.at(j).at(0)==VertexToFind) | (this->EdgeSegments.at(j).at(1)==VertexToFind)) {
                         LOG("Next link found (%p, %p)\n", this->EdgeSegments.at(j).at(0), this->EdgeSegments.at(j).at(1));
 
                         NextLink = this->EdgeSegments.at(j);
+                        NextLinkFound = true;
                         this->EdgeSegments.erase(this->EdgeSegments.begin()+j, this->EdgeSegments.begin()+j+1);
                         break;
                     }
                 }
 
-                if (NextLink.size()>0) {
-                    std::vector<VertexType*> *NewEdgeSegment;
+                if (NextLinkFound) {
+                    std::array<VertexType*, 2> *NewEdgeSegment;
                     VertexType *NextLastVertex;
 
                     if (NextLink.at(0)==VertexToFind) {
@@ -96,10 +98,10 @@ void PhaseEdge :: SortAndFixBrokenEdge(std::vector<PhaseEdge*> *FixedEdges)
                     }
 
                     if (i==0) {
-                        NewEdgeSegment = new std::vector<VertexType*> {NextLastVertex, VertexToFind};
+                        NewEdgeSegment = new std::array<VertexType*, 2> {NextLastVertex, VertexToFind};
                         NewPhaseEdge->EdgeSegments.insert(NewPhaseEdge->EdgeSegments.begin(), *NewEdgeSegment);
                     } else {
-                        NewEdgeSegment = new std::vector<VertexType*> {VertexToFind, NextLastVertex};
+                        NewEdgeSegment = new std::array<VertexType*, 2> {VertexToFind, NextLastVertex};
                         NewPhaseEdge->EdgeSegments.push_back(*NewEdgeSegment);
                     }
                     VertexToFind = NextLastVertex;

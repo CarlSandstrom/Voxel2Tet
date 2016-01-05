@@ -5,6 +5,8 @@
 #include "MeshManipulations.h"
 #include "MeshComponents.h"
 #include "VTKExporter.h"
+#include "PhaseEdge.h"
+#include "Options.h"
 
 voxel2tet::MeshData *createmesh(int n)
 {
@@ -62,33 +64,47 @@ voxel2tet::MeshData *createmesh(int n)
     return Mesh;
 }
 
-int main() {
+int main( int argc, char *argv[] ) {
     int vertexsidecount = 4;
+    std::map <std::string, std::string> DefaultOptions;
+    voxel2tet::Options *Options = new voxel2tet::Options(argc, argv, DefaultOptions);
+
     voxel2tet::MeshManipulations *mesh = static_cast <voxel2tet::MeshManipulations*> (createmesh(vertexsidecount)) ;
+
+    voxel2tet::PhaseEdge West(Options), East(Options), North(Options), South(Options);
 
     for (voxel2tet::VertexType* v: mesh->Vertices) {
         std::array<double, 3> c=v->get_c();
 
-        if ( (c[0] == 0) || (c[1] == 0)) {
-            v->EdgeVertex = true;
-        }
+        if (c[0] == 0) v->AddPhaseEdge(&West);
+        if (c[1] == 0) v->AddPhaseEdge(&South);
+        if (c[0] > double(vertexsidecount-1) - 1e-8) v->AddPhaseEdge(&East);
+        if (c[1] > double(vertexsidecount-1) - 1e-8) v->AddPhaseEdge(&North);
 
-        if ( (c[0] > double(vertexsidecount-1) - 1e-8) || (c[1]  > double(vertexsidecount-1) - 1e-8 )  ) {
-            v->EdgeVertex = true;
-        }
-
-        int extremecount = 0;
-        if (c[0] == 0) extremecount++;
-        if (c[1] == 0) extremecount++;
-        if (c[0] > double(vertexsidecount-1) - 1e-8) extremecount++;
-        if (c[1] > double(vertexsidecount-1) - 1e-8) extremecount++;
-        if (extremecount>1) {
-            v->FixedVertex = true;
-        }
     }
 
+    for (voxel2tet::EdgeType* e: mesh->Edges) {
+         if ((e->Vertices.at(0)->get_c(1) == 0.0) && (e->Vertices.at(1)->get_c(1) == 0.0)){
+             South.EdgeSegments.push_back(e->Vertices);
+         }
+         if ((e->Vertices.at(0)->get_c(0) == 0.0) && (e->Vertices.at(1)->get_c(0) == 0.0)){
+             West.EdgeSegments.push_back(e->Vertices);
+         }
+
+         if ((e->Vertices.at(0)->get_c(1) > double(vertexsidecount-1) - 1e-8) && (e->Vertices.at(1)->get_c(1) > double(vertexsidecount-1) - 1e-8)){
+             North.EdgeSegments.push_back(e->Vertices);
+         }
+
+         if ((e->Vertices.at(0)->get_c(0) > double(vertexsidecount-1) - 1e-8) && (e->Vertices.at(1)->get_c(0) > double(vertexsidecount-1) - 1e-8)){
+             East.EdgeSegments.push_back(e->Vertices);
+         }
+    }
+
+
+    mesh->Vertices.at(11)->set_c(2.5, 0);
+
     mesh->ExportVTK("/tmp/test2D_0.vtp");
-    mesh->CollapseEdge(mesh->Edges.at(12), 1);
+    mesh->CollapseEdge(mesh->Edges.at(10), 1);
     mesh->ExportVTK("/tmp/test2D_1.vtp");
 
 }

@@ -34,7 +34,7 @@ private:
     void SmoothAllAtOnce();
 
     void AddSurfaceSquare(std::vector<int> VoxelIDs, std::vector<int> phases, int normalphase);
-    void AddPhaseEdge(std::vector<VertexType*> EdgeSegment, std::vector<int> Phases);
+    PhaseEdge* AddPhaseEdge(std::vector<VertexType*> EdgeSegment, std::vector<int> Phases);
 
     void FinalizeLoad();
 

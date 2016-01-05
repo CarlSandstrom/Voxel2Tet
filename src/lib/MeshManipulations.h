@@ -31,7 +31,7 @@ public:
 
     bool CollapseEdge(EdgeType *EdgeToCollapse, int RemoveVertexIndex);
     bool CheckCoarsenNormal(std::vector<TriangleType*> *OldTriangles, std::vector<TriangleType*> *NewTriangles);
-    bool CheckCoarsenChord(std::vector<TriangleType*> *OldTriangles, std::vector<TriangleType*> *NewTriangles);
+    bool CheckCoarsenChord(EdgeType *EdgeToCollapse, VertexType* RemoveVertex, VertexType* SaveVertex);
 
 };
 

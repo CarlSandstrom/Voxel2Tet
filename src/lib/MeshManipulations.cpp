@@ -1,4 +1,5 @@
 #include "MeshManipulations.h"
+#include "PhaseEdge.h"
 
 namespace voxel2tet
 {
@@ -162,12 +163,12 @@ bool MeshManipulations :: CheckFlipNormal(std::vector<TriangleType*> *OldTriangl
 
 bool MeshManipulations :: CollapseEdge(EdgeType *EdgeToCollapse, int RemoveVertexIndex)
 {
+    // TODO: In its current setting, this procedure only checks if collapsing is ok from the current topology. It should compare to the original topology, otherwise degeneration can occur gradually
+
     // Cannot remove a fixed vertex
-    if (EdgeToCollapse->Vertices[RemoveVertexIndex]->FixedVertex) return false;
+    if (EdgeToCollapse->Vertices[RemoveVertexIndex]->IsFixedVertex()) return false;
 
     int SaveVertexIndex = (RemoveVertexIndex == 0) ? 1 : 0;
-
-    // TODO: In the Python code, is the topology check necessary?
 
     // Create new triangles. These are create by moving RemoveVertex to the other end of the edge and remove the 0-area triangles
     std::vector<TriangleType*> TrianglesToRemove = EdgeToCollapse->GiveTriangles();
@@ -203,21 +204,24 @@ bool MeshManipulations :: CollapseEdge(EdgeType *EdgeToCollapse, int RemoveVerte
         return false;
     }
 
-    if (!this->CheckCoarsenChord(&TrianglesToSave, &NewTriangles)) {
+    if (!this->CheckCoarsenChord(EdgeToCollapse, EdgeToCollapse->Vertices[RemoveVertexIndex], EdgeToCollapse->Vertices[SaveVertexIndex])) {
         return false;
     }
 
     // Update triangulation
-    for (TriangleType* t: TrianglesToRemove) {
-        this->Triangles.erase(std::remove(this->Triangles.begin(), this->Triangles.end(), t), this->Triangles.end());
-    }
-
-    for (TriangleType* t: TrianglesToSave) {
+    for (TriangleType* t: ConnectedTriangles) {
+        for (VertexType *v: t->Vertices) {
+            v->RemoveTriangle(t);
+            v->RemoveEdge(EdgeToCollapse);
+        }
         this->Triangles.erase(std::remove(this->Triangles.begin(), this->Triangles.end(), t), this->Triangles.end());
     }
 
     for (TriangleType* t: NewTriangles) {
         this->Triangles.push_back(t);
+        for (VertexType *v: t->Vertices) {
+            v->AddTriangle(t);
+        }
     }
 
     TrianglesToSave.clear();
@@ -250,8 +254,73 @@ bool MeshManipulations :: CheckCoarsenNormal(std::vector<TriangleType*> *OldTria
         return true;
 }
 
-bool MeshManipulations :: CheckCoarsenChord(std::vector<TriangleType*> *OldTriangles, std::vector<TriangleType*> *NewTriangles)
+bool MeshManipulations :: CheckCoarsenChord(EdgeType *EdgeToCollapse, VertexType* RemoveVertex, VertexType* SaveVertex)
 {
+    // If both vertices are located on an edge, proceed wih check. If not, collapsing is ok.
+    if (!(SaveVertex->IsEdgeVertex() && RemoveVertex->IsEdgeVertex())) {
+        return true;
+    }
+
+    // If RemoveVertex is fixed, prevent collapsing
+    if (RemoveVertex->IsFixedVertex()) {
+        return false;
+    }
+
+    // If vertices are located on different PhaseEdges, collapsing is not ok
+
+    // Here we know that RemoveVertex only contains one PhaseEdge and both vertices are located on edges.
+    PhaseEdge* RemoveVertexPhaseEdge = RemoveVertex->PhaseEdges.at(0);
+    bool SamePhaseEdge = false;
+    for (PhaseEdge* pe: SaveVertex->PhaseEdges) {
+        if (pe == RemoveVertexPhaseEdge) {
+            SamePhaseEdge = true;
+            break;
+        }
+    }
+
+    if (!SamePhaseEdge) return false;
+
+    // Check if chord changes too much...
+    std::array<VertexType*, 2> NewEdge;
+    std::array<VertexType*, 2> *OtherEdge;
+
+    // Find the other edge connected to RemoveVertex (the one connected to the same PhaseEdge)
+    for (std::array<VertexType*, 2> e: RemoveVertexPhaseEdge->EdgeSegments) {
+        int OtherIndex = -1;
+        if (e.at(0) == RemoveVertex) OtherIndex = 1;
+        if (e.at(1) == RemoveVertex) OtherIndex = 0;
+
+        if ( OtherIndex != -1 ) {
+            // Is 'e' the edge that will be collapsed?
+            if ( ( (e.at(0)==EdgeToCollapse->Vertices.at(0)) && (e.at(1)==EdgeToCollapse->Vertices.at(1)) ) ||
+                 ( (e.at(1)==EdgeToCollapse->Vertices.at(0)) && (e.at(0)==EdgeToCollapse->Vertices.at(1)) ) ) {
+                // This is the current edge. Pass
+            } else {
+                NewEdge.at(0) = SaveVertex;
+                NewEdge.at(1) = e.at(OtherIndex);
+                OtherEdge = &e;
+                break;
+            }
+        }
+    }
+
+    // Compute normalized vectors
+    std::array<double, 3> NewNormal = ComputeNormalizedVector(NewEdge.at(0), NewEdge.at(1));
+    std::array<std::array<double, 3>, 2> Normals = {ComputeNormalizedVector(OtherEdge->at(0), OtherEdge->at(1)),
+                                                    ComputeNormalizedVector(EdgeToCollapse->Vertices.at(0), EdgeToCollapse->Vertices.at(1)) };
+    double MaxAngle = 0.0;
+
+    for (int i: {0, 1}) {
+        double Alpha = std::acos(NewNormal.at(0)*Normals[i][0] + NewNormal.at(1)*Normals[i][1] + NewNormal.at(2)*Normals[i][2] );
+        Alpha = std::min(std::abs(Alpha), std::abs(Alpha-3.141592));
+        if (Alpha>MaxAngle) MaxAngle=Alpha;
+    }
+
+    if (MaxAngle > 45*3.141593/360) {
+        return false;
+    }
+
+    return true;
 
 }
 

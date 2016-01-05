@@ -32,6 +32,8 @@ void dooutputstat(const char *fmt, ...);
 void SpringSmooth(std::vector<VertexType*> Vertices, std::vector<std::array<bool,3>> FixedDirections,
                   std::vector<std::vector<VertexType*>> Connections, double K, MeshData *Mesh=NULL);
 
+std::array<double,3> ComputeNormalizedVector(VertexType* v1, VertexType* v2);
+
 template <typename T> std::vector<int> FindSubsetIndices(std::vector<T> Container, std::vector<T> Subset);
 
 }

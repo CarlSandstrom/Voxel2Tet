@@ -12,7 +12,7 @@ namespace voxel2tet {
 
 void dolog(const char *functionname, const char *fmt, ...)
 {
-#if LOGOUTPUT == 1
+#if LOGOUTPUT == 0
         va_list argp;
         va_start(argp, fmt);
         printf("%s:\t", functionname);
@@ -34,12 +34,21 @@ std::vector<int> FindSubsetIndices(std::vector<T> Container, std::vector<T> Subs
 {
     std::vector <int> Indices;
     for (auto s: Subset) {
-        int pos = std::distance(Container.begin(), std::find(Container.begin(), Container.end(), s));
+        unsigned int pos = std::distance(Container.begin(), std::find(Container.begin(), Container.end(), s));
         if (pos<Container.size()) {
             Indices.push_back(pos);
         }
     }
     return Indices;
+}
+
+std::array<double,3> ComputeNormalizedVector(VertexType* v1, VertexType* v2)
+{
+    std::array<double, 3> Normal;
+    for (int i=0; i<3; i++) Normal.at(i) = v1->get_c(i)-v2->get_c(i);
+    double NewNormalLength = sqrt(Normal.at(0)*Normal.at(0) + Normal.at(1)*Normal.at(1) +Normal.at(2)*Normal.at(2));
+    for (int i=0; i<3; i++) Normal.at(i) = Normal.at(i) / NewNormalLength;
+    return Normal;
 }
 
 void SpringSmooth(std::vector<VertexType*> Vertices, std::vector<std::array<bool,3>> FixedDirections, std::vector<std::vector<VertexType*>> Connections, double K, voxel2tet::MeshData *Mesh)
