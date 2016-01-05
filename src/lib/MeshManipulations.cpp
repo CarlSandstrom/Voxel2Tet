@@ -160,4 +160,58 @@ bool MeshManipulations :: CheckFlipNormal(std::vector<TriangleType*> *OldTriangl
 
 }
 
+bool MeshManipulations :: CollapseEdge(EdgeType *EdgeToCollapse, int RemoveVertexIndex)
+{
+    // Cannot remove a fixed vertex
+    if (EdgeToCollapse->Vertices[RemoveVertexIndex]->FixedVertex) return false;
+
+    int SaveVertexIndex = (RemoveVertexIndex == 0) ? 1 : 0;
+
+    // TODO: In the Python code, is the topology check necessary?
+
+    // Create new triangles. These are create by moving RemoveVertex to the other end of the edge and remove the 0-area triangles
+    std::vector<TriangleType*> TrianglesToRemove = EdgeToCollapse->GiveTriangles();
+    std::vector<TriangleType*> ConnectedTriangle = EdgeToCollapse->Vertices[RemoveVertexIndex]->Triangles;
+
+    std::sort(TrianglesToRemove.begin(), TrianglesToRemove.end());
+    std::sort(ConnectedTriangle.begin(), ConnectedTriangle.end());
+
+    std::vector<TriangleType*> TrianglesToSave;
+    std::set_difference(ConnectedTriangle.begin(), ConnectedTriangle.end(),
+                        TrianglesToRemove.begin(), TrianglesToRemove.end(), std::inserter( TrianglesToSave, TrianglesToSave.begin() ) );
+
+    std::vector<TriangleType*> NewTriangles;
+    for (TriangleType* t: TrianglesToSave) {
+        TriangleType* NewTriangle = new TriangleType;
+
+        // TODO: Keep track of materials
+        NewTriangle->InterfaceID = t->InterfaceID;
+        for (int i=0; i<3; i++) {
+            if (t->Vertices[i]==EdgeToCollapse->Vertices[RemoveVertexIndex]) {
+                NewTriangle->Vertices[i] = EdgeToCollapse->Vertices[SaveVertexIndex];
+            } else {
+                NewTriangle->Vertices[i] = t->Vertices[i];
+            }
+        }
+
+        NewTriangle->UpdateNormal();
+
+        NewTriangles.push_back(NewTriangle);
+    }
+
+    // Check if NewTriangles is a good approximation
+
+
+
+
+    for (TriangleType* t: TrianglesToRemove) {
+        this->Triangles.erase(std::remove(this->Triangles.begin(), this->Triangles.end(), t), this->Triangles.end());
+    }
+    for (TriangleType* t: NewTriangles) {
+        this->Triangles.push_back(t);
+    }
+
+    TrianglesToSave.clear();
+}
+
 }

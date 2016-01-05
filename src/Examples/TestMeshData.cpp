@@ -1,7 +1,9 @@
 #include <stdio.h>
+#include <array>
 #include <armadillo>
 
-#include "MeshData.h"
+#include "MeshManipulations.h"
+#include "MeshComponents.h"
 #include "VTKExporter.h"
 
 voxel2tet::MeshData *createmesh(int n)
@@ -61,8 +63,20 @@ voxel2tet::MeshData *createmesh(int n)
 }
 
 int main() {
-    //voxel2tet::MeshData *mesh = createmesh(10);
-    //voxel2tet::VTKExporter exporter(mesh);
-    //exporter.WriteData("/tmp/testXYZ.vtp");
+    int vertexsidecount = 4;
+    voxel2tet::MeshManipulations *mesh = static_cast <voxel2tet::MeshManipulations*> (createmesh(vertexsidecount)) ;
+
+    for (voxel2tet::VertexType* v: mesh->Vertices) {
+        std::array<double, 3> c=v->get_c();
+
+        if ( (c[0] == 0) || (c[1] == 0)) v->FixedVertex = true;
+        if ( (c[0] > double(vertexsidecount-1) - 1e-8) || (c[1]  > double(vertexsidecount-1) - 1e-8 )  ) {
+            v->FixedVertex = true;
+        }
+    }
+
+    mesh->ExportVTK("/tmp/test2D_0.vtp");
+    mesh->CollapseEdge(mesh->Edges.at(12), 1);
+    mesh->ExportVTK("/tmp/test2D_1.vtp");
 
 }

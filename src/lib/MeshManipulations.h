@@ -25,8 +25,9 @@ public:
     void RemoveDegenerateTriangles();
 
     bool FlipEdge(EdgeType *Edge);
-
     bool CheckFlipNormal(std::vector<TriangleType*> *OldTriangles, std::array<TriangleType*, 2> NewTriangles);
+
+    bool CollapseEdge(EdgeType *EdgeToCollapse, int RemoveVertexIndex);
 
 };
 

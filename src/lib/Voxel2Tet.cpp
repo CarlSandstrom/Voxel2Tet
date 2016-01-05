@@ -381,6 +381,7 @@ void Voxel2Tet :: FindEdges()
 
     // Split edges at SharedVertices
     for (auto v: SharedVertices) {
+        v->FixedVertex = true; // TODO: Not tested. Should set all vertices joining edges to fixed
         unsigned int i=0;
         for (auto p: this->PhaseEdges) {
             std::vector<PhaseEdge*> SplitEdges;

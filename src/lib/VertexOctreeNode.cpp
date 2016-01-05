@@ -63,6 +63,7 @@ int VertexOctreeNode :: AddVertex(double x, double y, double z)
 
         this->Vertices->push_back( new VertexType(x, y, z) );
         int VertexID = this->Vertices->size()-1;
+        this->Vertices->at(this->Vertices->size()-1)->ID = VertexID;
         this->VertexIds.push_back(VertexID);
 
         return VertexID;
