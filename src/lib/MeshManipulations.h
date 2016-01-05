@@ -19,6 +19,8 @@ class MeshManipulations: public MeshData
 private:
     bool GetFlippedEdgeData(EdgeType *EdgeToFlip, EdgeType *NewEdge, std::array<TriangleType*, 2> *NewTriangles);
 
+
+
 public:
     MeshManipulations(BoundingBoxType BoundingBox);
 
@@ -28,6 +30,8 @@ public:
     bool CheckFlipNormal(std::vector<TriangleType*> *OldTriangles, std::array<TriangleType*, 2> NewTriangles);
 
     bool CollapseEdge(EdgeType *EdgeToCollapse, int RemoveVertexIndex);
+    bool CheckCoarsenNormal(std::vector<TriangleType*> *OldTriangles, std::vector<TriangleType*> *NewTriangles);
+    bool CheckCoarsenChord(std::vector<TriangleType*> *OldTriangles, std::vector<TriangleType*> *NewTriangles);
 
 };
 

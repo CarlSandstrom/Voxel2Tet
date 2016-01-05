@@ -69,8 +69,20 @@ int main() {
     for (voxel2tet::VertexType* v: mesh->Vertices) {
         std::array<double, 3> c=v->get_c();
 
-        if ( (c[0] == 0) || (c[1] == 0)) v->FixedVertex = true;
+        if ( (c[0] == 0) || (c[1] == 0)) {
+            v->EdgeVertex = true;
+        }
+
         if ( (c[0] > double(vertexsidecount-1) - 1e-8) || (c[1]  > double(vertexsidecount-1) - 1e-8 )  ) {
+            v->EdgeVertex = true;
+        }
+
+        int extremecount = 0;
+        if (c[0] == 0) extremecount++;
+        if (c[1] == 0) extremecount++;
+        if (c[0] > double(vertexsidecount-1) - 1e-8) extremecount++;
+        if (c[1] > double(vertexsidecount-1) - 1e-8) extremecount++;
+        if (extremecount>1) {
             v->FixedVertex = true;
         }
     }

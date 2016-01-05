@@ -171,13 +171,13 @@ bool MeshManipulations :: CollapseEdge(EdgeType *EdgeToCollapse, int RemoveVerte
 
     // Create new triangles. These are create by moving RemoveVertex to the other end of the edge and remove the 0-area triangles
     std::vector<TriangleType*> TrianglesToRemove = EdgeToCollapse->GiveTriangles();
-    std::vector<TriangleType*> ConnectedTriangle = EdgeToCollapse->Vertices[RemoveVertexIndex]->Triangles;
+    std::vector<TriangleType*> ConnectedTriangles = EdgeToCollapse->Vertices[RemoveVertexIndex]->Triangles;
 
     std::sort(TrianglesToRemove.begin(), TrianglesToRemove.end());
-    std::sort(ConnectedTriangle.begin(), ConnectedTriangle.end());
+    std::sort(ConnectedTriangles.begin(), ConnectedTriangles.end());
 
     std::vector<TriangleType*> TrianglesToSave;
-    std::set_difference(ConnectedTriangle.begin(), ConnectedTriangle.end(),
+    std::set_difference(ConnectedTriangles.begin(), ConnectedTriangles.end(),
                         TrianglesToRemove.begin(), TrianglesToRemove.end(), std::inserter( TrianglesToSave, TrianglesToSave.begin() ) );
 
     std::vector<TriangleType*> NewTriangles;
@@ -195,23 +195,65 @@ bool MeshManipulations :: CollapseEdge(EdgeType *EdgeToCollapse, int RemoveVerte
         }
 
         NewTriangle->UpdateNormal();
-
         NewTriangles.push_back(NewTriangle);
     }
 
-    // Check if NewTriangles is a good approximation
+    // Check if NewTriangles are good replacements
+    if (!this->CheckCoarsenNormal(&TrianglesToSave, &NewTriangles)) {
+        return false;
+    }
 
+    if (!this->CheckCoarsenChord(&TrianglesToSave, &NewTriangles)) {
+        return false;
+    }
 
-
-
+    // Update triangulation
     for (TriangleType* t: TrianglesToRemove) {
         this->Triangles.erase(std::remove(this->Triangles.begin(), this->Triangles.end(), t), this->Triangles.end());
     }
+
+    for (TriangleType* t: TrianglesToSave) {
+        this->Triangles.erase(std::remove(this->Triangles.begin(), this->Triangles.end(), t), this->Triangles.end());
+    }
+
     for (TriangleType* t: NewTriangles) {
         this->Triangles.push_back(t);
     }
 
     TrianglesToSave.clear();
+    return true;
+
 }
+
+bool MeshManipulations :: CheckCoarsenNormal(std::vector<TriangleType*> *OldTriangles, std::vector<TriangleType*> *NewTriangles)
+{
+    // Here, we use that the order of the old and new triangles are the same in both lists. I.e. NewTriangle[i] is the same triangle as OldTriangles[i] except that vD is replaced by vR.
+
+    double MaxAngle = 0;
+
+    for (unsigned int i=0; i<OldTriangles->size(); i++) {
+
+        std::array<double, 3> OldNormal = OldTriangles->at(i)->GiveUnitNormal();
+        std::array<double, 3> NewNormal = NewTriangles->at(i)->GiveUnitNormal();
+
+        double angle1 = std::acos( OldNormal[0]*NewNormal[0] + OldNormal[1]*NewNormal[1] + OldNormal[2]*NewNormal[2]);
+        double angle2 = std::acos( -(OldNormal[0]*NewNormal[0] + OldNormal[1]*NewNormal[1] + OldNormal[2]*NewNormal[2]) );
+        if (std::min(angle1, angle2)>MaxAngle) {
+            MaxAngle = std::min(angle1, angle2);
+        }
+
+    }
+
+    if (MaxAngle > (20*3.1415/360))
+        return false;
+    else
+        return true;
+}
+
+bool MeshManipulations :: CheckCoarsenChord(std::vector<TriangleType*> *OldTriangles, std::vector<TriangleType*> *NewTriangles)
+{
+
+}
+
 
 }

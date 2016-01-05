@@ -19,6 +19,7 @@ private:
 public:
     int ID;
     bool FixedVertex;
+    bool EdgeVertex;
 
     VertexType (double x, double y, double z);
     double originalcoordinates[3];

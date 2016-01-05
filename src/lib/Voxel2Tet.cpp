@@ -239,6 +239,7 @@ void Voxel2Tet :: FindEdges()
                         if (SharedVertices.size()>0) {
                             LOG ("Surfaces intersects\n",0);
                             for (auto Vertex: SharedVertices) {
+                                Vertex->EdgeVertex=true; // TODO: Not tested
                                 EdgeVertices.push_back(Vertex);
                                 SurfaceEdgeVertices.push_back(Vertex);
                             }
