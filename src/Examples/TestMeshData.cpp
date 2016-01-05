@@ -104,7 +104,29 @@ int main( int argc, char *argv[] ) {
     mesh->Vertices.at(11)->set_c(2.5, 0);
 
     mesh->ExportVTK("/tmp/test2D_0.vtp");
-    mesh->CollapseEdge(mesh->Edges.at(10), 1);
-    mesh->ExportVTK("/tmp/test2D_1.vtp");
+    int iter=1;
+    bool EdgeCollapsed = true;
+    while (EdgeCollapsed) {
+        EdgeCollapsed=false;
+        for (voxel2tet::EdgeType* e: mesh->Edges) {
+
+            if (!mesh->CollapseEdge(e,0)) {
+                EdgeCollapsed=mesh->CollapseEdge(e,1);
+            } else {
+                EdgeCollapsed=true;
+            }
+
+
+            if (EdgeCollapsed) {
+                std::ostringstream FileName;
+                FileName << "/tmp/test2D_" << iter << ".vtp";
+                mesh->ExportVTK( FileName.str() );
+                iter++;
+                break;
+            }
+        }
+    }
+
+
 
 }

@@ -209,14 +209,53 @@ bool MeshManipulations :: CollapseEdge(EdgeType *EdgeToCollapse, int RemoveVerte
     }
 
     // Update triangulation
+
+    // Find edges to remove (all edges connected to RemoveVertex and in any triangle in TrianglesToRemove)
+    std::vector<EdgeType *> EdgesToRemove;
+    std::vector<EdgeType *> RemoveVertexEdges = EdgeToCollapse->Vertices.at(RemoveVertexIndex)->Edges;
+
+    std::vector<EdgeType *> TriangleToRemoveEdges;
+    for (TriangleType *t: TrianglesToRemove) {
+        for (EdgeType *e: t->GiveEdges()) {
+            TriangleToRemoveEdges.push_back(e);
+        }
+    }
+
+    std::sort(RemoveVertexEdges.begin(), RemoveVertexEdges.end());
+    std::sort(TriangleToRemoveEdges.begin(), TriangleToRemoveEdges.end());
+
+    std::set_intersection(RemoveVertexEdges.begin(), RemoveVertexEdges.end(),
+                          TriangleToRemoveEdges.begin(), TriangleToRemoveEdges.end(), std::back_inserter(EdgesToRemove));
+
+    // Update edges
+    std::vector<EdgeType*> ConnectedEdges = EdgeToCollapse->Vertices.at(RemoveVertexIndex)->Edges;
+    for (EdgeType *e: ConnectedEdges) {
+        if (e!=EdgeToCollapse) {
+            for (int i: {0, 1}) {
+                if (e->Vertices[i]==EdgeToCollapse->Vertices.at(RemoveVertexIndex)) {
+                    e->Vertices[i] = EdgeToCollapse->Vertices.at(SaveVertexIndex);
+                }
+            }
+        }
+    }
+
+    // Remove triangles
     for (TriangleType* t: ConnectedTriangles) {
         for (VertexType *v: t->Vertices) {
             v->RemoveTriangle(t);
-            v->RemoveEdge(EdgeToCollapse);
         }
         this->Triangles.erase(std::remove(this->Triangles.begin(), this->Triangles.end(), t), this->Triangles.end());
+        delete t;
     }
 
+    // Remove edges
+    for (EdgeType* e: EdgesToRemove) {
+        this->Edges.erase((std::remove(this->Edges.begin(), this->Edges.end(), e)));
+        delete e;
+    }
+
+
+    // Add new triangles
     for (TriangleType* t: NewTriangles) {
         this->Triangles.push_back(t);
         for (VertexType *v: t->Vertices) {
@@ -224,7 +263,6 @@ bool MeshManipulations :: CollapseEdge(EdgeType *EdgeToCollapse, int RemoveVerte
         }
     }
 
-    TrianglesToSave.clear();
     return true;
 
 }
