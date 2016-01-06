@@ -116,7 +116,6 @@ int main( int argc, char *argv[] ) {
                 EdgeCollapsed=true;
             }
 
-
             if (EdgeCollapsed) {
                 std::ostringstream FileName;
                 FileName << "/tmp/test2D_" << iter << ".vtp";
