@@ -57,6 +57,10 @@ void PhaseEdge :: SplitAtVertex(VertexType *Vertex, std::vector<PhaseEdge*> *Spl
 void PhaseEdge :: SortAndFixBrokenEdge(std::vector<PhaseEdge*> *FixedEdges)
 {
 
+    // For each EdgeSegment find the two connecting segments until all segments has been processed. If links
+    // to the end vertices of a chain of segments cannot be found while there are segments in the list, a new
+    // list of segments is created.
+
     while (this->EdgeSegments.size()>0) {
         std::array<VertexType*, 2> ThisLink = this->EdgeSegments.at(0);
         this->EdgeSegments.erase(this->EdgeSegments.begin(), this->EdgeSegments.begin()+1);
@@ -68,11 +72,16 @@ void PhaseEdge :: SortAndFixBrokenEdge(std::vector<PhaseEdge*> *FixedEdges)
         NewPhaseEdge->EdgeSegments.push_back(ThisLink);
         FixedEdges->push_back(NewPhaseEdge);
 
+        // Find next link, i.e. the link containing the i:th vertex of the current segment
         for (int i=0; i<2; i++) {
             VertexType* VertexToFind = ThisLink.at(i);
 
             bool LastConnectionFound = false;
             while (!LastConnectionFound) {
+
+                // Remove self from list of PhaseEdges
+                VertexToFind->PhaseEdges.erase(std::remove(VertexToFind->PhaseEdges.begin(), VertexToFind->PhaseEdges.end(), this));
+                VertexToFind->PhaseEdges.push_back(NewPhaseEdge);
 
                 std::array<VertexType*, 2> NextLink;
                 bool NextLinkFound = false;
@@ -111,6 +120,9 @@ void PhaseEdge :: SortAndFixBrokenEdge(std::vector<PhaseEdge*> *FixedEdges)
                     LastConnectionFound = true;
                 }
             }
+
+            // If no EdgeSegments are left, exit
+            if (this->EdgeSegments.size()==0) break;
 
         }
         if (this->EdgeSegments.size()>0) {

@@ -33,6 +33,8 @@ public:
     bool CheckCoarsenNormal(std::vector<TriangleType*> *OldTriangles, std::vector<TriangleType*> *NewTriangles);
     bool CheckCoarsenChord(EdgeType *EdgeToCollapse, VertexType* RemoveVertex, VertexType* SaveVertex);
 
+    bool CoarsenMesh();
+
 };
 
 }

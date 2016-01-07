@@ -336,7 +336,8 @@ void Voxel2Tet :: FindEdges()
         this->PhaseEdges.at(i)->SortAndFixBrokenEdge(FixedEdges);
 
         // Erase current PhaseEdge and replace it with the ones in FixedEdges
-        delete this->PhaseEdges.at(i);
+        // TODO: Should really delete this...
+        //delete this->PhaseEdges.at(i);
         this->PhaseEdges.erase(this->PhaseEdges.begin() + i);
         this->PhaseEdges.insert(this->PhaseEdges.begin() + i, FixedEdges->begin(), FixedEdges->end());
 
@@ -447,12 +448,13 @@ void Voxel2Tet :: SmoothEdgesSimultaneously()
     };
 
     struct by_vertexptr {
-        bool operator()(VertexConnectivity const &a, VertexConnectivity const &b) { return (a.v < b.v); }
+        bool operator()(VertexConnectivity *a, VertexConnectivity *b) { return (a->v < b->v); }
     };
 
-    std::vector<VertexConnectivity> VertexConnections;
+    std::vector<VertexConnectivity *> VertexConnections;
 
     // Collect all vertices on phase edges
+    int j=0;
     for (PhaseEdge *p: this->PhaseEdges) {
         std::vector<std::vector<VertexType *>> Connections;
         std::vector<std::array<bool,3>> FixedDirectionsList;
@@ -462,13 +464,13 @@ void Voxel2Tet :: SmoothEdgesSimultaneously()
 
         for (unsigned int i=0; i<EdgeVertices.size(); i++) {
             VertexType *v = EdgeVertices.at(i);
-            VertexConnectivity vc;
-            vc.v = v;
-            vc.Connections.insert(vc.Connections.begin(), Connections.at(i).begin(), Connections.at(i).end());
-            vc.FixedDirections = FixedDirectionsList.at(i);
+            VertexConnectivity *vc = new VertexConnectivity;
+            vc->v = v;
+            vc->Connections.insert(vc->Connections.begin(), Connections.at(i).begin(), Connections.at(i).end());
+            vc->FixedDirections = FixedDirectionsList.at(i);
             VertexConnections.push_back(vc);
         }
-
+        j++;
     }
 
     // Sort list by VertexType address and merge information of duplicate vertices
@@ -478,9 +480,9 @@ void Voxel2Tet :: SmoothEdgesSimultaneously()
     while (i<VertexConnections.size()) {
         // Compare element i to element i+1. If the elements points to the same vertex, merge connections and remove element i+1
         if (i<(VertexConnections.size()-1)) {
-            if (VertexConnections.at(i).v == VertexConnections.at(i+1).v) {
-                VertexConnectivity *thisvc = &VertexConnections.at(i);
-                VertexConnectivity *nextvc = &VertexConnections.at(i+1);
+            if (VertexConnections.at(i)->v == VertexConnections.at(i+1)->v) {
+                VertexConnectivity *thisvc = VertexConnections.at(i);
+                VertexConnectivity *nextvc = VertexConnections.at(i+1);
 
                 thisvc->Connections.insert(thisvc->Connections.end(), nextvc->Connections.begin(), nextvc->Connections.end());
 
@@ -507,10 +509,10 @@ void Voxel2Tet :: SmoothEdgesSimultaneously()
     std::vector<std::array<bool,3>> FixedDirectionsList;
 
     for (unsigned int i=0; i<VertexConnections.size(); i++) {
-        VertexType *v = VertexConnections.at(i).v;
+        VertexType *v = VertexConnections.at(i)->v;
 
         VertexList.push_back(v);
-        Connections.push_back(VertexConnections.at(i).Connections);
+        Connections.push_back(VertexConnections.at(i)->Connections);
 
         // Determine which directions are locked
         std::array<bool,3> FixedDirections;
@@ -683,14 +685,6 @@ void Voxel2Tet::Process()
         FileName << "/tmp/Voxeltest" << outputindex++ << ".vtp";
         this->Mesh->ExportVTK(FileName.str());
 
-/*        for (auto s: this->Surfaces) {
-            s->MoveAsTrussStructure();
-        }
-
-        FileName.str(""); FileName.clear();
-        FileName << "/tmp/Voxeltest" << outputindex++ << ".vtp";
-        this->Mesh->ExportVTK(FileName.str());*/
-
         this->Mesh->ExportOFF("/tmp/Voxel2Tet/OnlyEdges.off");
 
         this->Mesh->RemoveDegenerateTriangles();
@@ -709,6 +703,11 @@ void Voxel2Tet::Process()
 
         this->Mesh->RemoveDegenerateTriangles();
 
+        FileName.str(""); FileName.clear();
+        FileName << "/tmp/Voxeltest" << outputindex++ << ".vtp";
+        this->Mesh->ExportVTK(FileName.str());
+
+        this->Mesh->CoarsenMesh();
 
     } else {  // Mikael's suggestions
 

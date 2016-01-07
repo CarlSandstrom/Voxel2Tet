@@ -320,7 +320,7 @@ bool MeshManipulations :: CheckCoarsenChord(EdgeType *EdgeToCollapse, VertexType
 
     // Check if chord changes too much...
     std::array<VertexType*, 2> NewEdge;
-    std::array<VertexType*, 2> *OtherEdge;
+    std::array<VertexType*, 2> *OtherEdge = NULL;
 
     // Find the other edge connected to RemoveVertex (the one connected to the same PhaseEdge)
     for (std::array<VertexType*, 2> e: RemoveVertexPhaseEdge->EdgeSegments) {
@@ -340,6 +340,11 @@ bool MeshManipulations :: CheckCoarsenChord(EdgeType *EdgeToCollapse, VertexType
                 break;
             }
         }
+    }
+
+    if (OtherEdge==NULL) {
+        LOG("OtherEdge not found. \n", 0);
+        return false;
     }
 
     // Compute normalized vectors
@@ -362,5 +367,32 @@ bool MeshManipulations :: CheckCoarsenChord(EdgeType *EdgeToCollapse, VertexType
 
 }
 
+bool MeshManipulations :: CoarsenMesh()
+{
+
+    this->ExportVTK("/tmp/TestCoarsen_0.vtp");
+    int iter=1;
+    bool EdgeCollapsed = true;
+    while (EdgeCollapsed) {
+        EdgeCollapsed=false;
+        for (EdgeType* e: this->Edges) {
+
+            if (!this->CollapseEdge(e,0)) {
+                EdgeCollapsed=this->CollapseEdge(e,1);
+            } else {
+                EdgeCollapsed=true;
+            }
+
+            if (EdgeCollapsed) {
+                std::ostringstream FileName;
+                FileName << "/tmp/TestCoarsen_" << iter << ".vtp";
+                this->ExportVTK( FileName.str() );
+                iter++;
+                break;
+            }
+        }
+    }
+    return true;
+}
 
 }
