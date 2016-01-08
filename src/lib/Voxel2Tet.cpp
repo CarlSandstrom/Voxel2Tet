@@ -668,11 +668,12 @@ void Voxel2Tet::Process()
     this->Mesh->ExportVTK( FileName.str() );
 
     if (true) {  // Carl's suggestion
-        this->FindEdges();
 
-        for (unsigned int i=0; i<this->Mesh->Vertices.size(); i++) {
-            this->Mesh->Vertices.at(i)->ID = i;
+        for (unsigned int i=0; i<this->Mesh->Triangles.size(); i++) {
+            this->Mesh->Triangles.at(i)->ID = i;
         }
+
+        this->FindEdges();
 
 #if SMOOTH_EDGES_INDIVIDUALLY==1
         this->SmoothEdgesIndividually();
@@ -697,11 +698,11 @@ void Voxel2Tet::Process()
 
         this->SmoothSurfaces();
 
-        FileName.str(""); FileName.clear();
+/*        FileName.str(""); FileName.clear();
         FileName << "/tmp/Voxeltest" << outputindex++ << ".vtp";
         this->Mesh->ExportVTK(FileName.str());
 
-        this->Mesh->RemoveDegenerateTriangles();
+        this->Mesh->RemoveDegenerateTriangles();*/
 
         FileName.str(""); FileName.clear();
         FileName << "/tmp/Voxeltest" << outputindex++ << ".vtp";

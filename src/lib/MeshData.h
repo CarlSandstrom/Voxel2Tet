@@ -3,6 +3,7 @@
 
 #include<vector>
 #include<string>
+#include <algorithm>
 
 #include "MeshComponents.h"
 #include "VertexOctreeNode.h"
@@ -38,6 +39,8 @@ public:
 
     // Adds an edge using vertex indices
     EdgeType *AddEdge(std::vector<int> VertexIDs);
+
+    void RemoveTriangle(TriangleType *t);
 
     // Adds a triangle using coordinates
     TriangleType *AddTriangle(std::vector<double> n0, std::vector<double> n1, std::vector<double> n2);

@@ -26,8 +26,8 @@ private:
 
     vtkPoints* SetupVertices();
     vtkCellArray* SetupTriangles();
-    vtkUnsignedCharArray *SetupInterfaceIDs();
-    vtkUnsignedCharArray *SetupTriangleIDs();
+    vtkIntArray *SetupInterfaceIDs();
+    vtkIntArray *SetupTriangleIDs();
 public:
     VTKExporter();
     VTKExporter(std :: vector <TriangleType*> *Triangles, std :: vector <VertexType*> *Vertices, std :: vector <EdgeType*> *Edges);

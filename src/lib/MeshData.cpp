@@ -79,6 +79,14 @@ EdgeType *MeshData :: AddEdge(std::vector<int> VertexIDs)
     return NewEdge;
 }
 
+void MeshData :: RemoveTriangle(TriangleType *t)
+{
+    for (VertexType *v: t->Vertices) {
+        v->RemoveTriangle(t);
+    }
+    this->Triangles.erase(std::remove(this->Triangles.begin(), this->Triangles.end(), t), this->Triangles.end());
+}
+
 TriangleType *MeshData :: AddTriangle(std::vector<double> n0, std::vector<double> n1, std::vector<double> n2)
 {
     // Insert vertices and create a triangle using the indices returned
@@ -90,6 +98,8 @@ TriangleType *MeshData :: AddTriangle(std::vector<double> n0, std::vector<double
 
     return this->AddTriangle({VertexIDs[0], VertexIDs[1], VertexIDs[2]});
 }
+
+
 
 TriangleType *MeshData :: AddTriangle(std::vector<int> VertexIDs)
 {
@@ -111,8 +121,9 @@ TriangleType *MeshData :: AddTriangle(std::vector<int> VertexIDs)
         this->Vertices.at(VertexIDs.at(i))->AddTriangle(NewTriangle);
         NewTriangle->Vertices[i]=this->Vertices.at(VertexIDs.at(i));
     }
-    NewTriangle->UpdateNormal();
 
+    NewTriangle->UpdateNormal();
+    NewTriangle->ID = this->Triangles.size(); // TODO: This implies duplicate IDs. Need have a counter for this...
     this->Triangles.push_back(NewTriangle);
     return NewTriangle;
 

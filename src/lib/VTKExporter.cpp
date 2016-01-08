@@ -44,9 +44,9 @@ vtkCellArray *VTKExporter::SetupTriangles()
     return Cells;
 }
 
-vtkUnsignedCharArray *VTKExporter :: SetupInterfaceIDs()
+vtkIntArray *VTKExporter :: SetupInterfaceIDs()
 {
-    vtkUnsignedCharArray *InterfaceIDs = vtkUnsignedCharArray::New();
+    vtkIntArray *InterfaceIDs = vtkIntArray::New();
     InterfaceIDs->SetNumberOfComponents(1);
     InterfaceIDs->SetName("Surface ID");
     for (unsigned int i=0; i<this->Triangles->size(); i++) {
@@ -56,9 +56,9 @@ vtkUnsignedCharArray *VTKExporter :: SetupInterfaceIDs()
     return InterfaceIDs;
 }
 
-vtkUnsignedCharArray *VTKExporter :: SetupTriangleIDs()
+vtkIntArray *VTKExporter :: SetupTriangleIDs()
 {
-    vtkUnsignedCharArray *TriangleIDs = vtkUnsignedCharArray::New();
+    vtkIntArray *TriangleIDs = vtkIntArray::New();
     TriangleIDs->SetNumberOfComponents(1);
     TriangleIDs->SetName("ID");
     for (unsigned int i=0; i<this->Triangles->size(); i++) {
@@ -80,11 +80,11 @@ void VTKExporter :: WriteData(std::string Filename)
     PolyData->SetPoints (Points);
     PolyData->SetPolys( CellArrays );
 
-    vtkSmartPointer<vtkUnsignedCharArray> InterfaceID;
+    vtkSmartPointer<vtkIntArray> InterfaceID;
     InterfaceID.TakeReference(this->SetupInterfaceIDs());
     PolyData->GetCellData()->AddArray(InterfaceID);
 
-    vtkSmartPointer<vtkUnsignedCharArray> TriangleID;
+    vtkSmartPointer<vtkIntArray> TriangleID;
     TriangleID.TakeReference(this->SetupTriangleIDs());
     PolyData->GetCellData()->AddArray(TriangleID);
     PolyData->Modified();

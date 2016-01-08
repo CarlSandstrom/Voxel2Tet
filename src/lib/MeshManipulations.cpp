@@ -42,7 +42,7 @@ void MeshManipulations :: RemoveDegenerateTriangles()
             }
 
             if (!this->FlipEdge(OppositeEdge)) {
-                STATUS("The longest edge of triangle %u failed to flipped\n", i);
+                STATUS("The longest edge of triangle %u failed to flip\n", i);
             }
         }
     }
@@ -119,6 +119,13 @@ bool MeshManipulations :: FlipEdge(EdgeType *Edge)
         }
     }
 
+    // Remove triangles from verices
+    for (int i: {0, 1}) {
+        for (TriangleType *t: EdgeTriangles) {
+            Edge->Vertices[i]->RemoveTriangle(t);
+        }
+    }
+
     // Remove edge from vertices
     for (int i: {0, 1}) Edge->Vertices[i]->RemoveEdge(Edge);
 
@@ -128,8 +135,21 @@ bool MeshManipulations :: FlipEdge(EdgeType *Edge)
         Edge->Vertices[i]->AddEdge(Edge);
     }
 
-    // 5. Free old triangles
+    // Add new triangles list (and thus also to vertices)
     for (TriangleType *t: NewTriangles) {
+        for (VertexType *v: t->Vertices) {
+            v->AddTriangle(t);
+        }
+    }
+
+    for (TriangleType *t: NewTriangles) {
+        t->ID = this->Triangles.size();
+        this->Triangles.push_back(t);
+    }
+
+    // 5. Free old triangles
+    for (TriangleType *t: EdgeTriangles) {
+        this->RemoveTriangle(t);
         delete t;
     }
 
@@ -166,6 +186,8 @@ bool MeshManipulations :: CollapseEdge(EdgeType *EdgeToCollapse, int RemoveVerte
     // TODO: In its current setting, this procedure only checks if collapsing is ok from the current topology. It should compare to the original topology, otherwise degeneration can occur gradually
 
     // Cannot remove a fixed vertex
+    LOG("Collapse edge %p (%u, %u) by removing vertex %u\n", EdgeToCollapse, EdgeToCollapse->Vertices[0]->ID,
+            EdgeToCollapse->Vertices[1]->ID, RemoveVertexIndex);
     if (EdgeToCollapse->Vertices[RemoveVertexIndex]->IsFixedVertex()) return false;
 
     int SaveVertexIndex = (RemoveVertexIndex == 0) ? 1 : 0;
@@ -375,7 +397,10 @@ bool MeshManipulations :: CoarsenMesh()
     bool EdgeCollapsed = true;
     while (EdgeCollapsed) {
         EdgeCollapsed=false;
+        int failcount=0;
         for (EdgeType* e: this->Edges) {
+
+            LOG("Collapse iteration %u, failcount=%u\n", iter, failcount);
 
             if (!this->CollapseEdge(e,0)) {
                 EdgeCollapsed=this->CollapseEdge(e,1);
@@ -384,11 +409,14 @@ bool MeshManipulations :: CoarsenMesh()
             }
 
             if (EdgeCollapsed) {
+                LOG("Collapse iteration %u succeeded after %u failed tries\n", iter, failcount);
                 std::ostringstream FileName;
                 FileName << "/tmp/TestCoarsen_" << iter << ".vtp";
                 this->ExportVTK( FileName.str() );
                 iter++;
                 break;
+            } else {
+                failcount++;
             }
         }
     }

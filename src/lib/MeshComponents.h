@@ -70,6 +70,7 @@ private:
     // Normal of element
     std::array<double, 3> Normal;
 public:
+    int ID;
     int InterfaceID;
     int PosNormalMatID;
     int NegNormalMatID;
