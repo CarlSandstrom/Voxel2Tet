@@ -396,6 +396,7 @@ void Voxel2Tet :: FindEdges()
 
     // Add PhaseEdges to surfaces
     // TODO: Performance can be increased by making sure that the verices in Surfaces and PhaseEdges are sorted. Also, save the sorted list in PhaseEdges
+    int x=0;
     for (Surface* s: this->Surfaces) {
         std::vector <VertexType *> SurfaceVertices = s->Vertices;
         std::sort (SurfaceVertices.begin(), SurfaceVertices.end());
@@ -418,6 +419,10 @@ void Voxel2Tet :: FindEdges()
                                   PhaseEdgeVertices.begin(), PhaseEdgeVertices.end())) {
                     s->PhaseEdges.push_back(p);
                 }
+            }
+            x++;
+            if (this->Mesh->Vertices.at(168)->PhaseEdges.at(0)->FixedVertices.size() > 50) {
+                LOG("Test\n", 0);
             }
         }
     }
@@ -464,6 +469,9 @@ void Voxel2Tet :: SmoothEdgesSimultaneously()
 
         for (unsigned int i=0; i<EdgeVertices.size(); i++) {
             VertexType *v = EdgeVertices.at(i);
+            if (v->ID==168) {
+                LOG("Vertex 168 found\n", 0);
+            }
             VertexConnectivity *vc = new VertexConnectivity;
             vc->v = v;
             vc->Connections.insert(vc->Connections.begin(), Connections.at(i).begin(), Connections.at(i).end());
@@ -669,9 +677,9 @@ void Voxel2Tet::Process()
 
     if (true) {  // Carl's suggestion
 
-        for (unsigned int i=0; i<this->Mesh->Triangles.size(); i++) {
+/*        for (unsigned int i=0; i<this->Mesh->Triangles.size(); i++) {
             this->Mesh->Triangles.at(i)->ID = i;
-        }
+        }*/
 
         this->FindEdges();
 

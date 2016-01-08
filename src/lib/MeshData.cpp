@@ -12,6 +12,7 @@ MeshData::MeshData(BoundingBoxType BoundingBox)
 {
     this->BoundingBox = BoundingBox;
     this->VertexOctreeRoot = new VertexOctreeNode(this->BoundingBox, &this->Vertices, 0);
+    this->TriangleCounter = 0;
 }
 
 MeshData::~MeshData()
@@ -99,8 +100,6 @@ TriangleType *MeshData :: AddTriangle(std::vector<double> n0, std::vector<double
     return this->AddTriangle({VertexIDs[0], VertexIDs[1], VertexIDs[2]});
 }
 
-
-
 TriangleType *MeshData :: AddTriangle(std::vector<int> VertexIDs)
 {
 
@@ -122,8 +121,18 @@ TriangleType *MeshData :: AddTriangle(std::vector<int> VertexIDs)
         NewTriangle->Vertices[i]=this->Vertices.at(VertexIDs.at(i));
     }
 
+    return AddTriangle(NewTriangle);
+
+}
+
+TriangleType *MeshData :: AddTriangle(TriangleType *NewTriangle)
+{
     NewTriangle->UpdateNormal();
-    NewTriangle->ID = this->Triangles.size(); // TODO: This implies duplicate IDs. Need have a counter for this...
+    NewTriangle->ID = TriangleCounter;
+    for (VertexType *v: NewTriangle->Vertices) {
+        v->AddTriangle(NewTriangle);
+    }
+    TriangleCounter++;
     this->Triangles.push_back(NewTriangle);
     return NewTriangle;
 

@@ -15,6 +15,7 @@ namespace voxel2tet
 class MeshData
 {
 private:
+    int TriangleCounter;
 public:
     BoundingBoxType BoundingBox;
     std :: vector <TriangleType*> Triangles;
@@ -47,6 +48,9 @@ public:
 
     // Adds a triangle using vertex indices
     TriangleType *AddTriangle(std::vector<int> VertexIDs);
+
+    // Adds a triangle object to the list of triangles
+    TriangleType *AddTriangle(TriangleType *NewTriangle);
 
 };
 

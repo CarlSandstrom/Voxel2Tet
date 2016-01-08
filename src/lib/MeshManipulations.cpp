@@ -136,15 +136,14 @@ bool MeshManipulations :: FlipEdge(EdgeType *Edge)
     }
 
     // Add new triangles list (and thus also to vertices)
-    for (TriangleType *t: NewTriangles) {
+/*    for (TriangleType *t: NewTriangles) {
         for (VertexType *v: t->Vertices) {
             v->AddTriangle(t);
         }
-    }
+    }*/
 
     for (TriangleType *t: NewTriangles) {
-        t->ID = this->Triangles.size();
-        this->Triangles.push_back(t);
+        this->AddTriangle(t);
     }
 
     // 5. Free old triangles
