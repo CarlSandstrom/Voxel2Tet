@@ -68,16 +68,28 @@ EdgeType *MeshData :: AddEdge(std::vector<int> VertexIDs)
 
     EdgeType *NewEdge = new EdgeType;
     LOG("Create edge from Vertex IDs %u and %u: %p\n", VertexIDs.at(0), VertexIDs.at(1), NewEdge);
+    for (unsigned int i: {0, 1}) {
+        NewEdge->Vertices.at(i) =  this->Vertices.at(VertexIDs.at(i));
+    }
 
-    // Update edge
-    NewEdge->Vertices[0] = ThisVertex;
-    NewEdge->Vertices[1] = OtherVertex;
-    this->Edges.push_back(NewEdge);
+    return AddEdge(NewEdge);
+}
 
-    // Update vertices
-    ThisVertex->AddEdge(NewEdge);
-    OtherVertex->AddEdge(NewEdge);
-    return NewEdge;
+EdgeType *MeshData :: AddEdge(EdgeType *e) {
+    for (VertexType *v: e->Vertices) {
+        v->AddEdge(e);
+    }
+    this->Edges.push_back(e);
+    return e;
+}
+
+void MeshData :: RemoveEdge(EdgeType *e)
+{
+    for (VertexType *v: e->Vertices) {
+        v->RemoveEdge(e);
+    }
+    this->Edges.erase(std::remove(this->Edges.begin(), this->Edges.end(), e), this->Edges.end());
+    delete e;
 }
 
 void MeshData :: RemoveTriangle(TriangleType *t)
@@ -86,6 +98,7 @@ void MeshData :: RemoveTriangle(TriangleType *t)
         v->RemoveTriangle(t);
     }
     this->Triangles.erase(std::remove(this->Triangles.begin(), this->Triangles.end(), t), this->Triangles.end());
+    delete t;
 }
 
 TriangleType *MeshData :: AddTriangle(std::vector<double> n0, std::vector<double> n1, std::vector<double> n2)

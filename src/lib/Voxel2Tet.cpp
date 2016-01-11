@@ -337,7 +337,7 @@ void Voxel2Tet :: FindEdges()
 
         // Erase current PhaseEdge and replace it with the ones in FixedEdges
         // TODO: Should really delete this...
-        //delete this->PhaseEdges.at(i);
+        delete this->PhaseEdges.at(i);
         this->PhaseEdges.erase(this->PhaseEdges.begin() + i);
         this->PhaseEdges.insert(this->PhaseEdges.begin() + i, FixedEdges->begin(), FixedEdges->end());
 
@@ -389,19 +389,20 @@ void Voxel2Tet :: FindEdges()
             PhaseEdge *p = PhaseEdges.at(i);
 
             std::vector<PhaseEdge*> SplitEdges;
-            p->SplitAtVertex(v, &SplitEdges);
+            if (p->SplitAtVertex(v, &SplitEdges)) {
 
-            this->PhaseEdges.insert(this->PhaseEdges.end(), SplitEdges.begin(), SplitEdges.end());
-            this->PhaseEdges.erase(this->PhaseEdges.begin()+i);
-            if (this->Mesh->Vertices.at(168)->PhaseEdges.at(0)->Opt==NULL) {
-                LOG("Test ", 0);
-            }
+                this->PhaseEdges.insert(this->PhaseEdges.end(), SplitEdges.begin(), SplitEdges.end());
+                this->PhaseEdges.erase(this->PhaseEdges.begin()+i);
+                if (this->Mesh->Vertices.at(168)->PhaseEdges.at(0)->Opt==NULL) {
+                    LOG("Test ", 0);
+                }
 
 
-            // Free memory from old PhaseEdge
-            delete p;
-            if (this->Mesh->Vertices.at(168)->PhaseEdges.at(0)->Opt==NULL) {
-                LOG("Test ", 0);
+                // Free memory from old PhaseEdge
+                delete p;
+                if (this->Mesh->Vertices.at(168)->PhaseEdges.at(0)->Opt==NULL) {
+                    LOG("Test ", 0);
+                }
             }
             i++;
         }
@@ -556,6 +557,10 @@ void Voxel2Tet :: SmoothEdgesSimultaneously()
         }
         FixedDirectionsList.push_back(FixedDirections);
 
+    }
+
+    for (VertexConnectivity *v: VertexConnections) {
+        delete v;
     }
 
     SpringSmooth(VertexList, FixedDirectionsList, Connections, K, this->Mesh);

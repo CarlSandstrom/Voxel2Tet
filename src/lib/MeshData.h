@@ -41,6 +41,12 @@ public:
     // Adds an edge using vertex indices
     EdgeType *AddEdge(std::vector<int> VertexIDs);
 
+    // Adds and edge object to list and update vertices
+    EdgeType *AddEdge(EdgeType *e);
+
+    void RemoveEdge(EdgeType *e);
+    //TODO: Add function for removing edges
+
     void RemoveTriangle(TriangleType *t);
 
     // Adds a triangle using coordinates

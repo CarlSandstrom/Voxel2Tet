@@ -24,34 +24,28 @@ std::vector<VertexType*> PhaseEdge :: GetFlatListOfVertices()
     return FlatList;
 }
 
-void PhaseEdge :: SplitAtVertex(VertexType *Vertex, std::vector<PhaseEdge*> *SplitEdges)
+bool PhaseEdge :: SplitAtVertex(VertexType *Vertex, std::vector<PhaseEdge*> *SplitEdges)
 {
-    int EdgeStart = 0;
-    unsigned int i=0;
 
-    for (; i<this->EdgeSegments.size(); i++) {
+    if (this->EdgeSegments.size()==1) return false; // Don't even bother if size is 1
 
-        std::array<VertexType*, 2> e;
-        e = EdgeSegments.at(i);
+    for (unsigned int i=0; i< this->EdgeSegments.size()-2; i++) {
 
-        if ( (e.at(1)==Vertex) | (e.at(0)==Vertex)) {
-            // TODO: Does this do anything?
-            PhaseEdge *NewPhaseEdge = new PhaseEdge(this->Opt);
-            NewPhaseEdge->Phases = this->Phases;
+        std::array<VertexType*, 2> ThisES = this->EdgeSegments.at(i);
+        std::array<VertexType*, 2> NextES = this->EdgeSegments.at(i);
 
-            std::copy(this->EdgeSegments.begin()+EdgeStart, this->EdgeSegments.begin()+i, std::back_inserter( NewPhaseEdge->EdgeSegments ));
-
-            SplitEdges->push_back(NewPhaseEdge);
-            EdgeStart=i;
+        if ((ThisES.at(1) == Vertex) & (NextES.at(0) == Vertex)) {
+            throw std::out_of_range ( "This is code that is not complete yet.");
+            LOG("Split!\n", 0);
         }
+
     }
 
-    // Copy remaining part.
-    PhaseEdge *NewPhaseEdge = new PhaseEdge(this->Opt);
-    NewPhaseEdge->Phases = this->Phases;
-
-    std::copy(this->EdgeSegments.begin()+EdgeStart, this->EdgeSegments.begin()+i, std::back_inserter( NewPhaseEdge->EdgeSegments ));
-    SplitEdges->push_back(NewPhaseEdge);
+    if (SplitEdges->size()==0) {
+        return false;
+    } else {
+        return true;
+    }
 
 }
 

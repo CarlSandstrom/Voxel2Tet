@@ -19,7 +19,7 @@ public:
     Options *Opt; // TODO: Should be private
 
     void SortAndFixBrokenEdge(std::vector<PhaseEdge*> *FixedEdges);
-    void SplitAtVertex(VertexType *Vertex, std::vector<PhaseEdge*> *SplitEdges);
+    bool SplitAtVertex(VertexType *Vertex, std::vector<PhaseEdge*> *SplitEdges);
     void GiveTopologyLists(std::vector<std::vector<VertexType *>> *Connections, std::vector<std::array<bool,3>> *FixedDirections);
     void Smooth(MeshData *Mesh);
 

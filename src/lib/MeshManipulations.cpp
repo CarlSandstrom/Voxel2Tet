@@ -149,7 +149,6 @@ bool MeshManipulations :: FlipEdge(EdgeType *Edge)
     // 5. Free old triangles
     for (TriangleType *t: EdgeTriangles) {
         this->RemoveTriangle(t);
-        delete t;
     }
 
     return true;
@@ -208,6 +207,7 @@ bool MeshManipulations :: CollapseEdge(EdgeType *EdgeToCollapse, int RemoveVerte
 
         // TODO: Keep track of materials
         NewTriangle->InterfaceID = t->InterfaceID;
+        NewTriangle->ID = -1;
         for (int i=0; i<3; i++) {
             if (t->Vertices[i]==EdgeToCollapse->Vertices[RemoveVertexIndex]) {
                 NewTriangle->Vertices[i] = EdgeToCollapse->Vertices[SaveVertexIndex];
@@ -221,13 +221,27 @@ bool MeshManipulations :: CollapseEdge(EdgeType *EdgeToCollapse, int RemoveVerte
     }
 
     // Check if NewTriangles are good replacements
+    LOG("Check validity of new normals...\n", 0);
     if (!this->CheckCoarsenNormal(&TrianglesToSave, &NewTriangles)) {
+        LOG(" - Check failed\n", 0);
         return false;
     }
 
+    LOG("Check validity of new chord...\n", 0);
     if (!this->CheckCoarsenChord(EdgeToCollapse, EdgeToCollapse->Vertices[RemoveVertexIndex], EdgeToCollapse->Vertices[SaveVertexIndex])) {
+        LOG(" - Check failed\n", 0);
         return false;
     }
+
+    LOG("Check area of new triangles...\n", 0);
+    for (TriangleType *t: NewTriangles) {
+        if (t->GiveArea()<1e-7) {
+            LOG(" - Check failed\n", 0);
+            return false;
+        }
+    }
+
+    LOG ("Checks ok. Proceed\n", 0);
 
     // Update triangulation
 
@@ -253,8 +267,11 @@ bool MeshManipulations :: CollapseEdge(EdgeType *EdgeToCollapse, int RemoveVerte
     for (EdgeType *e: ConnectedEdges) {
         if (e!=EdgeToCollapse) {
             for (int i: {0, 1}) {
+                // "Move" vertex
                 if (e->Vertices[i]==EdgeToCollapse->Vertices.at(RemoveVertexIndex)) {
+                    e->Vertices[i]->RemoveEdge(e);
                     e->Vertices[i] = EdgeToCollapse->Vertices.at(SaveVertexIndex);
+                    e->Vertices[i]->AddEdge(e);
                 }
             }
         }
@@ -262,26 +279,18 @@ bool MeshManipulations :: CollapseEdge(EdgeType *EdgeToCollapse, int RemoveVerte
 
     // Remove triangles
     for (TriangleType* t: ConnectedTriangles) {
-        for (VertexType *v: t->Vertices) {
-            v->RemoveTriangle(t);
-        }
-        this->Triangles.erase(std::remove(this->Triangles.begin(), this->Triangles.end(), t), this->Triangles.end());
-        delete t;
+        this->RemoveTriangle(t);
     }
 
     // Remove edges
     for (EdgeType* e: EdgesToRemove) {
-        this->Edges.erase((std::remove(this->Edges.begin(), this->Edges.end(), e)));
-        delete e;
+        this->RemoveEdge(e);
     }
 
 
     // Add new triangles
     for (TriangleType* t: NewTriangles) {
-        this->Triangles.push_back(t);
-        for (VertexType *v: t->Vertices) {
-            v->AddTriangle(t);
-        }
+        this->AddTriangle(t);
     }
 
     return true;
@@ -397,9 +406,21 @@ bool MeshManipulations :: CoarsenMesh()
     while (EdgeCollapsed) {
         EdgeCollapsed=false;
         int failcount=0;
+
+        LOG ("Start iteration %u ===================== \n", iter);
+
+        int i=0;
+        for (EdgeType* e: this->Edges) {
+            if ( (e->Vertices.at(0)->ID==8) & (e->Vertices.at(1)->ID==1)) {
+                LOG("Edge found at index %u! ***********\n ", i);
+                break;
+            }
+            i++;
+        }
+
         for (EdgeType* e: this->Edges) {
 
-            LOG("Collapse iteration %u, failcount=%u\n", iter, failcount);
+            LOG("Collapse iteration %u (%u, %u), failcount=%u\n", iter, e->Vertices.at(0)->ID, e->Vertices.at(1)->ID, failcount);
 
             if (!this->CollapseEdge(e,0)) {
                 EdgeCollapsed=this->CollapseEdge(e,1);
@@ -408,13 +429,14 @@ bool MeshManipulations :: CoarsenMesh()
             }
 
             if (EdgeCollapsed) {
-                LOG("Collapse iteration %u succeeded after %u failed tries\n", iter, failcount);
+                LOG("Collapse success!\n", iter, failcount);
                 std::ostringstream FileName;
                 FileName << "/tmp/TestCoarsen_" << iter << ".vtp";
                 this->ExportVTK( FileName.str() );
                 iter++;
                 break;
             } else {
+                LOG ("Collapse failed...\n", 0);
                 failcount++;
             }
         }
