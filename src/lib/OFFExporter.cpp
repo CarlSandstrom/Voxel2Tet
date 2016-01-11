@@ -2,6 +2,7 @@
 #include <iostream>
 #include <fstream>
 #include <iomanip>
+#include<algorithm>
 
 namespace voxel2tet
 {
@@ -23,11 +24,28 @@ void OFFExporter::WriteData(std::string Filename)
     std::ofstream OFFFile;
     OFFFile.open(Filename);
 
+    // Prepare information
+    std::vector<VertexType *> UsedVertices;
+    for (TriangleType *t: *this->Triangles) {
+        for (VertexType *v: t->Vertices) {
+            UsedVertices.push_back(v);
+        }
+    }
+
+    std::sort(UsedVertices.begin(), UsedVertices.end());
+    UsedVertices.erase( std::unique(UsedVertices.begin(), UsedVertices.end()), UsedVertices.end());
+
+    int i=0;
+    for (VertexType *v: UsedVertices) {
+        v->tag = i;
+        i++;
+    }
+
     // Write header
-    OFFFile << "OFF\n" << this->Vertices->size() << "\t" << this->Triangles->size() << "\t0\n";
+    OFFFile << "OFF\n" << UsedVertices.size() << "\t" << this->Triangles->size() << "\t0\n";
 
     // Write vertices
-    for (auto v: *this->Vertices) {
+    for (auto v: UsedVertices) {
         OFFFile << std::setiosflags(std::ios::fixed) << std::setprecision(15) << v->get_c(0)<< " " << v->get_c(1) << " " << v->get_c(2) << "\n";
     }
 
@@ -38,7 +56,7 @@ void OFFExporter::WriteData(std::string Filename)
         OFFFile << 3;
         std::array<int,3> VertexIDs;
         for (int i=0; i<3; i++) {
-            VertexIDs[i] = t->Vertices[i]->ID;
+            VertexIDs[i] = t->Vertices[i]->tag;
             OFFFile << " " << VertexIDs[i];
         }
         OFFFile << "\t#" << j << "\n";

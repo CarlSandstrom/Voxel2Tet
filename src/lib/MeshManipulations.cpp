@@ -441,7 +441,7 @@ bool MeshManipulations :: CoarsenMesh()
                 LOG("Collapse success!\n", iter, failcount);
                 std::ostringstream FileName;
                 FileName << "/tmp/TestCoarsen_" << iter << ".vtp";
-                this->ExportVTK( FileName.str() );
+                //this->ExportVTK( FileName.str() );
                 iter++;
                 break;
             } else {

@@ -19,6 +19,7 @@ private:
 
 public:
     int ID;
+    int tag;
     std::vector<PhaseEdge*> PhaseEdges;
     void AddPhaseEdge(PhaseEdge*);
     bool IsFixedVertex() {return PhaseEdges.size()>1;}
