@@ -225,6 +225,10 @@ void TriangleType :: UpdateNormal()
     this->Normal[1] = -edge0[0]*edge1[2]+edge1[0]*edge0[2];
     this->Normal[2] = edge0[0]*edge1[1]-edge1[0]*edge0[1];
 
+    //double NormalLength = std::sqrt(this->Normal[0]*this->Normal[0] + this->Normal[1]*this->Normal[1] + this->Normal[2]*this->Normal[2]);
+
+    //for (int i=0; i<3; i++) this->Normal[i]=this->Normal[i]/NormalLength;
+
 }
 
 }

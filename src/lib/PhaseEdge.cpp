@@ -60,7 +60,7 @@ void PhaseEdge :: SortAndFixBrokenEdge(std::vector<PhaseEdge*> *FixedEdges)
         std::array<VertexType*, 2> ThisLink = this->EdgeSegments.at(0);
         this->EdgeSegments.erase(this->EdgeSegments.begin(), this->EdgeSegments.begin()+1);
 
-        LOG("Find connections for link (%p, %p)\n", ThisLink.at(0), ThisLink.at(1));
+        LOG("Find connections for vertices (%u, %u)\n", ThisLink.at(0)->ID, ThisLink.at(1)->ID);
 
         PhaseEdge *NewPhaseEdge=new PhaseEdge(this->Opt);
         NewPhaseEdge->Phases = this->Phases;
@@ -75,7 +75,9 @@ void PhaseEdge :: SortAndFixBrokenEdge(std::vector<PhaseEdge*> *FixedEdges)
             while (!LastConnectionFound) {
 
                 // Remove self from list of PhaseEdges
-                VertexToFind->PhaseEdges.erase(std::remove(VertexToFind->PhaseEdges.begin(), VertexToFind->PhaseEdges.end(), this));
+                LOG("Remove PhaseEdge object from list for vertex %u\n", VertexToFind->ID);
+                std::vector<PhaseEdge *>::iterator ErasePhaseEdges = std::remove(VertexToFind->PhaseEdges.begin(), VertexToFind->PhaseEdges.end(), this);
+                VertexToFind->PhaseEdges.erase(ErasePhaseEdges, VertexToFind->PhaseEdges.end());
                 VertexToFind->PhaseEdges.push_back(NewPhaseEdge);
 
                 std::array<VertexType*, 2> NextLink;

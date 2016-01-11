@@ -337,7 +337,7 @@ void Voxel2Tet :: FindEdges()
 
         // Erase current PhaseEdge and replace it with the ones in FixedEdges
         // TODO: Should really delete this...
-        delete this->PhaseEdges.at(i);
+        //delete this->PhaseEdges.at(i);
         this->PhaseEdges.erase(this->PhaseEdges.begin() + i);
         this->PhaseEdges.insert(this->PhaseEdges.begin() + i, FixedEdges->begin(), FixedEdges->end());
 
@@ -393,27 +393,16 @@ void Voxel2Tet :: FindEdges()
 
                 this->PhaseEdges.insert(this->PhaseEdges.end(), SplitEdges.begin(), SplitEdges.end());
                 this->PhaseEdges.erase(this->PhaseEdges.begin()+i);
-                if (this->Mesh->Vertices.at(168)->PhaseEdges.at(0)->Opt==NULL) {
-                    LOG("Test ", 0);
-                }
-
 
                 // Free memory from old PhaseEdge
                 delete p;
-                if (this->Mesh->Vertices.at(168)->PhaseEdges.at(0)->Opt==NULL) {
-                    LOG("Test ", 0);
-                }
+
             }
             i++;
         }
-        if (this->Mesh->Vertices.at(168)->PhaseEdges.at(0)->Opt==NULL) {
-            LOG("Test ", 0);
-        }
+
     }
 
-    if (this->Mesh->Vertices.at(168)->PhaseEdges.at(0)->Opt==NULL) {
-        LOG("Test ", 0);
-    }
 
     // Add PhaseEdges to surfaces
     // TODO: Performance can be increased by making sure that the verices in Surfaces and PhaseEdges are sorted. Also, save the sorted list in PhaseEdges
@@ -445,9 +434,7 @@ void Voxel2Tet :: FindEdges()
                 }
             }
             x++;
-            if (this->Mesh->Vertices.at(168)->PhaseEdges.at(0)->FixedVertices.size() > 50) {
-                LOG("Test\n", 0);
-            }
+
         }
     }
 
@@ -704,10 +691,6 @@ void Voxel2Tet::Process()
     this->Mesh->ExportVTK( FileName.str() );
 
     if (true) {  // Carl's suggestion
-
-/*        for (unsigned int i=0; i<this->Mesh->Triangles.size(); i++) {
-            this->Mesh->Triangles.at(i)->ID = i;
-        }*/
 
         this->FindEdges();
 

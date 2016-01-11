@@ -310,9 +310,18 @@ bool MeshManipulations :: CheckCoarsenNormal(std::vector<TriangleType*> *OldTria
 
         double angle1 = std::acos( OldNormal[0]*NewNormal[0] + OldNormal[1]*NewNormal[1] + OldNormal[2]*NewNormal[2]);
         double angle2 = std::acos( -(OldNormal[0]*NewNormal[0] + OldNormal[1]*NewNormal[1] + OldNormal[2]*NewNormal[2]) );
+
+        double oldarea  = OldTriangles->at(i)->GiveArea();
+        double newarea  = NewTriangles->at(i)->GiveArea();
+
+        LOG("angle1=%f,\tangle2=%f\tOldArea=%f\tNewArea=%f\n", angle1, angle2, oldarea, newarea);
+
         if (std::min(angle1, angle2)>MaxAngle) {
             MaxAngle = std::min(angle1, angle2);
         }
+
+        if (angle1 > (90*3.1415/360))
+            return false;
 
     }
 
