@@ -34,7 +34,8 @@ void PhaseEdge :: SplitAtVertex(VertexType *Vertex, std::vector<PhaseEdge*> *Spl
         std::array<VertexType*, 2> e;
         e = EdgeSegments.at(i);
 
-        if ( (e.at(1)==Vertex) & (e.at(0)==Vertex)) {
+        if ( (e.at(1)==Vertex) | (e.at(0)==Vertex)) {
+            // TODO: Does this do anything?
             PhaseEdge *NewPhaseEdge = new PhaseEdge(this->Opt);
             NewPhaseEdge->Phases = this->Phases;
 

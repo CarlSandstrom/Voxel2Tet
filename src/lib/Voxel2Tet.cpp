@@ -383,22 +383,45 @@ void Voxel2Tet :: FindEdges()
     // Split edges at SharedVertices
     for (auto v: SharedVertices) {
         unsigned int i=0;
-        for (auto p: this->PhaseEdges) {
+
+        //for (auto p: this->PhaseEdges) {
+        while (i<this->PhaseEdges.size()) {
+            PhaseEdge *p = PhaseEdges.at(i);
+
             std::vector<PhaseEdge*> SplitEdges;
             p->SplitAtVertex(v, &SplitEdges);
-            delete p;
+
             this->PhaseEdges.insert(this->PhaseEdges.end(), SplitEdges.begin(), SplitEdges.end());
             this->PhaseEdges.erase(this->PhaseEdges.begin()+i);
+            if (this->Mesh->Vertices.at(168)->PhaseEdges.at(0)->Opt==NULL) {
+                LOG("Test ", 0);
+            }
+
+
+            // Free memory from old PhaseEdge
+            delete p;
+            if (this->Mesh->Vertices.at(168)->PhaseEdges.at(0)->Opt==NULL) {
+                LOG("Test ", 0);
+            }
             i++;
+        }
+        if (this->Mesh->Vertices.at(168)->PhaseEdges.at(0)->Opt==NULL) {
+            LOG("Test ", 0);
         }
     }
 
+    if (this->Mesh->Vertices.at(168)->PhaseEdges.at(0)->Opt==NULL) {
+        LOG("Test ", 0);
+    }
 
     // Add PhaseEdges to surfaces
     // TODO: Performance can be increased by making sure that the verices in Surfaces and PhaseEdges are sorted. Also, save the sorted list in PhaseEdges
     int x=0;
     for (Surface* s: this->Surfaces) {
-        std::vector <VertexType *> SurfaceVertices = s->Vertices;
+        std::vector <VertexType *> SurfaceVertices;
+        for (VertexType *v: s->Vertices) {
+            SurfaceVertices.push_back(v);
+        }
         std::sort (SurfaceVertices.begin(), SurfaceVertices.end());
         int SurfacePhases[2];
         SurfacePhases[0] = s->Phases[0];
