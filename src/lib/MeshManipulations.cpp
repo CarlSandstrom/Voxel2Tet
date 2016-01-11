@@ -220,25 +220,34 @@ bool MeshManipulations :: CollapseEdge(EdgeType *EdgeToCollapse, int RemoveVerte
         NewTriangles.push_back(NewTriangle);
     }
 
+    bool DoCollapse = true;
+
     // Check if NewTriangles are good replacements
     LOG("Check validity of new normals...\n", 0);
     if (!this->CheckCoarsenNormal(&TrianglesToSave, &NewTriangles)) {
         LOG(" - Check failed\n", 0);
-        return false;
+        DoCollapse = false;
     }
 
     LOG("Check validity of new chord...\n", 0);
     if (!this->CheckCoarsenChord(EdgeToCollapse, EdgeToCollapse->Vertices[RemoveVertexIndex], EdgeToCollapse->Vertices[SaveVertexIndex])) {
         LOG(" - Check failed\n", 0);
-        return false;
+        DoCollapse = false;
     }
 
     LOG("Check area of new triangles...\n", 0);
     for (TriangleType *t: NewTriangles) {
         if (t->GiveArea()<1e-7) {
             LOG(" - Check failed\n", 0);
-            return false;
+            DoCollapse = false;
         }
+    }
+
+    if (!DoCollapse) {
+        for (TriangleType *t: NewTriangles) {
+            delete t;
+        }
+        return false;
     }
 
     LOG ("Checks ok. Proceed\n", 0);
