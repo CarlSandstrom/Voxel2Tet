@@ -105,6 +105,16 @@ std::vector<TriangleType *> EdgeType :: GiveTriangles()
 
 }
 
+double EdgeType :: GiveLength()
+{
+    std::array<double,3> v;
+    for (int i=0; i<3; i++) {
+        v[i] = this->Vertices[1]->get_c(i) - this->Vertices[1]->get_c(i);
+    }
+
+    return std::sqrt(v[0]*v[0] + v[1]*v[1] + v[2]*v[2]);
+}
+
 
 // TriangleType
 
@@ -177,6 +187,34 @@ double TriangleType :: GiveLargestAngle(int *index)
 
     return LargestAngle;
 
+}
+
+double TriangleType :: GiveSmallestAngle(int *index)
+{
+    std::array<std::array<double, 3>, 3> e;
+    std::array<double, 3> length;
+    std::array<double, 3> alpha;
+
+    for (int i=0; i<3; i++) {
+        e[i] = this->GiveEdgeVector(i);
+        length[i] = std::sqrt(e[i][0]*e[i][0] + e[i][1]*e[i][1] + e[i][2]*e[i][2] );
+    }
+
+    double SmallestAngle = 100.0;
+
+    for (int node=0; node<3; node++) {
+
+        int prevnode = (node>0) ? (node-1) : (2);
+
+        alpha[node] = std::acos ( -(e[node][0]*e[prevnode][0] + e[node][1]*e[prevnode][1] + e[node][2]*e[prevnode][2])/(length[node]*length[prevnode]) );
+        if (alpha[node]<SmallestAngle) {
+            SmallestAngle = alpha[node];
+            if (index!=NULL) *index = node;
+        }
+
+    }
+
+    return SmallestAngle;
 }
 
 std::array<EdgeType *, 3> TriangleType :: GiveEdges()

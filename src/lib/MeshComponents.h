@@ -60,6 +60,7 @@ public:
     std::array<VertexType *, 2> Vertices;
 
     std::vector<TriangleType *> GiveTriangles();
+    double GiveLength();
 };
 
 
@@ -84,6 +85,7 @@ public:
     double GiveArea();
 
     double GiveLargestAngle(int *index=NULL);
+    double GiveSmallestAngle(int *index=NULL);
 
     std::array<double, 3> GiveNormal() {return Normal;}
     std::array<double, 3> GiveUnitNormal();

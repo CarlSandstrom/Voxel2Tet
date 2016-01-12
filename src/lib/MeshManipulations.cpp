@@ -89,7 +89,7 @@ bool MeshManipulations :: GetFlippedEdgeData(EdgeType *EdgeToFlip, EdgeType *New
 
 bool MeshManipulations :: FlipEdge(EdgeType *Edge)
 {
-    LOG ("\tFlip edge %p\n", Edge);
+    LOG ("\tFlip edge %p (%u, %u)\n", Edge, Edge->Vertices[0]->ID, Edge->Vertices[1]->ID);
 
     std::vector<TriangleType *> EdgeTriangles = Edge->GiveTriangles();
     if (EdgeTriangles.size()!=2) {
@@ -110,6 +110,19 @@ bool MeshManipulations :: FlipEdge(EdgeType *Edge)
         return false;
     }
 
+    // Ensure that minimal angle is improved if we continue
+    double minAngleCurrent = std::min(EdgeTriangles[0]->GiveSmallestAngle(), EdgeTriangles[1]->GiveSmallestAngle());
+    double minAngleNew = std::min(NewTriangles[0]->GiveSmallestAngle(), NewTriangles[1]->GiveSmallestAngle());
+
+    if (minAngleNew<minAngleCurrent) {
+        LOG("New minimal angles worse than current. Prevent flipping.\n", 0);
+        for (TriangleType *t: NewTriangles) {
+            delete t;
+        }
+        return false;
+    }
+
+    LOG("Flip edge!\n", 0);
     // Update mesh data
 
     // Update triangles
@@ -129,6 +142,8 @@ bool MeshManipulations :: FlipEdge(EdgeType *Edge)
     // Remove edge from vertices
     for (int i: {0, 1}) Edge->Vertices[i]->RemoveEdge(Edge);
 
+
+
     // Add new edge to vertices
     for (int i: {0, 1}) {
         Edge->Vertices[i] = NewEdge.Vertices[i];
@@ -136,12 +151,6 @@ bool MeshManipulations :: FlipEdge(EdgeType *Edge)
     }
 
     // Add new triangles list (and thus also to vertices)
-/*    for (TriangleType *t: NewTriangles) {
-        for (VertexType *v: t->Vertices) {
-            v->AddTriangle(t);
-        }
-    }*/
-
     for (TriangleType *t: NewTriangles) {
         this->AddTriangle(t);
     }
@@ -296,10 +305,13 @@ bool MeshManipulations :: CollapseEdge(EdgeType *EdgeToCollapse, int RemoveVerte
         this->RemoveEdge(e);
     }
 
-
     // Add new triangles
     for (TriangleType* t: NewTriangles) {
         this->AddTriangle(t);
+    }
+
+    for (EdgeType *e: ConnectedEdges) {
+        FlipEdge(e);
     }
 
     return true;
@@ -413,6 +425,120 @@ bool MeshManipulations :: CheckCoarsenChord(EdgeType *EdgeToCollapse, VertexType
 
     return true;
 
+}
+
+std::vector<VertexType *> MeshManipulations :: FindIndependentSet()
+{
+    std::vector<VertexType *> IndepSet;
+
+    // Add all fixed vertices
+    for (VertexType *v: this->Vertices) {
+        if (v->IsFixedVertex()) {
+            IndepSet.push_back(v);
+        }
+    }
+
+    // Create vectors of vertices on edges and faces
+    std::vector<VertexType *> EdgeVertices;
+    std::vector<VertexType *> FaceVertices;
+    for (VertexType *v: this->Vertices) {
+        if (v->IsEdgeVertex()) {
+            EdgeVertices.push_back(v);
+        } else {
+            FaceVertices.push_back(v);
+        }
+    }
+
+    for (std::vector<VertexType *> vl: {EdgeVertices, FaceVertices}) {
+        for (VertexType *v: vl) {
+
+            if (std::find(IndepSet.begin(), IndepSet.end(), v) == IndepSet.end()) {
+
+                bool AddToSet = true;
+
+                // Add v to IndepSet if no neighbour is in the set
+                for (EdgeType *e: v->Edges) {
+                    VertexType *w;
+                    if (e->Vertices[0] == v) {
+                        w = e->Vertices[1];
+                    } else {
+                        w = e->Vertices[0];
+                    }
+                    if (std::find(IndepSet.begin(), IndepSet.end(), w) != IndepSet.end()) AddToSet=false;
+                }
+
+                if (AddToSet) {
+                    IndepSet.push_back(v);
+                }
+
+            }
+        }
+    }
+
+    return IndepSet;
+}
+
+bool MeshManipulations :: FlipAll()
+{
+    int i=0;
+    for (EdgeType *e: this->Edges) {
+        LOG ("Flip edge iteration %u: edge @%p (%u, %u)\n", i, e, e->Vertices[0]->ID, e->Vertices[1]->ID);
+        this->FlipEdge(e);
+        std::ostringstream FileName;
+        FileName << "/tmp/TestFlip_" << i << ".vtp";
+        //this->ExportVTK( FileName.str() );
+        i++;
+    }
+}
+
+bool MeshManipulations :: CoarsenMeshImproved()
+{
+    bool CoarseningOccurs=true;
+
+    while (CoarseningOccurs) {
+        CoarseningOccurs = false;
+        std::vector<VertexType*> IndepSet = FindIndependentSet();
+        int i=0;
+        while (i<this->Edges.size()) {
+            EdgeType *e = this->Edges.at(i);
+            if (e->GiveLength()<.007) {
+                bool BothInSet = (std::find(IndepSet.begin(), IndepSet.end(), e->Vertices[0]) == IndepSet.end()) && (std::find(IndepSet.begin(), IndepSet.end(), e->Vertices[1]) == IndepSet.end());
+                if (!BothInSet) {
+                    int D = 0;
+                    if (std::find(IndepSet.begin(), IndepSet.end(), e->Vertices[D]) != IndepSet.end()) {
+                        D = 1;
+                    }
+                    bool CoarseOk = this->CollapseEdge(e, D);
+                    if (!CoarseOk) {
+                        D = 1 ? 0 : 1;
+                        CoarseOk = this->CollapseEdge(e, D);
+                    }
+                    if (CoarseOk) CoarseningOccurs = true;
+                }
+            }
+            i++;
+        }
+    }
+
+    for (TriangleType *t: this->Triangles) {
+        double A = t->GiveArea();
+        if (A<1e-3) {
+            STATUS("Triangle %u has a too small area (A=%f)\n", t->ID, A);
+            for (EdgeType *e: t->GiveEdges()) {
+                bool CollapseOk = this->CollapseEdge(e, 0);
+                if (!CollapseOk) {
+                    CollapseOk = this->CollapseEdge(e, 1);
+                }
+                if (CollapseOk) {
+                    break;
+                } else {
+                    STATUS("Collapse failed\n", 0);
+                }
+            }
+        }
+    }
+
+    return true;
 }
 
 bool MeshManipulations :: CoarsenMesh()

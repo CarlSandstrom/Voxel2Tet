@@ -12,21 +12,21 @@ namespace voxel2tet {
 
 void dolog(const char *functionname, const char *fmt, ...)
 {
-#if LOGOUTPUT == -1
-        va_list argp;
-        va_start(argp, fmt);
-        printf("%s:\t", functionname);
-        vfprintf(stdout, fmt, argp);
-        va_end(argp);
+#if LOGOUTPUT == 1
+    va_list argp;
+    va_start(argp, fmt);
+    printf("%s:\t", functionname);
+    vfprintf(stdout, fmt, argp);
+    va_end(argp);
 #endif
 }
 
 void dooutputstat(const char *fmt, ...)
 {
-        va_list argp;
-        va_start(argp, fmt);
-        vfprintf(stdout, fmt, argp);
-        va_end(argp);
+    va_list argp;
+    va_start(argp, fmt);
+    vfprintf(stdout, fmt, argp);
+    va_end(argp);
 }
 
 template <typename T>
@@ -149,8 +149,8 @@ void SpringSmooth(std::vector<VertexType*> Vertices, std::vector<std::array<bool
 
             // Compute difference from previous step
             double df = sqrt( pow(CurrentPositions.at(i)[0]-PreviousPositions.at(i)[0],2) +
-                             pow(CurrentPositions.at(i)[1]-PreviousPositions.at(i)[1],2) +
-                             pow(CurrentPositions.at(i)[2]-PreviousPositions.at(i)[2],2) );
+                    pow(CurrentPositions.at(i)[1]-PreviousPositions.at(i)[1],2) +
+                    pow(CurrentPositions.at(i)[2]-PreviousPositions.at(i)[2],2) );
             if (df>deltamax) {
                 deltamaxnode = i;
                 deltamax=df;
@@ -205,7 +205,12 @@ void SpringSmooth(std::vector<VertexType*> Vertices, std::vector<std::array<bool
 
 }
 
+bool CheckIntersection(VertexType *p0v0, VertexType *p0v1, VertexType *p1v0, VertexType *p1v1)
+{
 
+// http://paulbourke.net/geometry/pointlineplane/
+
+}
 
 
 template std::vector<int> FindSubsetIndices(std::vector<VertexType*>, std::vector<VertexType*>);

@@ -94,6 +94,7 @@ void MeshData :: RemoveEdge(EdgeType *e)
 
 void MeshData :: RemoveTriangle(TriangleType *t)
 {
+    LOG("Remove triangle %u\n", t->ID);
     for (VertexType *v: t->Vertices) {
         v->RemoveTriangle(t);
     }
@@ -142,6 +143,7 @@ TriangleType *MeshData :: AddTriangle(TriangleType *NewTriangle)
 {
     NewTriangle->UpdateNormal();
     NewTriangle->ID = TriangleCounter;
+    LOG("Add triangle %u to set\n", NewTriangle->ID);
     for (VertexType *v: NewTriangle->Vertices) {
         v->AddTriangle(NewTriangle);
     }

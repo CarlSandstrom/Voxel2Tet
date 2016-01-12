@@ -34,6 +34,10 @@ public:
     bool CheckCoarsenChord(EdgeType *EdgeToCollapse, VertexType* RemoveVertex, VertexType* SaveVertex);
 
     bool CoarsenMesh();
+    bool CoarsenMeshImproved();
+    std::vector<VertexType *> FindIndependentSet();
+
+    bool FlipAll();
 
 };
 
