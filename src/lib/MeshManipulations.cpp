@@ -69,9 +69,15 @@ bool MeshManipulations :: GetFlippedEdgeData(EdgeType *EdgeToFlip, EdgeType *New
     // Create triangles
     for (int i=0; i<2; i++) {
         TriangleType* t=new TriangleType;
-        t->Vertices[0] = NewEdgeVertices[0];
-        t->Vertices[1] = NewEdgeVertices[1];
-        t->Vertices[2] = EdgeToFlip->Vertices[i];
+        if (i==0) {
+            t->Vertices[0] = NewEdgeVertices[1];
+            t->Vertices[1] = NewEdgeVertices[0];
+            t->Vertices[2] = EdgeToFlip->Vertices[i];
+        } else {
+            t->Vertices[0] = NewEdgeVertices[0];
+            t->Vertices[1] = NewEdgeVertices[1];
+            t->Vertices[2] = EdgeToFlip->Vertices[i];
+        }
         t->InterfaceID = EdgeTriangles.at(0)->InterfaceID;
         t->NegNormalMatID = -1; // TODO: Keep track of materials
         t->PosNormalMatID = -1;
@@ -115,12 +121,23 @@ bool MeshManipulations :: FlipEdge(EdgeType *Edge)
     double minAngleNew = std::min(NewTriangles[0]->GiveSmallestAngle(), NewTriangles[1]->GiveSmallestAngle());
 
     if (minAngleNew<minAngleCurrent) {
-        LOG("New minimal angles worse than current. Prevent flipping.\n", 0);
+        LOG("New minimal angles worse than current (New: %f, Current: %f). Prevent flipping.\n", minAngleNew, minAngleCurrent);
         for (TriangleType *t: NewTriangles) {
             delete t;
         }
         return false;
     }
+
+    double CurrentArea = EdgeTriangles.at(0)->GiveArea()+EdgeTriangles.at(1)->GiveArea();
+    double NewArea = NewTriangles.at(0)->GiveArea()+NewTriangles.at(1)->GiveArea();
+
+/*    if (std::fabs(CurrentArea-NewArea)>1e-4) {
+        LOG("The combined area of the triangles changes too much. Prevent flipping.\n", 0);
+        for (TriangleType *t: NewTriangles) {
+            delete t;
+        }
+        return false;
+    }*/
 
     LOG("Flip edge!\n", 0);
     // Update mesh data
@@ -181,7 +198,7 @@ bool MeshManipulations :: CheckFlipNormal(std::vector<TriangleType*> *OldTriangl
         }
     }
 
-    if (MaxAngle > (90*3.1415/360))
+    if (MaxAngle > (10*2*3.1415/360))
         return false;
     else
         return true;
@@ -192,15 +209,17 @@ bool MeshManipulations :: CollapseEdge(EdgeType *EdgeToCollapse, int RemoveVerte
 {
     // TODO: In its current setting, this procedure only checks if collapsing is ok from the current topology. It should compare to the original topology, otherwise degeneration can occur gradually
 
-    // Cannot remove a fixed vertex
     LOG("Collapse edge %p (%u, %u) by removing vertex %u\n", EdgeToCollapse, EdgeToCollapse->Vertices[0]->ID,
             EdgeToCollapse->Vertices[1]->ID, RemoveVertexIndex);
+
+    // Cannot remove a fixed vertex
     if (EdgeToCollapse->Vertices[RemoveVertexIndex]->IsFixedVertex()) return false;
 
     int SaveVertexIndex = (RemoveVertexIndex == 0) ? 1 : 0;
 
     // Create new triangles. These are create by moving RemoveVertex to the other end of the edge and remove the 0-area triangles
     std::vector<TriangleType*> TrianglesToRemove = EdgeToCollapse->GiveTriangles();
+    LOG("Connected triangle IDs: %u, %u\n", TrianglesToRemove.at(0)->ID, TrianglesToRemove.at(1)->ID);
     std::vector<TriangleType*> ConnectedTriangles = EdgeToCollapse->Vertices[RemoveVertexIndex]->Triangles;
 
     std::sort(TrianglesToRemove.begin(), TrianglesToRemove.end());
@@ -212,11 +231,18 @@ bool MeshManipulations :: CollapseEdge(EdgeType *EdgeToCollapse, int RemoveVerte
 
     std::vector<TriangleType*> NewTriangles;
     for (TriangleType* t: TrianglesToSave) {
+        t->UpdateNormal();
         TriangleType* NewTriangle = new TriangleType;
 
         // TODO: Keep track of materials
         NewTriangle->InterfaceID = t->InterfaceID;
         NewTriangle->ID = -1;
+
+        for (int i=0; i<3; i++) {
+            NewTriangle->Vertices[i] = t->Vertices[i];
+        }
+        NewTriangle->UpdateNormal();
+
         for (int i=0; i<3; i++) {
             if (t->Vertices[i]==EdgeToCollapse->Vertices[RemoveVertexIndex]) {
                 NewTriangle->Vertices[i] = EdgeToCollapse->Vertices[SaveVertexIndex];
@@ -250,6 +276,15 @@ bool MeshManipulations :: CollapseEdge(EdgeType *EdgeToCollapse, int RemoveVerte
             LOG(" - Check failed\n", 0);
             DoCollapse = false;
         }
+    }
+
+    LOG("Check cmmbined area of new vs current triangles\n", 0);
+    double NewArea=0, CurrentArea=0;
+    for (TriangleType *t: NewTriangles) NewArea = NewArea + t->GiveArea();
+    for (TriangleType *t: ConnectedTriangles) CurrentArea = CurrentArea + t->GiveArea();
+    if (fabs(NewArea-CurrentArea) > 1e-2) {
+        LOG("Area change significant. Prevent collapse\n", 0);
+        DoCollapse = false;
     }
 
     if (!DoCollapse) {
@@ -303,6 +338,7 @@ bool MeshManipulations :: CollapseEdge(EdgeType *EdgeToCollapse, int RemoveVerte
     // Remove edges
     for (EdgeType* e: EdgesToRemove) {
         this->RemoveEdge(e);
+        //ConnectedEdges.erase( std::remove(ConnectedEdges.begin(), ConnectedEdges.end(), e), ConnectedEdges.end());
     }
 
     // Add new triangles
@@ -311,7 +347,7 @@ bool MeshManipulations :: CollapseEdge(EdgeType *EdgeToCollapse, int RemoveVerte
     }
 
     for (EdgeType *e: ConnectedEdges) {
-        FlipEdge(e);
+        //FlipEdge(e);
     }
 
     return true;
@@ -341,12 +377,15 @@ bool MeshManipulations :: CheckCoarsenNormal(std::vector<TriangleType*> *OldTria
             MaxAngle = std::min(angle1, angle2);
         }
 
-        if (angle1 > (90*3.1415/360))
+        if (angle1 > (170*2*3.1415/360)) {
+            LOG("Should not be collapsed...\n", 0);
             return false;
+        }
+
 
     }
 
-    if (MaxAngle > (20*3.1415/360))
+    if (MaxAngle > (10*2*3.1415/360))
         return false;
     else
         return true;
@@ -553,14 +592,14 @@ bool MeshManipulations :: CoarsenMesh()
 
         LOG ("Start iteration %u ===================== \n", iter);
 
-        int i=0;
-        for (EdgeType* e: this->Edges) {
-            if ( (e->Vertices.at(0)->ID==8) & (e->Vertices.at(1)->ID==1)) {
-                LOG("Edge found at index %u! ***********\n ", i);
-                break;
-            }
-            i++;
-        }
+//        int i=0;
+//        for (EdgeType* e: this->Edges) {
+//            if ( (e->Vertices.at(0)->ID==8) & (e->Vertices.at(1)->ID==1)) {
+//                LOG("Edge found at index %u! ***********\n ", i);
+//                break;
+//            }
+//            i++;
+//        }
 
         for (EdgeType* e: this->Edges) {
 
@@ -576,7 +615,7 @@ bool MeshManipulations :: CoarsenMesh()
                 LOG("Collapse success!\n", iter, failcount);
                 std::ostringstream FileName;
                 FileName << "/tmp/TestCoarsen_" << iter << ".vtp";
-                //this->ExportVTK( FileName.str() );
+                this->ExportVTK( FileName.str() );
                 iter++;
                 break;
             } else {

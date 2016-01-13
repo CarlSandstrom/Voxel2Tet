@@ -662,7 +662,7 @@ void Voxel2Tet :: AddSurfaceSquare(std::vector<int> VoxelIDs, std::vector<int> p
     // Create square (i.e. two triangles)
     TriangleType *triangle0, *triangle1;
     triangle0 = Mesh->AddTriangle({VoxelIDs.at(0), VoxelIDs.at(1), VoxelIDs.at(2)});
-    triangle1 = Mesh->AddTriangle({VoxelIDs.at(1), VoxelIDs.at(3), VoxelIDs.at(2)});
+    triangle1 = Mesh->AddTriangle({VoxelIDs.at(1), VoxelIDs.at(2), VoxelIDs.at(3)});
     triangle0->InterfaceID = SurfaceID;
     triangle1->InterfaceID = SurfaceID;
     triangle0->PosNormalMatID = normalphase;
@@ -705,25 +705,26 @@ void Voxel2Tet::Process()
         FileName << "/tmp/Voxeltest" << outputindex++ << ".vtp";
         this->Mesh->ExportVTK(FileName.str());
 
-        this->Mesh->RemoveDegenerateTriangles();
-
-        FileName.str(""); FileName.clear();
-        FileName << "/tmp/Voxeltest" << outputindex++ << ".vtp";
-        this->Mesh->ExportVTK(FileName.str());
-
         this->SmoothSurfaces();
 
         FileName.str(""); FileName.clear();
         FileName << "/tmp/Voxeltest" << outputindex++ << ".vtp";
         this->Mesh->ExportVTK(FileName.str());
 
+/*      Redundant (Replaced with FlipAll):
+        this->Mesh->RemoveDegenerateTriangles();
+
+        FileName.str(""); FileName.clear();
+        FileName << "/tmp/Voxeltest" << outputindex++ << ".vtp";
+        this->Mesh->ExportVTK(FileName.str());*/
+
         this->Mesh->FlipAll();
 
-/*        FileName.str(""); FileName.clear();
+        FileName.str(""); FileName.clear();
         FileName << "/tmp/Voxeltest" << outputindex++ << ".vtp";
         this->Mesh->ExportVTK(FileName.str());
 
-        this->Mesh->CoarsenMeshImproved();*/
+        this->Mesh->CoarsenMesh();
 
     } else {  // Mikael's suggestions
 
