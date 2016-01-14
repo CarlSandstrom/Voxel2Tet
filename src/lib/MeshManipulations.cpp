@@ -131,13 +131,13 @@ bool MeshManipulations :: FlipEdge(EdgeType *Edge)
     double CurrentArea = EdgeTriangles.at(0)->GiveArea()+EdgeTriangles.at(1)->GiveArea();
     double NewArea = NewTriangles.at(0)->GiveArea()+NewTriangles.at(1)->GiveArea();
 
-/*    if (std::fabs(CurrentArea-NewArea)>1e-4) {
+    if (std::fabs(CurrentArea-NewArea)>1e-4) {
         LOG("The combined area of the triangles changes too much. Prevent flipping.\n", 0);
         for (TriangleType *t: NewTriangles) {
             delete t;
         }
         return false;
-    }*/
+    }
 
     LOG("Flip edge!\n", 0);
     // Update mesh data
@@ -188,7 +188,7 @@ bool MeshManipulations :: CheckFlipNormal(std::vector<TriangleType*> *OldTriangl
     for (TriangleType *OldTriangle: *OldTriangles) {
         for (unsigned int j=0; j<NewTriangles.size(); j++) {
             TriangleType *NewTriangle = NewTriangles.at(j);
-            std::array<double, 3> OldNormal = OldTriangle->GiveUnitNormal();
+            std::array<double, 3> OldNormal = OldTriangle->GiveUnitNormal(); // TODO: Move to first for loop
             std::array<double, 3> NewNormal = NewTriangle->GiveUnitNormal();
             double angle1 = std::acos( OldNormal[0]*NewNormal[0] + OldNormal[1]*NewNormal[1] + OldNormal[2]*NewNormal[2]);
             double angle2 = std::acos( -(OldNormal[0]*NewNormal[0] + OldNormal[1]*NewNormal[1] + OldNormal[2]*NewNormal[2]) );
@@ -216,6 +216,8 @@ bool MeshManipulations :: CollapseEdge(EdgeType *EdgeToCollapse, int RemoveVerte
     if (EdgeToCollapse->Vertices[RemoveVertexIndex]->IsFixedVertex()) return false;
 
     int SaveVertexIndex = (RemoveVertexIndex == 0) ? 1 : 0;
+
+    VertexType *SaveVertex = EdgeToCollapse->Vertices[SaveVertexIndex];
 
     // Create new triangles. These are create by moving RemoveVertex to the other end of the edge and remove the 0-area triangles
     std::vector<TriangleType*> TrianglesToRemove = EdgeToCollapse->GiveTriangles();
@@ -346,8 +348,9 @@ bool MeshManipulations :: CollapseEdge(EdgeType *EdgeToCollapse, int RemoveVerte
         this->AddTriangle(t);
     }
 
+    ConnectedEdges = SaveVertex->Edges;
     for (EdgeType *e: ConnectedEdges) {
-        //FlipEdge(e);
+        FlipEdge(e);
     }
 
     return true;
@@ -524,7 +527,7 @@ bool MeshManipulations :: FlipAll()
         LOG ("Flip edge iteration %u: edge @%p (%u, %u)\n", i, e, e->Vertices[0]->ID, e->Vertices[1]->ID);
         this->FlipEdge(e);
         std::ostringstream FileName;
-        FileName << "/tmp/TestFlip_" << i << ".vtp";
+        //FileName << "/tmp/TestFlip_" << i << ".vtp";
         //this->ExportVTK( FileName.str() );
         i++;
     }
@@ -540,7 +543,7 @@ bool MeshManipulations :: CoarsenMeshImproved()
         int i=0;
         while (i<this->Edges.size()) {
             EdgeType *e = this->Edges.at(i);
-            if (e->GiveLength()<.007) {
+            if (e->GiveLength()<.14) { // TODO: Use argument here
                 bool BothInSet = (std::find(IndepSet.begin(), IndepSet.end(), e->Vertices[0]) == IndepSet.end()) && (std::find(IndepSet.begin(), IndepSet.end(), e->Vertices[1]) == IndepSet.end());
                 if (!BothInSet) {
                     int D = 0;
@@ -558,6 +561,8 @@ bool MeshManipulations :: CoarsenMeshImproved()
             i++;
         }
     }
+
+    //return true;
 
     for (TriangleType *t: this->Triangles) {
         double A = t->GiveArea();
@@ -615,7 +620,7 @@ bool MeshManipulations :: CoarsenMesh()
                 LOG("Collapse success!\n", iter, failcount);
                 std::ostringstream FileName;
                 FileName << "/tmp/TestCoarsen_" << iter << ".vtp";
-                this->ExportVTK( FileName.str() );
+                //this->ExportVTK( FileName.str() );
                 iter++;
                 break;
             } else {

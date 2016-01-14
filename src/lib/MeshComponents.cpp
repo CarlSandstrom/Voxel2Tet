@@ -109,7 +109,7 @@ double EdgeType :: GiveLength()
 {
     std::array<double,3> v;
     for (int i=0; i<3; i++) {
-        v[i] = this->Vertices[1]->get_c(i) - this->Vertices[1]->get_c(i);
+        v[i] = this->Vertices[1]->get_c(i) - this->Vertices[0]->get_c(i);
     }
 
     return std::sqrt(v[0]*v[0] + v[1]*v[1] + v[2]*v[2]);

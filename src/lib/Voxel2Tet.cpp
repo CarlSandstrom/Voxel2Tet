@@ -724,7 +724,13 @@ void Voxel2Tet::Process()
         FileName << "/tmp/Voxeltest" << outputindex++ << ".vtp";
         this->Mesh->ExportVTK(FileName.str());
 
-        this->Mesh->CoarsenMesh();
+        this->Mesh->CoarsenMeshImproved();
+
+        FileName.str(""); FileName.clear();
+        FileName << "/tmp/Voxeltest" << outputindex++ << ".vtp";
+        this->Mesh->ExportVTK(FileName.str());
+
+        this->Mesh->FlipAll();
 
     } else {  // Mikael's suggestions
 
