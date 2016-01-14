@@ -128,10 +128,11 @@ bool MeshManipulations :: FlipEdge(EdgeType *Edge)
         return false;
     }
 
+    // Check change in area of region. Should be small
     double CurrentArea = EdgeTriangles.at(0)->GiveArea()+EdgeTriangles.at(1)->GiveArea();
     double NewArea = NewTriangles.at(0)->GiveArea()+NewTriangles.at(1)->GiveArea();
 
-    if (std::fabs(CurrentArea-NewArea)>1e-4) {
+    if (std::fabs(CurrentArea-NewArea)>1e-4) { // TODO: Use variable instead of fixed value
         LOG("The combined area of the triangles changes too much. Prevent flipping.\n", 0);
         for (TriangleType *t: NewTriangles) {
             delete t;
@@ -139,16 +140,33 @@ bool MeshManipulations :: FlipEdge(EdgeType *Edge)
         return false;
     }
 
+    // Check if any of the new triangles already exist
+    std::vector<TriangleType *> ConnectedTriangles;
+    for (VertexType *v: NewEdge.Vertices) {
+        for (TriangleType *t: v->Triangles) {
+            ConnectedTriangles.push_back(t);
+        }
+    }
+
+    std::sort(ConnectedTriangles.begin(), ConnectedTriangles.end());
+
+    for (unsigned int i=0; i<ConnectedTriangles.size()-1; i++) {
+        if (ConnectedTriangles.at(i) == ConnectedTriangles.at(i+1)) {
+            LOG("Edge already exists!\n", 0);
+            return false;
+        }
+    }
+
+
     LOG("Flip edge!\n", 0);
     // Update mesh data
 
     // Update triangles
-    for (int i=0; i<2; i++) {
+/*    for (int i=0; i<2; i++) {
         for (int j=0; j<3; j++) {
             EdgeTriangles.at(i)->Vertices[j] = NewTriangles.at(i)->Vertices[j];
         }
-    }
-
+    }*/
     // Remove triangles from verices
     for (int i: {0, 1}) {
         for (TriangleType *t: EdgeTriangles) {
@@ -527,7 +545,7 @@ bool MeshManipulations :: FlipAll()
         LOG ("Flip edge iteration %u: edge @%p (%u, %u)\n", i, e, e->Vertices[0]->ID, e->Vertices[1]->ID);
         this->FlipEdge(e);
         std::ostringstream FileName;
-        //FileName << "/tmp/TestFlip_" << i << ".vtp";
+        FileName << "/tmp/TestFlip_" << i << ".vtp";
         //this->ExportVTK( FileName.str() );
         i++;
     }
@@ -535,32 +553,65 @@ bool MeshManipulations :: FlipAll()
 
 bool MeshManipulations :: CoarsenMeshImproved()
 {
+
+    STATUS("Coarsen mesh\n", 0);
+
     bool CoarseningOccurs=true;
+    int iter=0;
+    int failcount;
 
     while (CoarseningOccurs) {
+
+        STATUS("%c[2K\rCoarsening iteration %u", 27, iter);
+        fflush(stdout);
+
         CoarseningOccurs = false;
         std::vector<VertexType*> IndepSet = FindIndependentSet();
+        failcount=0;
         int i=0;
         while (i<this->Edges.size()) {
             EdgeType *e = this->Edges.at(i);
-            if (e->GiveLength()<.14) { // TODO: Use argument here
+            if (e->GiveLength()<1e10) { // TODO: Use argument here
                 bool BothInSet = (std::find(IndepSet.begin(), IndepSet.end(), e->Vertices[0]) == IndepSet.end()) && (std::find(IndepSet.begin(), IndepSet.end(), e->Vertices[1]) == IndepSet.end());
                 if (!BothInSet) {
                     int D = 0;
                     if (std::find(IndepSet.begin(), IndepSet.end(), e->Vertices[D]) != IndepSet.end()) {
                         D = 1;
                     }
+                    if ( (iter==2616) & (failcount==731)) {
+                        this->ExportVTK( "/tmp/beforecollapse.vtp" );
+                    }
                     bool CoarseOk = this->CollapseEdge(e, D);
                     if (!CoarseOk) {
                         D = 1 ? 0 : 1;
                         CoarseOk = this->CollapseEdge(e, D);
                     }
-                    if (CoarseOk) CoarseningOccurs = true;
+                    if (CoarseOk) {
+                        CoarseningOccurs = true;
+                        iter++;
+                    } else {
+                        failcount++;
+                    }
+
                 }
             }
             i++;
         }
+#if SANITYCHECK == 1
+            for (TriangleType *t1: this->Triangles) {
+                for (TriangleType *t2: this->Triangles) {
+                    if (t1!=t2) {
+                        bool ispermutation = std::is_permutation(t1->Vertices.begin(), t1->Vertices.end(), t2->Vertices.begin());
+                        if (ispermutation) {
+                            STATUS ("\nDuplicate triangles at iteration %u, failcount %u\n", iter, failcount);
+                            throw 0;
+                        }
+                    }
+                }
+            }
+#endif
     }
+    STATUS("\n",0);
 
     //return true;
 

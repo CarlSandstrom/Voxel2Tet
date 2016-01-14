@@ -207,7 +207,7 @@ void SpringSmooth(std::vector<VertexType*> Vertices, std::vector<std::array<bool
 
 bool CheckIntersection(VertexType *p0v0, VertexType *p0v1, VertexType *p1v0, VertexType *p1v1)
 {
-
+//TODO: Not used, not implemented... subject for cleanup
 // http://paulbourke.net/geometry/pointlineplane/
 
 }

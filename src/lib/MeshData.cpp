@@ -141,6 +141,19 @@ TriangleType *MeshData :: AddTriangle(std::vector<int> VertexIDs)
 
 TriangleType *MeshData :: AddTriangle(TriangleType *NewTriangle)
 {
+#if SANITYCHECK == 1
+    int i=0;
+    for (TriangleType *t: this->Triangles) {
+        bool permutation = std::is_permutation(t->Vertices.begin(), t->Vertices.end(), NewTriangle->Vertices.begin());
+        if (permutation) {
+            STATUS("\nTriangle already exist. Existing ID = %u (index %u in list)!\n", t->ID, i); //TODO: Add a logging command for errors
+            return t;
+            throw 0;
+        }
+        i++;
+    }
+#endif
+
     NewTriangle->UpdateNormal();
     NewTriangle->ID = TriangleCounter;
     LOG("Add triangle %u to set\n", NewTriangle->ID);

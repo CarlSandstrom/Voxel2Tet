@@ -693,6 +693,7 @@ void Voxel2Tet::Process()
     if (true) {  // Carl's suggestion
 
         this->FindEdges();
+        this->Mesh->ExportOFF("/tmp/duplicatehunt0.off");
 
 #if SMOOTH_EDGES_INDIVIDUALLY==1
         this->SmoothEdgesIndividually();
@@ -706,6 +707,7 @@ void Voxel2Tet::Process()
         this->Mesh->ExportVTK(FileName.str());
 
         this->SmoothSurfaces();
+        this->Mesh->ExportOFF("/tmp/duplicatehunt1.off");
 
         FileName.str(""); FileName.clear();
         FileName << "/tmp/Voxeltest" << outputindex++ << ".vtp";
@@ -718,19 +720,23 @@ void Voxel2Tet::Process()
         FileName << "/tmp/Voxeltest" << outputindex++ << ".vtp";
         this->Mesh->ExportVTK(FileName.str());*/
 
+
         this->Mesh->FlipAll();
+        this->Mesh->ExportOFF("/tmp/duplicatehunt2.off");
 
         FileName.str(""); FileName.clear();
         FileName << "/tmp/Voxeltest" << outputindex++ << ".vtp";
         this->Mesh->ExportVTK(FileName.str());
 
         this->Mesh->CoarsenMeshImproved();
+        this->Mesh->ExportOFF("/tmp/duplicatehunt3.off");
 
         FileName.str(""); FileName.clear();
         FileName << "/tmp/Voxeltest" << outputindex++ << ".vtp";
         this->Mesh->ExportVTK(FileName.str());
 
         this->Mesh->FlipAll();
+        this->Mesh->ExportOFF("/tmp/duplicatehunt4.off");
 
     } else {  // Mikael's suggestions
 
@@ -745,6 +751,14 @@ void Voxel2Tet::Process()
     FileName.str(""); FileName.clear();
     FileName << "/tmp/Voxeltest" << outputindex++ << ".vtp";
     this->Mesh->ExportVTK(FileName.str());
+
+    for (unsigned int i=0; i<this->Mesh->Triangles.size(); i++) {
+        TriangleType *t = this->Mesh->Triangles.at(i);
+        double smallestangle = t->GiveSmallestAngle();
+        if (smallestangle*360/(2*3.141592)<1) {
+            STATUS ("Very small angle (%f) on triangle #%u (ID %u)\n", smallestangle, i, t->ID);
+        }
+    }
 
 }
 
