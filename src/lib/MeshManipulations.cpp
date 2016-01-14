@@ -157,16 +157,10 @@ bool MeshManipulations :: FlipEdge(EdgeType *Edge)
         }
     }
 
-
     LOG("Flip edge!\n", 0);
+
     // Update mesh data
 
-    // Update triangles
-/*    for (int i=0; i<2; i++) {
-        for (int j=0; j<3; j++) {
-            EdgeTriangles.at(i)->Vertices[j] = NewTriangles.at(i)->Vertices[j];
-        }
-    }*/
     // Remove triangles from verices
     for (int i: {0, 1}) {
         for (TriangleType *t: EdgeTriangles) {
@@ -223,7 +217,44 @@ bool MeshManipulations :: CheckFlipNormal(std::vector<TriangleType*> *OldTriangl
 
 }
 
-bool MeshManipulations :: CollapseEdge(EdgeType *EdgeToCollapse, int RemoveVertexIndex)
+bool MeshManipulations :: CollapseEdgeTest(std::vector<TriangleType *> *TrianglesToSave, std::vector<TriangleType *> *NewTriangles, EdgeType *EdgeToCollapse, int RemoveVertexIndex)
+{
+    bool DoCollapse = true;
+    int SaveVertexIndex = (RemoveVertexIndex == 0) ? 1 : 0;
+
+    // Check if NewTriangles are good replacements
+    LOG("Check validity of new normals...\n", 0);
+    if (!this->CheckCoarsenNormal(TrianglesToSave, NewTriangles)) {
+        LOG(" - Check failed\n", 0);
+        DoCollapse = false;
+    }
+
+    LOG("Check validity of new chord...\n", 0);
+    if (!this->CheckCoarsenChord(EdgeToCollapse, EdgeToCollapse->Vertices[RemoveVertexIndex], EdgeToCollapse->Vertices[SaveVertexIndex])) {
+        LOG(" - Check failed\n", 0);
+        DoCollapse = false;
+    }
+
+    LOG("Check area of new triangles...\n", 0);
+    for (TriangleType *t: *NewTriangles) {
+        if (t->GiveArea()<1e-7) {
+            LOG(" - Check failed\n", 0);
+            DoCollapse = false;
+        }
+    }
+
+/*    LOG("Check commbined area of new vs current triangles\n", 0);
+    double NewArea=0, CurrentArea=0;
+    for (TriangleType *t: NewTriangles) NewArea = NewArea + t->GiveArea();
+    for (TriangleType *t: ConnectedTriangles) CurrentArea = CurrentArea + t->GiveArea();
+    if (fabs(NewArea-CurrentArea) > 1e-2) {
+        LOG("Area change significant. Prevent collapse\n", 0);
+        DoCollapse = false;
+    }*/
+    return DoCollapse;
+}
+
+bool MeshManipulations :: CollapseEdge(EdgeType *EdgeToCollapse, int RemoveVertexIndex, bool PerformTesting)
 {
     // TODO: In its current setting, this procedure only checks if collapsing is ok from the current topology. It should compare to the original topology, otherwise degeneration can occur gradually
 
@@ -275,36 +306,12 @@ bool MeshManipulations :: CollapseEdge(EdgeType *EdgeToCollapse, int RemoveVerte
         NewTriangles.push_back(NewTriangle);
     }
 
-    bool DoCollapse = true;
 
-    // Check if NewTriangles are good replacements
-    LOG("Check validity of new normals...\n", 0);
-    if (!this->CheckCoarsenNormal(&TrianglesToSave, &NewTriangles)) {
-        LOG(" - Check failed\n", 0);
-        DoCollapse = false;
-    }
-
-    LOG("Check validity of new chord...\n", 0);
-    if (!this->CheckCoarsenChord(EdgeToCollapse, EdgeToCollapse->Vertices[RemoveVertexIndex], EdgeToCollapse->Vertices[SaveVertexIndex])) {
-        LOG(" - Check failed\n", 0);
-        DoCollapse = false;
-    }
-
-    LOG("Check area of new triangles...\n", 0);
-    for (TriangleType *t: NewTriangles) {
-        if (t->GiveArea()<1e-7) {
-            LOG(" - Check failed\n", 0);
-            DoCollapse = false;
-        }
-    }
-
-    LOG("Check cmmbined area of new vs current triangles\n", 0);
-    double NewArea=0, CurrentArea=0;
-    for (TriangleType *t: NewTriangles) NewArea = NewArea + t->GiveArea();
-    for (TriangleType *t: ConnectedTriangles) CurrentArea = CurrentArea + t->GiveArea();
-    if (fabs(NewArea-CurrentArea) > 1e-2) {
-        LOG("Area change significant. Prevent collapse\n", 0);
-        DoCollapse = false;
+    bool DoCollapse;
+    if (PerformTesting) {
+        DoCollapse = this->CollapseEdgeTest(&TrianglesToSave, &NewTriangles, EdgeToCollapse, RemoveVertexIndex );
+    } else {
+        DoCollapse = true;
     }
 
     if (!DoCollapse) {
