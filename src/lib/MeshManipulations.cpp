@@ -1,3 +1,4 @@
+#include "MiscFunctions.h"
 #include "MeshManipulations.h"
 #include "PhaseEdge.h"
 
@@ -200,6 +201,10 @@ bool MeshManipulations :: CheckFlipNormal(std::vector<TriangleType*> *OldTriangl
     for (TriangleType *OldTriangle: *OldTriangles) {
         for (unsigned int j=0; j<NewTriangles.size(); j++) {
             TriangleType *NewTriangle = NewTriangles.at(j);
+            double NewArea = NewTriangle->GiveArea();
+            if (NewArea < 1e-8) {
+                return false;
+            }
             std::array<double, 3> OldNormal = OldTriangle->GiveUnitNormal(); // TODO: Move to first for loop
             std::array<double, 3> NewNormal = NewTriangle->GiveUnitNormal();
             double angle1 = std::acos( OldNormal[0]*NewNormal[0] + OldNormal[1]*NewNormal[1] + OldNormal[2]*NewNormal[2]);
@@ -399,6 +404,10 @@ bool MeshManipulations :: CheckCoarsenNormal(std::vector<TriangleType*> *OldTria
         double oldarea  = OldTriangles->at(i)->GiveArea();
         double newarea  = NewTriangles->at(i)->GiveArea();
 
+        if (newarea < 1e-8) {
+            return false; // TODO: Change to variable tol
+        }
+
         LOG("angle1=%f,\tangle2=%f\tOldArea=%f\tNewArea=%f\n", angle1, angle2, oldarea, newarea);
 
         if (std::min(angle1, angle2)>MaxAngle) {
@@ -585,16 +594,17 @@ bool MeshManipulations :: CoarsenMeshImproved()
                     if (std::find(IndepSet.begin(), IndepSet.end(), e->Vertices[D]) != IndepSet.end()) {
                         D = 1;
                     }
-                    if ( (iter==2616) & (failcount==731)) {
-                        this->ExportVTK( "/tmp/beforecollapse.vtp" );
-                    }
+
                     bool CoarseOk = this->CollapseEdge(e, D);
                     if (!CoarseOk) {
                         D = 1 ? 0 : 1;
                         CoarseOk = this->CollapseEdge(e, D);
                     }
+
                     if (CoarseOk) {
                         CoarseningOccurs = true;
+                        dooutputlogmesh(*this, "/tmp/test_%u.vtp", iter);
+                        this->DoSanityCheck();
                         iter++;
                     } else {
                         failcount++;

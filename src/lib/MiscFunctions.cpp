@@ -29,6 +29,16 @@ void dooutputstat(const char *fmt, ...)
     va_end(argp);
 }
 
+void dooutputlogmesh(MeshData &Mesh, char *filename, ...)
+{
+    va_list argp;
+    va_start(argp, filename);
+    char buffer[255];
+    vsprintf(buffer, filename, argp);
+    Mesh.ExportVTK(buffer);
+    va_end(argp);
+}
+
 template <typename T>
 std::vector<int> FindSubsetIndices(std::vector<T> Container, std::vector<T> Subset)
 {

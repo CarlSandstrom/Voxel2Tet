@@ -30,6 +30,76 @@ MeshData::~MeshData()
     delete this->VertexOctreeRoot;
 }
 
+void MeshData :: DoSanityCheck()
+{
+    // Does the list of triangles vertices correspond to the list of vertices triangles?
+    for (TriangleType *t: this->Triangles) {
+        bool TriangleFound = false;
+        for (VertexType *v: t->Vertices) {
+            for (TriangleType *vt: v->Triangles) {
+                if (vt==t) {
+                    TriangleFound = true;
+                }
+            }
+        }
+        if (!TriangleFound) {
+            STATUS ("Triangles and vertices does not match!\n", 0);
+            throw 0;
+        }
+    }
+
+    // Does the list of edge vertices correspond to the list of vertices triangles?
+    for (EdgeType *e: this->Edges) {
+        bool EdgeFound = false;
+        for (VertexType *v: e->Vertices) {
+            for (EdgeType *ve: v->Edges) {
+                if (ve==e) {
+                    EdgeFound = true;
+                }
+            }
+        }
+        if (!EdgeFound) {
+            STATUS ("Edges and vertices does not match!\n", 0);
+            throw 0;
+        }
+    }
+
+    // Check the same, but for vertices
+    for (VertexType *v: this->Vertices) {
+        bool VertexFoundInTriangle = (v->Triangles.size()==0) ? true : false;
+
+        for (TriangleType *t: v->Triangles) {
+
+            for (VertexType *vt: t->Vertices) {
+                if (vt==v) {
+                    VertexFoundInTriangle = true;
+                }
+            }
+        }
+
+        if (!VertexFoundInTriangle) {
+            STATUS ("Triangle does not contain vertex while vertex contains triangle\n", 0);
+            throw 0;
+        }
+
+        bool VertexFoundInEdge = (v->Edges.size()==0) ? true : false;
+
+        for (EdgeType *e: v->Edges) {
+            for (VertexType *ve: e->Vertices) {
+                if (ve==v) {
+                    VertexFoundInEdge = true;
+                }
+            }
+        }
+
+        if (!VertexFoundInEdge) {
+            STATUS("Vertex not found in edge list while edge is found in vertex list of edges\n", 0);
+            throw 0;
+        }
+
+    }
+}
+
 void MeshData :: ExportVTK(std::string FileName)
 {
     STATUS ("Export to %s\n", FileName.c_str());

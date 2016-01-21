@@ -16,7 +16,9 @@ class MeshData
 {
 private:
     int TriangleCounter;
+
 public:
+    void DoSanityCheck();
     BoundingBoxType BoundingBox;
     std :: vector <TriangleType*> Triangles;
     std :: vector <VertexType*> Vertices;
