@@ -217,6 +217,12 @@ double TriangleType :: GiveSmallestAngle(int *index)
     return SmallestAngle;
 }
 
+EdgeType * TriangleType :: GiveEdge(int Index)
+{
+    std::array<EdgeType*, 3> Edges = this->GiveEdges();
+    return Edges.at(Index);
+}
+
 std::array<EdgeType *, 3> TriangleType :: GiveEdges()
 {
     std::vector<EdgeType *> EdgeCollection;

@@ -46,6 +46,10 @@ void MeshData :: DoSanityCheck()
             STATUS ("Triangles and vertices does not match!\n", 0);
             throw 0;
         }
+        if (t->ID>this->TriangleCounter) {
+            STATUS ("Invalid triangle ID!\n", 0);
+            throw 0;
+        }
     }
 
     // Does the list of edge vertices correspond to the list of vertices triangles?

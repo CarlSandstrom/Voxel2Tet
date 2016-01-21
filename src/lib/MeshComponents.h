@@ -79,6 +79,7 @@ public:
 
     std::array<VertexType *, 3> Vertices;
 
+    EdgeType * GiveEdge(int Index);
     std::array<EdgeType *, 3> GiveEdges();
 
     // Compute area of triangle

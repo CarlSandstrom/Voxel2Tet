@@ -31,12 +31,14 @@ void dooutputstat(const char *fmt, ...)
 
 void dooutputlogmesh(MeshData &Mesh, char *filename, ...)
 {
+#if EXPORTMESHCOARSENING == 1
     va_list argp;
     va_start(argp, filename);
     char buffer[255];
     vsprintf(buffer, filename, argp);
     Mesh.ExportVTK(buffer);
     va_end(argp);
+#endif
 }
 
 template <typename T>

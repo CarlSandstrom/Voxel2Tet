@@ -383,6 +383,8 @@ bool MeshManipulations :: CollapseEdge(EdgeType *EdgeToCollapse, int RemoveVerte
         FlipEdge(e);
     }
 
+    this->DoSanityCheck();
+
     return true;
 
 }
@@ -603,7 +605,7 @@ bool MeshManipulations :: CoarsenMeshImproved()
 
                     if (CoarseOk) {
                         CoarseningOccurs = true;
-                        dooutputlogmesh(*this, "/tmp/test_%u.vtp", iter);
+                        //dooutputlogmesh(*this, "/tmp/test_%u.vtp", iter);
                         this->DoSanityCheck();
                         iter++;
                     } else {
