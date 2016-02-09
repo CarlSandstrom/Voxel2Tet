@@ -760,22 +760,36 @@ void Voxel2Tet::Process()
         double smallestangle = t->GiveSmallestAngle();
         if (smallestangle*360/(2*3.141592)<1) {
             STATUS ("iter %u: Very small angle (%f) on triangle #%u (ID %u)\n", iter, smallestangle, i, t->ID);
-            EdgeType *ShortestEdge = t->GiveEdge(0);
+            if (true) { //t->ID==4959) {
+                EdgeType *ShortestEdge = t->GiveEdge(0);
 
-            for (EdgeType *e: t->GiveEdges()) {
-                if (ShortestEdge->GiveLength() < e->GiveLength()) {
-                    ShortestEdge = e;
+                for (EdgeType *e: t->GiveEdges()) {
+                    if (e->GiveLength() < ShortestEdge->GiveLength()) {
+                        ShortestEdge = e;
+                    }
+                }
+
+                bool Success = Mesh->CollapseEdge(ShortestEdge, 0, false); // TODO: Which vertex to collapse? Maybe move one to the center and collapse the other one?
+                if (!Success) {
+                    Success = Mesh->CollapseEdge(ShortestEdge, 1, false);
+                }
+                if (Success) {
+                    STATUS("Edge collapsed ok\n", 0);
+                    Mesh->DoSanityCheck();
                 }
             }
 
-            bool Success = Mesh->CollapseEdge(ShortestEdge, 0, false); // TODO: Which vertex to collapse? Maybe move one to the center and collapse the other one?
-            if (Success) {
-                STATUS("Edge collapsed ok\n", 0);
-                Mesh->DoSanityCheck();
-            }
             dooutputlogmesh(*this->Mesh, "/tmp/finalcoarsening%u.vtp", iter);
             iter++;
 
+        }
+    }
+
+    for (unsigned int i=0; i<this->Mesh->Triangles.size(); i++) {
+        TriangleType *t = this->Mesh->Triangles.at(i);
+        double smallestangle = t->GiveSmallestAngle();
+        if (smallestangle*360/(2*3.141592)<1) {
+            STATUS ("Still very small angle (%f) on triangle #%u (ID %u)\n", iter, smallestangle, i, t->ID);
         }
     }
 
