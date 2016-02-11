@@ -31,14 +31,12 @@ void dooutputstat(const char *fmt, ...)
 
 void dooutputlogmesh(MeshData &Mesh, char *filename, ...)
 {
-#if EXPORTMESHCOARSENING == 1
     va_list argp;
     va_start(argp, filename);
     char buffer[255];
     vsprintf(buffer, filename, argp);
     Mesh.ExportVTK(buffer);
     va_end(argp);
-#endif
 }
 
 template <typename T>
@@ -214,13 +212,6 @@ void SpringSmooth(std::vector<VertexType*> Vertices, std::vector<std::array<bool
             }
         }
     }
-
-}
-
-bool CheckIntersection(VertexType *p0v0, VertexType *p0v1, VertexType *p1v0, VertexType *p1v1)
-{
-//TODO: Not used, not implemented... subject for cleanup
-// http://paulbourke.net/geometry/pointlineplane/
 
 }
 

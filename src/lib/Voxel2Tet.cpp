@@ -49,11 +49,28 @@ void Voxel2Tet::LoadFile(std::string Filename)
 
 void Voxel2Tet :: FinalizeLoad()
 {
+
+    double spring_const;
+    double edge_spring_const;
+
     if (!this->Opt->has_key("spring_const")) {
         double cellspace[3];
         this->Imp->GiveSpacing(cellspace);
-        Opt->AddDefaultMap("spring_const", std::to_string(cellspace[0]));
+        spring_const = cellspace[0];
+        Opt->AddDefaultMap("spring_const", std::to_string(spring_const));
+    } else {
+         spring_const = Opt->GiveDoubleValue("spring_const");
     }
+
+    if (!this->Opt->has_key("edge_spring_const")) {
+        edge_spring_const = spring_const/30.0;
+        Opt->AddDefaultMap("edge_spring_const", std::to_string(edge_spring_const));
+    } else {
+        edge_spring_const = Opt->GiveDoubleValue("edge_spring_const");
+    }
+
+    STATUS("Using spring_const=%f\n", spring_const);
+    STATUS("Using edge_spring_const=%f\n", edge_spring_const);
 
     BoundingBoxType bb;
     double spacing[3];
@@ -454,7 +471,7 @@ void Voxel2Tet :: SmoothEdgesSimultaneously()
 {
     STATUS("Smooth edges (simultaneously)\n", 0);
 
-    double K = this->Opt->GiveDoubleValue("spring_const");
+    double K = this->Opt->GiveDoubleValue("edge_spring_const");
 
     // We want to sort several lists according to one list. (http://stackoverflow.com/questions/1723066/c-stl-custom-sorting-one-vector-based-on-contents-of-another)
     struct VertexConnectivity {
@@ -753,7 +770,13 @@ void Voxel2Tet::Process()
     this->Mesh->ExportVTK(FileName.str());
 
     int iter = 0;
-    dooutputlogmesh(*this->Mesh, "/tmp/finalcoarsening%u.vtp", 0);
+#if EXPORTMESHCOARSENING == 1
+    dooutputlogmesh(*this->Mesh, (char*) "/tmp/finalcoarsening%u.vtp", 0);
+#endif
+
+//#if SANITYCHECK == 1
+    //this->Mesh->DoSanityCheck();
+//#endif
 
     for (unsigned int i=0; i<this->Mesh->Triangles.size(); i++) {
         TriangleType *t = this->Mesh->Triangles.at(i);
@@ -775,11 +798,16 @@ void Voxel2Tet::Process()
                 }
                 if (Success) {
                     STATUS("Edge collapsed ok\n", 0);
-                    Mesh->DoSanityCheck();
+#if SANITYCHECK == 1
+//                    Mesh->DoSanityCheck();
+#endif
                 }
+
             }
 
-            dooutputlogmesh(*this->Mesh, "/tmp/finalcoarsening%u.vtp", iter);
+#if EXPORTMESHCOARSENING == 1
+            dooutputlogmesh(*this->Mesh, (char*) "/tmp/finalcoarsening%u.vtp", iter);
+#endif
             iter++;
 
         }

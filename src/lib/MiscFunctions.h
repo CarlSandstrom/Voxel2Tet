@@ -1,10 +1,10 @@
 #ifndef MISCFUNCTIONS_H_
 #define MISCFUNCTIONS_H_
 
-#define LOGOUTPUT 1
+#define LOGOUTPUT 0
 #define STATOUTPUT 1
 #define SANITYCHECK 1
-#define EXPORTMESHCOARSENING 1
+#define EXPORTMESHCOARSENING 0
 
 #define EXPORT_SMOOTHING_ANIMATION 0
 
@@ -25,6 +25,8 @@ namespace voxel2tet
 {
 
 class MeshData;
+
+//TODO: Are these used?
 extern "C" int outputindex;
 extern "C" MeshData* GlobalMesh;
 
@@ -38,8 +40,6 @@ void SpringSmooth(std::vector<VertexType*> Vertices, std::vector<std::array<bool
 std::array<double,3> ComputeNormalizedVector(VertexType* v1, VertexType* v2);
 
 template <typename T> std::vector<int> FindSubsetIndices(std::vector<T> Container, std::vector<T> Subset);
-
-bool CheckIntersection(VertexType *p0v0, VertexType *p0v1, VertexType *p1v0, VertexType *p1v1);
 
 }
 

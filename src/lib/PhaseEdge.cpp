@@ -154,7 +154,7 @@ void PhaseEdge :: GiveTopologyLists(std::vector<std::vector<VertexType *>> *Conn
 
         std::vector<VertexType *> MyConnections;
 
-        unsigned int previndex = i-1;
+        signed int previndex = i-1;
         unsigned int nextindex = i+1;
 
         if (closed) {
@@ -191,8 +191,10 @@ void PhaseEdge :: GiveTopologyLists(std::vector<std::vector<VertexType *>> *Conn
 
 void PhaseEdge :: Smooth(MeshData *Mesh)
 {
+    // TODO: This does not seem to be used, right?
+
     if (this->EdgeSegments.size()==1) return;
-    double K = this->Opt->GiveDoubleValue("spring_const");
+    double K = this->Opt->GiveDoubleValue("edge_spring_const");
 
     std::vector<VertexType *> FlatList = this->GetFlatListOfVertices();
 

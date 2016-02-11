@@ -1,6 +1,7 @@
 #ifndef OPTIONS_H_
 #define OPTIONS_H_
 
+#include <vector>
 #include <iostream>
 #include <string>
 #include <map>

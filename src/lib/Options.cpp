@@ -7,6 +7,7 @@ namespace voxel2tet
 
 Options :: Options( int argc, char *argv[], ValueMap DefaultValues )
 {
+
     // Parse command line arguments and simply store them in a map
     for (int i=1; i<argc; i++) {
         if (char(argv[i][0]) == '-') {

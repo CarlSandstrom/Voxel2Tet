@@ -38,7 +38,7 @@ public:
     bool CoarsenMeshImproved();
     std::vector<VertexType *> FindIndependentSet();
 
-    bool FlipAll();
+    int FlipAll();
 
 };
 

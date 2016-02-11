@@ -67,6 +67,11 @@ bool MeshManipulations :: GetFlippedEdgeData(EdgeType *EdgeToFlip, EdgeType *New
     std::set_symmetric_difference(EdgeTriangles.at(0)->Vertices.begin(), EdgeTriangles.at(0)->Vertices.end(),
                                   EdgeTriangles.at(1)->Vertices.begin(), EdgeTriangles.at(1)->Vertices.end(), std::back_inserter(NewEdgeVertices));
 
+    if (NewEdgeVertices.size()==0) {
+        STATUS("Edge triangles are equivalent!\n", 0);
+        return false;
+    }
+
     // Create triangles
     for (int i=0; i<2; i++) {
         TriangleType* t=new TriangleType;
@@ -85,6 +90,7 @@ bool MeshManipulations :: GetFlippedEdgeData(EdgeType *EdgeToFlip, EdgeType *New
         t->UpdateNormal();
         NewTriangles->at(i) = t;
     }
+
 
     // Create edge
     NewEdge->Vertices[0] = NewEdgeVertices[0];
@@ -107,7 +113,9 @@ bool MeshManipulations :: FlipEdge(EdgeType *Edge)
     std::array<TriangleType*, 2> NewTriangles;
     EdgeType NewEdge;
 
-    this->GetFlippedEdgeData(Edge, &NewEdge, &NewTriangles);
+    if (!this->GetFlippedEdgeData(Edge, &NewEdge, &NewTriangles)) {
+        return false;
+    }
 
     if (!this->CheckFlipNormal(&EdgeTriangles, NewTriangles)) {
         LOG("Changes in normal direction prevents flipping\n", 0);
@@ -383,7 +391,9 @@ bool MeshManipulations :: CollapseEdge(EdgeType *EdgeToCollapse, int RemoveVerte
         FlipEdge(e);
     }
 
-    this->DoSanityCheck();
+#if SANITYCHECK == 1
+    //this->DoSanityCheck();
+#endif
 
     return true;
 
@@ -556,17 +566,18 @@ std::vector<VertexType *> MeshManipulations :: FindIndependentSet()
     return IndepSet;
 }
 
-bool MeshManipulations :: FlipAll()
+int MeshManipulations::FlipAll()
 {
     int i=0;
+    int flipcount = 0;
     for (EdgeType *e: this->Edges) {
         LOG ("Flip edge iteration %u: edge @%p (%u, %u)\n", i, e, e->Vertices[0]->ID, e->Vertices[1]->ID);
-        this->FlipEdge(e);
+        if (this->FlipEdge(e)) flipcount++;
         std::ostringstream FileName;
         FileName << "/tmp/TestFlip_" << i << ".vtp";
-        //this->ExportVTK( FileName.str() );
         i++;
     }
+    return flipcount;
 }
 
 bool MeshManipulations :: CoarsenMeshImproved()
@@ -580,14 +591,16 @@ bool MeshManipulations :: CoarsenMeshImproved()
 
     while (CoarseningOccurs) {
 
-        STATUS("%c[2K\rCoarsening iteration %u", 27, iter);
-        fflush(stdout);
 
         CoarseningOccurs = false;
         std::vector<VertexType*> IndepSet = FindIndependentSet();
         failcount=0;
-        int i=0;
+        unsigned int i=0;
         while (i<this->Edges.size()) {
+
+            STATUS("%c[2K\rCoarsening iteration %u, failcount %u", 27, iter, failcount);
+            fflush(stdout);
+
             EdgeType *e = this->Edges.at(i);
             if (e->GiveLength()<1e10) { // TODO: Use argument here
                 bool BothInSet = (std::find(IndepSet.begin(), IndepSet.end(), e->Vertices[0]) == IndepSet.end()) && (std::find(IndepSet.begin(), IndepSet.end(), e->Vertices[1]) == IndepSet.end());
@@ -597,7 +610,16 @@ bool MeshManipulations :: CoarsenMeshImproved()
                         D = 1;
                     }
 
+                    if ((iter==241) & (failcount==116)) {
+                        dooutputlogmesh(*this, (char *) "/tmp/test_0.vtp", 0);
+                    }
+
                     bool CoarseOk = this->CollapseEdge(e, D);
+
+                    if ((iter==241) & (failcount==116)) {
+                        dooutputlogmesh(*this, (char *) "/tmp/test_1.vtp", 0);
+                    }
+
                     if (!CoarseOk) {
                         D = 1 ? 0 : 1;
                         CoarseOk = this->CollapseEdge(e, D);
@@ -606,7 +628,9 @@ bool MeshManipulations :: CoarsenMeshImproved()
                     if (CoarseOk) {
                         CoarseningOccurs = true;
                         //dooutputlogmesh(*this, "/tmp/test_%u.vtp", iter);
-                        this->DoSanityCheck();
+#if SANITYCHECK == 1
+//                        this->DoSanityCheck();
+#endif
                         iter++;
                     } else {
                         failcount++;

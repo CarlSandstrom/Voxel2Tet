@@ -102,6 +102,20 @@ void MeshData :: DoSanityCheck()
         }
 
     }
+
+
+    // Are all triangles unique?
+    for (TriangleType *t1: this->Triangles) {
+        for (TriangleType *t2: this->Triangles) {
+            if (t1!=t2) {
+                bool ispermutation = std::is_permutation(t1->Vertices.begin(), t1->Vertices.end(), t2->Vertices.begin());
+                if (ispermutation) {
+                    STATUS ("\nDuplicate triangles\n", 0);
+                    throw 0;
+                }
+            }
+        }
+    }
 }
 
 void MeshData :: ExportVTK(std::string FileName)
