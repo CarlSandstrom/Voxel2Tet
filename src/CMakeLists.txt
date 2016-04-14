@@ -77,8 +77,11 @@ set(linkerlist ${linkerlist} ${TETGEN_LIB})
 
 #### Project files
 
-include_directories(lib)
+include_directories(lib lib/Export lib/Import lib/Mesh lib/General)
 add_subdirectory(lib)
+
+get_property(inc_dirs DIRECTORY PROPERTY INCLUDE_DIRECTORIES)
+message("inc_dirs = ${inc_dirs}")
 
 include_directories(Examples)
 add_subdirectory(Examples)

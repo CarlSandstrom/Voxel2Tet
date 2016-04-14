@@ -1,22 +1,18 @@
 set(Voxel2TetLibList
-    Options.cpp
-    Importer.cpp
-    hdf5DataReader.cpp
-    VertexOctreeNode.cpp
-    Exporter.cpp
-    VTKExporter.cpp
-    MeshData.cpp
-    MeshManipulations.cpp
-    MeshComponents.cpp
-    MiscFunctions.cpp
     Surface.cpp
     Voxel2Tet.cpp
     PhaseEdge.cpp
-    CallbackImporter.cpp
-    TetGenExporter.cpp
-    OFFExporter.cpp
-    MeshGenerator3D.cpp
-    TetGenCaller.cpp
 )
+
+set(subdirs Export General Import Mesh)
+
+foreach(subdir ${subdirs})
+	set(thisdir "${subdir}")
+	message(STATUS "Process directory ${thisdir}")
+	add_subdirectory(${subdir})
+	message(STATUS "Add include path ${thisdir}")
+	include_directories(${thisdir})
+	message(STATUS "LIB: Current list: ${Voxel2TetLibList}")
+endforeach(subdir)
 
 add_library(Voxel2TetLib ${Voxel2TetLibList})

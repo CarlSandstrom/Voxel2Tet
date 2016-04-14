@@ -10,7 +10,6 @@ class MeshGenerator3D
 public:
     MeshGenerator3D();
     MeshData *Mesh;
-
 };
 
 }
