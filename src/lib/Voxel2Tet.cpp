@@ -6,6 +6,7 @@
 #include "Importer.h"
 #include "hdf5DataReader.h"
 #include "CallbackImporter.h"
+#include "TetGenCaller.h"
 
 namespace voxel2tet
 {

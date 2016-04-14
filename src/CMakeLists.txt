@@ -23,6 +23,7 @@ else (HDF5_FOUND)
   message(FATAL_ERROR "HDF5 library is required to compile this project")
   option(WITH_HDF5 "Use HDF5 library" OFF)
 endif (HDF5_FOUND)
+
 if (WITH_HDF5)
   if (NOT HDF5_FOUND)
       message(SEND_ERROR "Cannot find HDF5 library")
@@ -58,11 +59,21 @@ endif (ARMADILLO_FOUND)
 
 #### VTK
 
-find_package(VTK REQUIRED)
+find_package(VTK REQUIRED NO_MODULE)
 if (VTK_FOUND)
   include(${VTK_USE_FILE})
   set(linkerlist ${linkerlist} ${VTK_LIBRARIES})
 endif (VTK_FOUND)
+
+#### TetGen
+
+find_path(TETGEN_H tetgen.h)
+MESSAGE( STATUS "Include file tetgen.h found in ${TETGEN_H}" )
+include_directories (${TETGEN_H})
+
+find_library(TETGEN_LIB libtet.so)
+MESSAGE( STATUS "Tetgen library found in ${TETGEN_LIB}")
+set(linkerlist ${linkerlist} ${TETGEN_LIB})
 
 #### Project files
 

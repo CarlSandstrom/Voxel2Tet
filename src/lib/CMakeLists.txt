@@ -15,6 +15,8 @@ set(Voxel2TetLibList
     CallbackImporter.cpp
     TetGenExporter.cpp
     OFFExporter.cpp
+    MeshGenerator3D.cpp
+    TetGenCaller.cpp
 )
 
 add_library(Voxel2TetLib ${Voxel2TetLibList})
