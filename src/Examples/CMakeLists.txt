@@ -1,4 +1,4 @@
-set(files TestOptions TestImporter TestOctree TestVTK TestMeshData TestVoxel2Tet TestCallbackImporter)
+set(files TestOptions TestImporter TestOctree TestVTK TestMeshData TestVoxel2Tet TestCallbackImporter TestCube)
 
 foreach(file ${files})
   add_executable(${file} ${file}.cpp)

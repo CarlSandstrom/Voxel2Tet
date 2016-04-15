@@ -68,10 +68,12 @@ endif (VTK_FOUND)
 #### TetGen
 
 find_path(TETGEN_H tetgen.h)
+#find_path(TETGEN_H tetgen.h HINTS /home/carl/lib/tetgen1.5.0/)
 MESSAGE( STATUS "Include file tetgen.h found in ${TETGEN_H}" )
 include_directories (${TETGEN_H})
 
 find_library(TETGEN_LIB libtet.so)
+#find_library(TETGEN_LIB libtet.a HINTS /home/carl/lib/tetgen1.5.0/bin)
 MESSAGE( STATUS "Tetgen library found in ${TETGEN_LIB}")
 set(linkerlist ${linkerlist} ${TETGEN_LIB})
 
