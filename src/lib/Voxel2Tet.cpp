@@ -101,6 +101,18 @@ void Voxel2Tet::ExportSurface(std::string FileName, Exporter_FileTypes FileType)
     this->Mesh->ExportSurface(FileName, FileType);
 }
 
+void Voxel2Tet :: Tetrahedralize()
+{
+    TetGenCaller Generator;
+    Generator.Mesh = this->Mesh;
+    Generator.Execute();
+}
+
+void Voxel2Tet :: ExportVolume(std::string FileName)
+{
+
+}
+
 void Voxel2Tet::FindSurfaces()
 {
 

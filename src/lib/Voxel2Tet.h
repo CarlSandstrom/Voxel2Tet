@@ -14,6 +14,7 @@
 #include "Surface.h"
 #include "MiscFunctions.h"
 #include "PhaseEdge.h"
+#include "MeshGenerator3D.h"
 
 namespace voxel2tet
 {
@@ -49,9 +50,6 @@ public:
 
     MeshManipulations *Mesh;
     void ExportSurface(std::string FileName, Exporter_FileTypes FileType);
-
-    void ExportTetGenFile(std::string FileName);
-    void ExportOFF(std::string FileName);
 
     void Tetrahedralize();
     void ExportVolume(std::string FileName);
