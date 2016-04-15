@@ -48,8 +48,13 @@ public:
     ~Voxel2Tet();
 
     MeshManipulations *Mesh;
+    void ExportSurface(std::string FileName, Exporter_FileTypes FileType);
+
     void ExportTetGenFile(std::string FileName);
     void ExportOFF(std::string FileName);
+
+    void Tetrahedralize();
+    void ExportVolume(std::string FileName);
 
     void LoadFile(std::string FileName);
     void LoadCallback(cbMaterialIDByCoordinate MaterialIDByCoordinate, std::array<double, 3> origin, std::array<double, 3> spacing, std::array<int, 3> dimensions);

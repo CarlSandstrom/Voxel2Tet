@@ -96,14 +96,9 @@ void Voxel2Tet::LoadData()
 
 }
 
-void Voxel2Tet::ExportTetGenFile(std::string FileName)
+void Voxel2Tet::ExportSurface(std::string FileName, Exporter_FileTypes FileType)
 {
-    this->Mesh->ExportTetgen(FileName);
-}
-
-void Voxel2Tet::ExportOFF(std::string FileName)
-{
-    this->Mesh->ExportOFF(FileName);
+    this->Mesh->ExportSurface(FileName, FileType);
 }
 
 void Voxel2Tet::FindSurfaces()
@@ -706,12 +701,11 @@ void Voxel2Tet::Process()
     std::ostringstream FileName;
 
     FileName << "/tmp/Voxeltest" << outputindex++ << ".vtp";
-    this->Mesh->ExportVTK( FileName.str() );
+    this->Mesh->ExportSurface( FileName.str(), FT_VTK );
 
     if (true) {  // Carl's suggestion
 
         this->FindEdges();
-        this->Mesh->ExportOFF("/tmp/duplicatehunt0.off");
 
 #if SMOOTH_EDGES_INDIVIDUALLY==1
         this->SmoothEdgesIndividually();
@@ -722,14 +716,13 @@ void Voxel2Tet::Process()
 
         FileName.str(""); FileName.clear();
         FileName << "/tmp/Voxeltest" << outputindex++ << ".vtp";
-        this->Mesh->ExportVTK(FileName.str());
+        this->Mesh->ExportSurface(FileName.str(), FT_VTK);
 
         this->SmoothSurfaces();
-        this->Mesh->ExportOFF("/tmp/duplicatehunt1.off");
 
         FileName.str(""); FileName.clear();
         FileName << "/tmp/Voxeltest" << outputindex++ << ".vtp";
-        this->Mesh->ExportVTK(FileName.str());
+        this->Mesh->ExportSurface(FileName.str(), FT_VTK);
 
 /*      Redundant (Replaced with FlipAll):
         this->Mesh->RemoveDegenerateTriangles();
@@ -738,23 +731,19 @@ void Voxel2Tet::Process()
         FileName << "/tmp/Voxeltest" << outputindex++ << ".vtp";
         this->Mesh->ExportVTK(FileName.str());*/
 
-
         this->Mesh->FlipAll();
-        this->Mesh->ExportOFF("/tmp/duplicatehunt2.off");
 
         FileName.str(""); FileName.clear();
         FileName << "/tmp/Voxeltest" << outputindex++ << ".vtp";
-        this->Mesh->ExportVTK(FileName.str());
+        this->Mesh->ExportSurface(FileName.str(), FT_VTK);
 
         this->Mesh->CoarsenMeshImproved();
-        this->Mesh->ExportOFF("/tmp/duplicatehunt3.off");
 
         FileName.str(""); FileName.clear();
         FileName << "/tmp/Voxeltest" << outputindex++ << ".vtp";
-        this->Mesh->ExportVTK(FileName.str());
+        this->Mesh->ExportSurface(FileName.str(), FT_VTK);
 
         this->Mesh->FlipAll();
-        this->Mesh->ExportOFF("/tmp/duplicatehunt4.off");
 
     } else {  // Mikael's suggestions
 
@@ -768,7 +757,7 @@ void Voxel2Tet::Process()
 
     FileName.str(""); FileName.clear();
     FileName << "/tmp/Voxeltest" << outputindex++ << ".vtp";
-    this->Mesh->ExportVTK(FileName.str());
+    this->Mesh->ExportSurface(FileName.str(), FT_VTK);
 
     int iter = 0;
 #if EXPORTMESHCOARSENING == 1

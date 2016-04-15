@@ -11,6 +11,7 @@
 namespace voxel2tet
 {
 
+// TODO: Do we need this class?
 class TetGenExporter: public Exporter
 {
 public:

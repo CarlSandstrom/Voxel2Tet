@@ -103,7 +103,7 @@ int main( int argc, char *argv[] ) {
 
     mesh->Vertices.at(11)->set_c(2.5, 0);
 
-    mesh->ExportVTK("/tmp/test2D_0.vtp");
+    mesh->ExportSurface("/tmp/test2D_0.vtp", voxel2tet::FT_VTK);
     int iter=1;
     bool EdgeCollapsed = true;
     while (EdgeCollapsed) {
@@ -119,7 +119,7 @@ int main( int argc, char *argv[] ) {
             if (EdgeCollapsed) {
                 std::ostringstream FileName;
                 FileName << "/tmp/test2D_" << iter << ".vtp";
-                mesh->ExportVTK( FileName.str() );
+                mesh->ExportSurface( FileName.str(), voxel2tet::FT_VTK );
                 iter++;
                 break;
             }

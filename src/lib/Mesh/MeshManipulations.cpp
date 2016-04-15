@@ -682,7 +682,7 @@ bool MeshManipulations :: CoarsenMeshImproved()
 bool MeshManipulations :: CoarsenMesh()
 {
 
-    this->ExportVTK("/tmp/TestCoarsen_0.vtp");
+    this->ExportSurface("/tmp/TestCoarsen_0.vtp", FT_VTK);
     int iter=1;
     bool EdgeCollapsed = true;
     while (EdgeCollapsed) {

@@ -35,7 +35,7 @@ void dooutputlogmesh(MeshData &Mesh, char *filename, ...)
     va_start(argp, filename);
     char buffer[255];
     vsprintf(buffer, filename, argp);
-    Mesh.ExportVTK(buffer);
+    Mesh.ExportSurface(buffer, FT_VTK);
     va_end(argp);
 }
 

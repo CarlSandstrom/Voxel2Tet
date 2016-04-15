@@ -118,23 +118,26 @@ void MeshData :: DoSanityCheck()
     }
 }
 
-void MeshData :: ExportVTK(std::string FileName)
+void MeshData :: ExportSurface(std::string FileName, Exporter_FileTypes FileType)
 {
     STATUS ("Export to %s\n", FileName.c_str());
-    VTKExporter exporter(&this->Triangles, &this->Vertices, &this->Edges);
-    exporter.WriteData(FileName);
-}
-
-void MeshData::ExportTetgen(std::string FileName)
-{
-    TetGenExporter exporter(&this->Triangles, &this->Vertices, &this->Edges);
-    exporter.WriteData(FileName);
-}
-
-void MeshData::ExportOFF(std::string FileName)
-{
-    OFFExporter exporter(&this->Triangles, &this->Vertices, &this->Edges);
-    exporter.WriteData(FileName);
+    Exporter *exporter;
+    switch (FileType) {
+    case FT_OFF: {
+        exporter = new OFFExporter (&this->Triangles, &this->Vertices, &this->Edges);
+        break;
+    }
+    case FT_Poly: {
+        exporter = new TetGenExporter (&this->Triangles, &this->Vertices, &this->Edges);
+        break;
+    }
+    case FT_VTK: {
+        exporter = new VTKExporter(&this->Triangles, &this->Vertices, &this->Edges);
+        break;
+    }
+    }
+    exporter->WriteData(FileName);
+    free(exporter);
 }
 
 EdgeType *MeshData :: AddEdge(std::vector<int> VertexIDs)
