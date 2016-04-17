@@ -33,7 +33,6 @@ public:
     std::array<double, 3> get_c();
     double get_c(int index);
 
-
     std::vector <TriangleType*> Triangles;
     std::vector <EdgeType*> Edges;
 
@@ -92,6 +91,15 @@ public:
     std::array<double, 3> GiveUnitNormal();
     void UpdateNormal();
 
+};
+
+
+class TetType {
+private:
+public:
+    int ID;
+    int MaterialID;
+    std::array<VertexType *, 4> Vertices;
 };
 
 }

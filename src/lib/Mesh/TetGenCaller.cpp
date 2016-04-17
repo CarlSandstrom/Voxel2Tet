@@ -59,7 +59,7 @@ void TetGenCaller :: CopyMeshFromSelf(tetgenio *in)
     // Copy mesh triangles
     in->numberoffacets = this->Mesh->Triangles.size();
     in->facetlist = new tetgenio::facet[in->numberoffacets]; // List of triangles
-    //in->facetmarkerlist = new int[in->numberoffacets]; // List of tag for each triangle
+    in->facetmarkerlist = new int[in->numberoffacets]; // List of tag for each triangle
 
     unsigned int tid=0;
     for (TriangleType *t: this->Mesh->Triangles) {
@@ -81,30 +81,26 @@ void TetGenCaller :: CopyMeshFromSelf(tetgenio *in)
             p->vertexlist[i] = TetGenID;
         }
 
-        //in->facetmarkerlist[tid] = t->InterfaceID;
+        in->facetmarkerlist[tid] = t->InterfaceID;
 
         tid++;
 
     }
 
-    /*tetrahedralize("pq1.414a0.1", io, &out);
-    in.save_nodes("/tmp/test");
-    in.save_poly("/tmp/test");
-    in.save_faces2smesh("/tmp/test");
-
-    tetrahedralize("pd", &in, &out);
-    tetrahedralize("p", &in, &out, NULL); */
-
-
-
 }
 
 void TetGenCaller :: CopyMeshToSelf(tetgenio *io)
 {
-
+    //io->pointlist
+    for (int i=0; i<io->numberoftrifaces; i++) {
+        int *triface[3];
+        int marker = io->trifacemarkerlist[i];
+        triface = &io->trifacelist[3*i];
+        printf("(%u, %u, %u) : %u\n", triface[0], triface[1], triface[2], marker);
+    }
 }
 
-void TetGenCaller :: EmbarasingTestExample()
+void TetGenCaller :: EmbarrassingTestExample()
 {
     tetgenio in, out;
     tetgenio::facet *f;
@@ -267,9 +263,6 @@ void TetGenCaller :: EmbarasingTestExample()
 void TetGenCaller :: Execute()
 {
 
-    //this->EmbarasingTestExample();
-    //return;
-
     tetgenio in, out;
 
     CopyMeshFromSelf(&in);
@@ -279,9 +272,8 @@ void TetGenCaller :: Execute()
     tetrahedralize("pd", &in, &out);
     tetrahedralize("p", &in, &out, NULL); //pq1.414a0.1
 
-    out.save_nodes("/tmp/tetout");
-    out.save_elements("/tmp/tetout");
-    out.save_faces("/tmp/tetout");
+    CopyMeshToSelf(&out);
+
 }
 
 }
