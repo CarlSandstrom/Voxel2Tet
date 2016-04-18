@@ -23,7 +23,6 @@ private:
     void CopyMeshFromSelf(tetgenio *io);
     void CopyMeshToSelf(tetgenio *io);
 
-    void EmbarrassingTestExample();
 public:
     TetGenCaller();
     virtual void Execute();
