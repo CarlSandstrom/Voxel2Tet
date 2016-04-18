@@ -129,14 +129,14 @@ void SpringSmooth(std::vector<VertexType*> Vertices, std::vector<std::array<bool
             VertexType *v=Vertices.at(i);
             for (int j=0; j<3; j++) {
                 if (!FixedDirections.at(i)[j]) {
-                    v->set_c(j, CurrentPositions.at(i)[j]);
+                    v->set_c(CurrentPositions.at(i)[j], j);
                 }
             }
         }
 
 /*        TetGenCaller Tetgen;
         Tetgen.Mesh = Mesh;
-        Tetgen.TestMesh(); */
+        Tetgen.TestMesh();*/
 
         if (Mesh!=NULL) {
             FileName.str(""); FileName.clear();
