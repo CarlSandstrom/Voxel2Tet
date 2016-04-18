@@ -142,4 +142,14 @@ void TetGenCaller :: Execute()
 
 }
 
+void TetGenCaller :: TestMesh()
+{
+    tetgenio in, out;
+
+    CopyMeshFromSelf(&in);
+
+    tetrahedralize("pd", &in, &out);
+
+}
+
 }

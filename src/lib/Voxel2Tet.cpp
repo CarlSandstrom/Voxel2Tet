@@ -749,6 +749,8 @@ void Voxel2Tet::Process()
         FileName << "/tmp/Voxeltest" << outputindex++ << ".vtp";
         this->Mesh->ExportSurface(FileName.str(), FT_VTK);
 
+        this->Tetrahedralize();
+
         this->Mesh->CoarsenMeshImproved();
 
         FileName.str(""); FileName.clear();

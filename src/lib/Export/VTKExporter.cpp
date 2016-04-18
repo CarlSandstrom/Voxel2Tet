@@ -150,7 +150,7 @@ void VTKExporter :: WriteVolumeData(std::string Filename)
     vtkSmartPointer<vtkXMLUnstructuredGridWriter> XMLWriter = vtkSmartPointer<vtkXMLUnstructuredGridWriter>::New();
     XMLWriter->SetFileName(Filename.c_str());
 #if VTK_MAJOR_VERSION <= 5
-    XMLWriter->SetInput(PolyData);
+    XMLWriter->SetInput(UnstructuredGrid);
 #else
     XMLWriter->SetInputData(UnstructuredGrid);
 #endif

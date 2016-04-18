@@ -3,7 +3,7 @@
 
 #include<vector>
 #include<string>
-#include <algorithm>
+#include<algorithm>
 
 #include "MeshComponents.h"
 #include "VertexOctreeNode.h"

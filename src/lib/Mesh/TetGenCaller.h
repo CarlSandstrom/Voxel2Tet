@@ -26,6 +26,7 @@ private:
 public:
     TetGenCaller();
     virtual void Execute();
+    virtual void TestMesh();
 };
 
 }
