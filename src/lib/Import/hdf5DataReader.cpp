@@ -17,18 +17,23 @@ void hdf5DataReader :: LoadFile(std::string FileName)
 {
     LOG ("Open file %s\n", FileName.c_str());
     H5::H5File file( FileName, H5F_ACC_RDONLY );
-    VoxelDataContainer = new H5 :: Group ( file.openGroup("VoxelDataContainer") );
+    //VoxelDataContainer = new H5 :: Group ( file.openGroup("VoxelDataContainer") );
+    H5::Group DataContainers;
+
+    DataContainers = H5 :: Group ( file.openGroup("DataContainers") );
+    VoxelDataContainer = new H5 :: Group ( DataContainers.openGroup("VoxelDataContainer") );
+
 
     // Load dimensional/spatial data
-    VoxelDataContainer->openDataSet("SPACING").read( spacing_data, H5::PredType::NATIVE_DOUBLE);
-    VoxelDataContainer->openDataSet("ORIGIN").read( origin_data, H5::PredType::NATIVE_DOUBLE);
-    VoxelDataContainer->openDataSet("DIMENSIONS").read( dimensions_data, H5::PredType::NATIVE_INT);
+    VoxelDataContainer->openGroup("_SIMPL_GEOMETRY").openDataSet("SPACING").read( spacing_data, H5::PredType::NATIVE_DOUBLE);
+    VoxelDataContainer->openGroup("_SIMPL_GEOMETRY").openDataSet("ORIGIN").read( origin_data, H5::PredType::NATIVE_DOUBLE);
+    VoxelDataContainer->openGroup("_SIMPL_GEOMETRY").openDataSet("DIMENSIONS").read( dimensions_data, H5::PredType::NATIVE_INT);
 
     for (int i=0; i<3; i++) this->BoundingBox.minvalues[i] = this->origin_data[i];
     for (int i=0; i<3; i++) this->BoundingBox.maxvalues[i] = this->origin_data[i]+this->dimensions_data[i]*this->spacing_data[i];
 
     // Load voxel data.
-    H5 :: DataSet GrainIds = VoxelDataContainer->openGroup("CELL_DATA").openDataSet("GrainIds");
+    H5 :: DataSet GrainIds = VoxelDataContainer->openGroup("CellData").openDataSet("GrainIds");
     H5 :: DataSpace space = GrainIds.getSpace();
     hsize_t dims[1];
     space.getSimpleExtentDims(dims);
