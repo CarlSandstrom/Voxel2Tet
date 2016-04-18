@@ -10,13 +10,13 @@ TetGenExporter::TetGenExporter()
 
 }
 
-TetGenExporter::TetGenExporter(std :: vector <TriangleType*> *Triangles, std :: vector <VertexType*> *Vertices, std :: vector <EdgeType*> *Edges):
-    Exporter (Triangles, Vertices, Edges)
+TetGenExporter::TetGenExporter(std :: vector <TriangleType*> *Triangles, std :: vector <VertexType*> *Vertices, std :: vector <EdgeType*> *Edges, std :: vector <TetType*> *Tets):
+    Exporter (Triangles, Vertices, Edges, Tets)
 {
     LOG("Create TetGenExporter object\n",0);
 }
 
-void TetGenExporter::WriteData(std::string Filename)
+void TetGenExporter::WriteSurfaceData(std::string Filename)
 {
     STATUS("Write TetGen file %s\n", Filename.c_str());
     std::ofstream TetGenFile;

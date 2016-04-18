@@ -17,11 +17,13 @@ class Exporter
 private:
 public:
     Exporter();
-    Exporter(std :: vector <TriangleType*> *Triangles, std :: vector <VertexType*> *Vertices, std :: vector <EdgeType*> *Edges);
+    Exporter(std :: vector <TriangleType*> *Triangles, std :: vector <VertexType*> *Vertices, std :: vector <EdgeType*> *Edges, std :: vector <TetType*> *Tets);
     std :: vector <TriangleType*> *Triangles;
     std :: vector <VertexType*> *Vertices;
     std :: vector <EdgeType*> *Edges;
-    virtual void WriteData(std::string Filename) = 0;
+    std :: vector <TetType*> *Tets;
+    virtual void WriteSurfaceData(std::string Filename) = 0;
+    virtual void WriteVolumeData(std::string Filename) = 0;
 };
 
 }

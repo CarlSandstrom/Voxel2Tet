@@ -23,7 +23,9 @@ public:
     std :: vector <TriangleType*> Triangles;
     std :: vector <VertexType*> Vertices;
     std :: vector <EdgeType*> Edges;
+    std :: vector <TetType*> Tets;
 
+    // TODO: Add a AddVertex function
     VertexOctreeNode *VertexOctreeRoot;
 
     // Either with all vertices or with a bounding box
@@ -33,6 +35,9 @@ public:
 
     // Export surface mesh
     void ExportSurface(std::string FileName, Exporter_FileTypes FileType);
+
+    // Export volume mesh
+    void ExportVolume(std::string FileName, Exporter_FileTypes FileType);
 
     // Adds an edge using vertex indices
     EdgeType *AddEdge(std::vector<int> VertexIDs);
@@ -54,6 +59,11 @@ public:
     // Adds a triangle object to the list of triangles
     TriangleType *AddTriangle(TriangleType *NewTriangle);
 
+    TetType *AddTetrahedron(std::vector<int> VertexIDs);
+
+    TetType *AddTetrahedron(TetType *NewTet);
+
+    void RemoveTetragedron(TetType *t);
 };
 
 }

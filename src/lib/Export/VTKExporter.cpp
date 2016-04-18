@@ -8,8 +8,8 @@ VTKExporter::VTKExporter()
 
 }
 
-VTKExporter::VTKExporter(std :: vector <TriangleType*> *Triangles, std :: vector <VertexType*> *Vertices, std :: vector <EdgeType*> *Edges) :
-    Exporter (Triangles, Vertices, Edges)
+VTKExporter::VTKExporter(std :: vector <TriangleType*> *Triangles, std :: vector <VertexType*> *Vertices, std :: vector <EdgeType*> *Edges, std :: vector <TetType*> *Tets) :
+    Exporter (Triangles, Vertices, Edges, Tets)
 {
     //LOG("Create VTKExporter object\n",0);
 }
@@ -30,16 +30,29 @@ vtkCellArray *VTKExporter::SetupTriangles()
 {
     vtkCellArray *Cells = vtkCellArray::New();
     for (unsigned int i=0; i<this->Triangles->size(); i++) {
-        //LOG("Setup triangle %u@(%p)\n", i, this->Triangles->at(i));
         TriangleType *t=this->Triangles->at(i);
         vtkSmartPointer<vtkTriangle> triangle = vtkSmartPointer<vtkTriangle>::New();
         for (int j=0; j<3; j++) {
             VertexType *v=t->Vertices[j];
             int VertexId = this->VertexMap[v];
-            //LOG("Add vertex %u@(%p) to triangle\n", VertexId, this->Vertices->at(VertexId));
             triangle->GetPointIds()->SetId ( j, VertexId );
         }
         Cells->InsertNextCell(triangle);
+    }
+    return Cells;
+}
+
+vtkCellArray *VTKExporter :: SetupTetrahedrons()
+{
+    vtkCellArray *Cells = vtkCellArray::New();
+    for (unsigned int i=0; i<this->Tets->size(); i++) {
+        TetType *t = this->Tets->at(i);
+        vtkSmartPointer<vtkTetra> tet = vtkSmartPointer<vtkTetra>::New();
+        for (int j=0; j<4; j++) {
+            VertexType *v=t->Vertices[j];
+            tet->GetPointIds()->SetId (j,  this->VertexMap[v]);
+        }
+        Cells->InsertNextCell(tet);
     }
     return Cells;
 }
@@ -68,17 +81,28 @@ vtkIntArray *VTKExporter :: SetupTriangleIDs()
     return TriangleIDs;
 }
 
-void VTKExporter :: WriteData(std::string Filename)
+vtkIntArray *VTKExporter :: SetupTetIDs()
+{
+    vtkIntArray *TetIDs = vtkIntArray::New();
+    TetIDs->SetNumberOfComponents(1);
+    TetIDs->SetName("ID");
+    for (unsigned int i=0; i<this->Tets->size(); i++) {
+        TetType *t=this->Tets->at(i);
+        TetIDs->InsertNextTuple1(t->MaterialID);
+    }
+    return TetIDs;
+}
+void VTKExporter :: WriteSurfaceData(std::string Filename)
 {
 
     vtkSmartPointer<vtkPoints> Points;
-    vtkSmartPointer<vtkCellArray> CellArrays;
+    vtkSmartPointer<vtkCellArray> TriangleArrays;
     Points.TakeReference(this->SetupVertices());
-    CellArrays.TakeReference(this->SetupTriangles());
+    TriangleArrays.TakeReference(this->SetupTriangles());
 
     vtkSmartPointer<vtkPolyData> PolyData = vtkSmartPointer<vtkPolyData>::New();
     PolyData->SetPoints (Points);
-    PolyData->SetPolys( CellArrays );
+    PolyData->SetPolys( TriangleArrays );
 
     vtkSmartPointer<vtkIntArray> InterfaceID;
     InterfaceID.TakeReference(this->SetupInterfaceIDs());
@@ -87,6 +111,7 @@ void VTKExporter :: WriteData(std::string Filename)
     vtkSmartPointer<vtkIntArray> TriangleID;
     TriangleID.TakeReference(this->SetupTriangleIDs());
     PolyData->GetCellData()->AddArray(TriangleID);
+
     PolyData->Modified();
 
     vtkSmartPointer<vtkXMLPolyDataWriter> XMLWriter = vtkSmartPointer<vtkXMLPolyDataWriter>::New();
@@ -100,6 +125,38 @@ void VTKExporter :: WriteData(std::string Filename)
 
 }
 
+void VTKExporter :: WriteVolumeData(std::string Filename)
+{
+
+    vtkSmartPointer<vtkPoints> Points;
+    vtkSmartPointer<vtkCellArray> TetArrays;
+    Points.TakeReference(this->SetupVertices());
+    TetArrays.TakeReference(this->SetupTetrahedrons());
+
+    vtkSmartPointer<vtkUnstructuredGrid> UnstructuredGrid= vtkSmartPointer<vtkUnstructuredGrid>::New();
+    UnstructuredGrid->SetPoints (Points);
+    UnstructuredGrid->SetCells(VTK_TETRA, TetArrays );
+
+    vtkSmartPointer<vtkIntArray> RegionID;
+    RegionID.TakeReference(this->SetupTetIDs());
+    UnstructuredGrid->GetCellData()->AddArray(RegionID);
+
+/*    vtkSmartPointer<vtkIntArray> TriangleID;
+    TriangleID.TakeReference(this->SetupTriangleIDs());
+    PolyData->GetCellData()->AddArray(TriangleID);*/
+
+    UnstructuredGrid->Modified();
+
+    vtkSmartPointer<vtkXMLUnstructuredGridWriter> XMLWriter = vtkSmartPointer<vtkXMLUnstructuredGridWriter>::New();
+    XMLWriter->SetFileName(Filename.c_str());
+#if VTK_MAJOR_VERSION <= 5
+    XMLWriter->SetInput(PolyData);
+#else
+    XMLWriter->SetInputData(UnstructuredGrid);
+#endif
+    XMLWriter->Write();
+
+}
 
 }
 

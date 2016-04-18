@@ -17,7 +17,7 @@ void TetGenCaller :: UpdateVertexMapping()
 
     for (TriangleType *t: this->Mesh->Triangles) {
         for (VertexType *v: t->Vertices)
-        VertexIDsFromTriangles.push_back(v);
+            VertexIDsFromTriangles.push_back(v);
     }
 
     std::sort(VertexIDsFromTriangles.begin(), VertexIDsFromTriangles.end());
@@ -49,11 +49,11 @@ void TetGenCaller :: CopyMeshFromSelf(tetgenio *in)
 
     std::map<VertexType *, int>::iterator iter;
     for (iter = this->VertexMapFromID.begin(); iter != this->VertexMapFromID.end(); iter++) {
-         VertexType *v=iter->first;
-         for (double coordvalue: v->get_c()) {
-             in->pointlist[cid]=coordvalue;
-             cid++;
-         }
+        VertexType *v=iter->first;
+        for (double coordvalue: v->get_c()) {
+            in->pointlist[cid]=coordvalue;
+            cid++;
+        }
     }
 
     // Copy mesh triangles
@@ -91,13 +91,41 @@ void TetGenCaller :: CopyMeshFromSelf(tetgenio *in)
 
 void TetGenCaller :: CopyMeshToSelf(tetgenio *io)
 {
-    //io->pointlist
+
+    MeshData NewMesh(this->Mesh->BoundingBox);
+
+    // Add vertices
+    for (int i=0; i<io->numberofpoints; i++) {
+        double *c;
+        c = &io->pointlist[3*i];
+        NewMesh.VertexOctreeRoot->AddVertex(c[0], c[1], c[2]);
+    }
+
+    // Add triangles
     for (int i=0; i<io->numberoftrifaces; i++) {
-        int *triface[3];
+        int *triface;
         int marker = io->trifacemarkerlist[i];
         triface = &io->trifacelist[3*i];
-        printf("(%u, %u, %u) : %u\n", triface[0], triface[1], triface[2], marker);
+        TriangleType *t = NewMesh.AddTriangle({triface[0], triface[1], triface[2]});
+        t->InterfaceID = marker;
     }
+
+    // Add tetrahedrons
+    for (int i=0; i<io->numberoftetrahedra; i++) {
+        int *tet = &io->tetrahedronlist[4*i];
+        TetType *t = NewMesh.AddTetrahedron({tet[0], tet[1], tet[2], tet[3]});
+
+        if (io->numberoftetrahedronattributes==1) {
+            int tetattr = io->tetrahedronattributelist[i];
+            t->MaterialID = tetattr;
+        } else {
+            t->MaterialID = 0;
+        }
+    }
+
+    NewMesh.ExportVolume("/tmp/TetVolume0.vtu", FT_VTK);
+    NewMesh.ExportVolume("/tmp/TetVolume1.vtu", FT_VTK);
+
 }
 
 void TetGenCaller :: EmbarrassingTestExample()
@@ -126,9 +154,9 @@ void TetGenCaller :: EmbarrassingTestExample()
     in.pointlist[11] = 0;
     // Set node 5, 6, 7, 8.
     for (i = 4; i < 8; i++) {
-      in.pointlist[i * 3]     = in.pointlist[(i - 4) * 3];
-      in.pointlist[i * 3 + 1] = in.pointlist[(i - 4) * 3 + 1];
-      in.pointlist[i * 3 + 2] = 12;
+        in.pointlist[i * 3]     = in.pointlist[(i - 4) * 3];
+        in.pointlist[i * 3 + 1] = in.pointlist[(i - 4) * 3 + 1];
+        in.pointlist[i * 3 + 2] = 12;
     }
     in.pointlist[24] = .1;
     in.pointlist[25] = .1;
@@ -267,10 +295,8 @@ void TetGenCaller :: Execute()
 
     CopyMeshFromSelf(&in);
 
-    in.save_nodes("plc");
-    in.save_poly("plc");
     tetrahedralize("pd", &in, &out);
-    tetrahedralize("p", &in, &out, NULL); //pq1.414a0.1
+    tetrahedralize("pq1.414a0.1A", &in, &out, NULL); //pq1.414a0.1
 
     CopyMeshToSelf(&out);
 

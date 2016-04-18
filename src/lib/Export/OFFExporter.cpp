@@ -12,13 +12,13 @@ OFFExporter::OFFExporter()
 
 }
 
-OFFExporter::OFFExporter(std :: vector <TriangleType*> *Triangles, std :: vector <VertexType*> *Vertices, std :: vector <EdgeType*> *Edges):
-    Exporter (Triangles, Vertices, Edges)
+OFFExporter::OFFExporter(std :: vector <TriangleType*> *Triangles, std :: vector <VertexType*> *Vertices, std :: vector <EdgeType*> *Edges, std :: vector <TetType*> *Tets):
+    Exporter (Triangles, Vertices, Edges, Tets)
 {
     LOG("Create TetGenExporter object\n",0);
 }
 
-void OFFExporter::WriteData(std::string Filename)
+void OFFExporter::WriteSurfaceData(std::string Filename)
 {
     STATUS("Write .off file %s\n", Filename.c_str());
     std::ofstream OFFFile;

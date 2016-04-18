@@ -120,23 +120,45 @@ void MeshData :: DoSanityCheck()
 
 void MeshData :: ExportSurface(std::string FileName, Exporter_FileTypes FileType)
 {
-    STATUS ("Export to %s\n", FileName.c_str());
+    STATUS ("Export surface to %s\n", FileName.c_str());
     Exporter *exporter;
     switch (FileType) {
     case FT_OFF: {
-        exporter = new OFFExporter (&this->Triangles, &this->Vertices, &this->Edges);
+        exporter = new OFFExporter (&this->Triangles, &this->Vertices, &this->Edges, &this->Tets);
         break;
     }
     case FT_Poly: {
-        exporter = new TetGenExporter (&this->Triangles, &this->Vertices, &this->Edges);
+        exporter = new TetGenExporter (&this->Triangles, &this->Vertices, &this->Edges, &this->Tets);
         break;
     }
     case FT_VTK: {
-        exporter = new VTKExporter(&this->Triangles, &this->Vertices, &this->Edges);
+        exporter = new VTKExporter(&this->Triangles, &this->Vertices, &this->Edges, &this->Tets);
         break;
     }
     }
-    exporter->WriteData(FileName);
+    exporter->WriteSurfaceData(FileName);
+    free(exporter);
+}
+
+void MeshData :: ExportVolume(std::string FileName, Exporter_FileTypes FileType)
+{
+    STATUS ("Export volume to %s\n", FileName.c_str());
+    Exporter *exporter;
+    switch (FileType) {
+    case FT_OFF: {
+        exporter = new OFFExporter (&this->Triangles, &this->Vertices, &this->Edges, &this->Tets);
+        break;
+    }
+    case FT_Poly: {
+        exporter = new TetGenExporter (&this->Triangles, &this->Vertices, &this->Edges, &this->Tets);
+        break;
+    }
+    case FT_VTK: {
+        exporter = new VTKExporter(&this->Triangles, &this->Vertices, &this->Edges, &this->Tets);
+        break;
+    }
+    }
+    exporter->WriteVolumeData(FileName);
     free(exporter);
 }
 
@@ -256,5 +278,25 @@ TriangleType *MeshData :: AddTriangle(TriangleType *NewTriangle)
     return NewTriangle;
 
 }
+
+TetType *MeshData :: AddTetrahedron(std::vector<int> VertexIDs)
+{
+    TetType *NewTet = new TetType;
+    NewTet->Vertices = {this->Vertices.at(VertexIDs[0]), this->Vertices.at(VertexIDs[1]), this->Vertices.at(VertexIDs[2]), this->Vertices.at(VertexIDs[3])};
+    return this->AddTetrahedron(NewTet);
+}
+
+TetType *MeshData :: AddTetrahedron(TetType *NewTet)
+{
+    NewTet->ID = this->Tets.size();
+    this->Tets.push_back(NewTet);
+    return NewTet;
+}
+
+void MeshData :: RemoveTetragedron(TetType *t)
+{
+
+}
+
 
 }
