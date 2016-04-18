@@ -6,6 +6,7 @@
 #include "MeshComponents.h"
 #include "PhaseEdge.h"
 #include "MiscFunctions.h"
+#include "Smoother.h"
 #include "armadillo"
 
 namespace voxel2tet

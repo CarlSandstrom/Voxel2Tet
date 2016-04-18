@@ -1,4 +1,5 @@
 #include "PhaseEdge.h"
+#include "Smoother.h"
 #include <array>
 
 namespace voxel2tet

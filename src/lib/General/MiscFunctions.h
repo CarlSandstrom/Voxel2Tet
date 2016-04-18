@@ -6,7 +6,7 @@
 #define SANITYCHECK 1
 #define EXPORTMESHCOARSENING 0
 
-#define EXPORT_SMOOTHING_ANIMATION 0
+#define EXPORT_SMOOTHING_ANIMATION 1
 
 #define SMOOTH_EDGES_INDIVIDUALLY 0
 
@@ -33,9 +33,6 @@ extern "C" MeshData* GlobalMesh;
 void dolog(const char *functionname, const char *fmt, ...);
 void dooutputstat(const char *fmt, ...);
 void dooutputlogmesh(MeshData &Mesh, char *filename, ...);
-
-void SpringSmooth(std::vector<VertexType*> Vertices, std::vector<std::array<bool,3>> FixedDirections,
-                  std::vector<std::vector<VertexType*>> Connections, double K, MeshData *Mesh=NULL);
 
 std::array<double,3> ComputeNormalizedVector(VertexType* v1, VertexType* v2);
 

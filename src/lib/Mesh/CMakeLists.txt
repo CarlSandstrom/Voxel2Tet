@@ -4,6 +4,7 @@ set(MeshLibList
 	${CMAKE_CURRENT_SOURCE_DIR}/MeshComponents.cpp
 	${CMAKE_CURRENT_SOURCE_DIR}/MeshGenerator3D.cpp
 	${CMAKE_CURRENT_SOURCE_DIR}/TetGenCaller.cpp
+	${CMAKE_CURRENT_SOURCE_DIR}/Smoother.cpp
 )
 
 set(Voxel2TetLibList ${Voxel2TetLibList} ${MeshLibList} PARENT_SCOPE)
