@@ -3,7 +3,7 @@
 
 #define LOGOUTPUT 0
 #define STATOUTPUT 1
-#define SANITYCHECK 1
+#define SANITYCHECK 0
 
 #define EXPORTMESHCOARSENING 0
 #define EXPORT_SMOOTHING_ANIMATION 0
@@ -18,6 +18,8 @@
 #include <vector>
 #include <array>
 #include <string>
+#include <memory>
+
 #include "MeshComponents.h"
 
 
@@ -33,6 +35,16 @@ extern "C" MeshData* GlobalMesh;
 void dolog(const char *functionname, const char *fmt, ...);
 void dooutputstat(const char *fmt, ...);
 void dooutputlogmesh(MeshData &Mesh, char *filename, ...);
+
+//template<typename ... Args> std::string strfmt( const std::string& format, Args ... args );
+template<typename ... Args>
+std::string strfmt( const std::string& format, Args ... args )
+{
+    size_t size = snprintf( nullptr, 0, format.c_str(), args ... ) + 1; // Extra space for '\0'
+    std::unique_ptr<char[]> buf( new char[ size ] );
+    snprintf( buf.get(), size, format.c_str(), args ... );
+    return std::string( buf.get(), buf.get() + size - 1 ); // We don't want the '\0' inside
+}
 
 std::array<double,3> ComputeNormalizedVector(VertexType* v1, VertexType* v2);
 

@@ -23,7 +23,7 @@ public:
     std::vector<PhaseEdge*> PhaseEdges;
     void AddPhaseEdge(PhaseEdge*);
     bool IsFixedVertex() {return PhaseEdges.size()>1;}
-    bool IsEdgeVertex() {return PhaseEdges.size()>0;}
+    bool IsPhaseEdgeVertex() {return PhaseEdges.size()>0;}
 
     VertexType (double x, double y, double z);
     double originalcoordinates[3];

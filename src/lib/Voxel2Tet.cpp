@@ -1,6 +1,7 @@
 #include <algorithm>
 #include <vector>
 #include <iterator>
+#include <time.h>
 
 #include "Voxel2Tet.h"
 #include "Importer.h"
@@ -126,6 +127,7 @@ void Voxel2Tet::FindSurfaces()
 
     std::vector <double> signs = {1, -1};
 
+//#pragma omp parallel for
     for (int i=0; i<dim[0]; i++) {
         for (int j=0; j<dim[1]; j++) {
             for (int k=0; k<dim[2]; k++) {
@@ -159,6 +161,7 @@ void Voxel2Tet::FindSurfaces()
                 bool SamePhase;
 
                 // Check material in each direction
+
                 for (unsigned int m=0; m<testdirections.size(); m++) {
                     int testi = testdirections.at(m).at(0) + i;
                     int testj = testdirections.at(m).at(1) + j;
@@ -196,6 +199,7 @@ void Voxel2Tet::FindSurfaces()
 
                         std::vector <int> VoxelIDs;
 
+
                         for (auto s1: signs) {
                             for (auto s2: signs) {
                                 double newvertex[3];
@@ -206,14 +210,23 @@ void Voxel2Tet::FindSurfaces()
                                 newvertex[vindex.at(m).at(0)] = newvertex[vindex.at(m).at(0)] + s1*delta[vindex.at(m)[0]];
                                 newvertex[vindex.at(m).at(1)] = newvertex[vindex.at(m).at(1)] + s2*delta[vindex.at(m)[1]];
 
+//#pragma omp critical
+                                {
                                 int id = Mesh->VertexOctreeRoot->AddVertex(newvertex[0], newvertex[1], newvertex[2]);
                                 LOG ("Corner (id=%u) at (%f, %f, %f)\n", id, newvertex[0], newvertex[1], newvertex[2]);
                                 VoxelIDs.push_back(id);
+                                }
                             }
                         }
+//#pragma omp critical
+                        {
                         AddSurfaceSquare(VoxelIDs, {ThisPhase, NeighboringPhase}, NeighboringPhase);
+                        }
+
                     }
+
                 }
+
             }
         }
     }
@@ -710,10 +723,7 @@ void Voxel2Tet::Process()
 
     this->FindSurfaces();
 
-    std::ostringstream FileName;
-
-    FileName << "/tmp/Voxeltest" << outputindex++ << ".vtp";
-    this->Mesh->ExportSurface( FileName.str(), FT_VTK );
+    this->Mesh->ExportSurface(strfmt("/tmp/Voxeltest%u.vtp", outputindex++) , FT_VTK );
 
     if (true) {  // Carl's suggestion
 
@@ -726,35 +736,19 @@ void Voxel2Tet::Process()
 #endif
 
 
-        FileName.str(""); FileName.clear();
-        FileName << "/tmp/Voxeltest" << outputindex++ << ".vtp";
-        this->Mesh->ExportSurface(FileName.str(), FT_VTK);
-
+        this->Mesh->ExportSurface(strfmt("/tmp/Voxeltest%u.vtp", outputindex++), FT_VTK);
         this->SmoothSurfaces();
 
-        FileName.str(""); FileName.clear();
-        FileName << "/tmp/Voxeltest" << outputindex++ << ".vtp";
-        this->Mesh->ExportSurface(FileName.str(), FT_VTK);
 
-/*      Redundant (Replaced with FlipAll):
-        this->Mesh->RemoveDegenerateTriangles();
-
-        FileName.str(""); FileName.clear();
-        FileName << "/tmp/Voxeltest" << outputindex++ << ".vtp";
-        this->Mesh->ExportVTK(FileName.str());*/
-
+        this->Mesh->ExportSurface(strfmt("/tmp/Voxeltest%u.vtp", outputindex++), FT_VTK);
         this->Mesh->FlipAll();
 
-        FileName.str(""); FileName.clear();
-        FileName << "/tmp/Voxeltest" << outputindex++ << ".vtp";
-        this->Mesh->ExportSurface(FileName.str(), FT_VTK);
 
+        this->Mesh->ExportSurface(strfmt("/tmp/Voxeltest%u.vtp", outputindex++), FT_VTK);
         this->Mesh->CoarsenMeshImproved();
 
-        FileName.str(""); FileName.clear();
-        FileName << "/tmp/Voxeltest" << outputindex++ << ".vtp";
-        this->Mesh->ExportSurface(FileName.str(), FT_VTK);
 
+        this->Mesh->ExportSurface(strfmt("/tmp/Voxeltest%u.vtp", outputindex++), FT_VTK);
         this->Mesh->FlipAll();
 
     } else {  // Mikael's suggestions
@@ -767,9 +761,7 @@ void Voxel2Tet::Process()
         this->SmoothAllAtOnce();
     }
 
-    FileName.str(""); FileName.clear();
-    FileName << "/tmp/Voxeltest" << outputindex++ << ".vtp";
-    this->Mesh->ExportSurface(FileName.str(), FT_VTK);
+    this->Mesh->ExportSurface(strfmt("/tmp/Voxeltest%u.vtp", outputindex++), FT_VTK);
 
     int iter = 0;
 #if EXPORTMESHCOARSENING == 1

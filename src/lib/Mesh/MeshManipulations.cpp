@@ -443,7 +443,7 @@ bool MeshManipulations :: CheckCoarsenNormal(std::vector<TriangleType*> *OldTria
 bool MeshManipulations :: CheckCoarsenChord(EdgeType *EdgeToCollapse, VertexType* RemoveVertex, VertexType* SaveVertex)
 {
     // If both vertices are located on an edge, proceed wih check. If not, collapsing is ok.
-    if (!(SaveVertex->IsEdgeVertex() && RemoveVertex->IsEdgeVertex())) {
+    if (!(SaveVertex->IsPhaseEdgeVertex() && RemoveVertex->IsPhaseEdgeVertex())) {
         return true;
     }
 
@@ -530,7 +530,7 @@ std::vector<VertexType *> MeshManipulations :: FindIndependentSet()
     std::vector<VertexType *> EdgeVertices;
     std::vector<VertexType *> FaceVertices;
     for (VertexType *v: this->Vertices) {
-        if (v->IsEdgeVertex()) {
+        if (v->IsPhaseEdgeVertex()) {
             EdgeVertices.push_back(v);
         } else {
             FaceVertices.push_back(v);
@@ -610,15 +610,7 @@ bool MeshManipulations :: CoarsenMeshImproved()
                         D = 1;
                     }
 
-                    if ((iter==241) & (failcount==116)) {
-                        dooutputlogmesh(*this, (char *) "/tmp/test_0.vtp", 0);
-                    }
-
                     bool CoarseOk = this->CollapseEdge(e, D);
-
-                    if ((iter==241) & (failcount==116)) {
-                        dooutputlogmesh(*this, (char *) "/tmp/test_1.vtp", 0);
-                    }
 
                     if (!CoarseOk) {
                         D = 1 ? 0 : 1;

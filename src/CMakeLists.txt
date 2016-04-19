@@ -77,6 +77,13 @@ find_library(TETGEN_LIB libtet.so)
 MESSAGE( STATUS "Tetgen library found in ${TETGEN_LIB}")
 set(linkerlist ${linkerlist} ${TETGEN_LIB})
 
+#### OpenMP
+find_package(OpenMP)
+if (OPENMP_FOUND)
+    set (CMAKE_C_FLAGS "${CMAKE_C_FLAGS} ${OpenMP_C_FLAGS}")
+    set (CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} ${OpenMP_CXX_FLAGS}")
+endif()
+
 #### Project files
 
 include_directories(lib lib/Export lib/Import lib/Mesh lib/General)
