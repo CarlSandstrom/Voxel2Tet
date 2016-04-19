@@ -225,9 +225,10 @@ FC_MESH MeshManipulations :: CheckFlipNormal(std::vector<TriangleType*> *OldTria
             // Compute angle between new and old normal
             double angle1 = std::acos( OldNormal[0]*NewNormal[0] + OldNormal[1]*NewNormal[1] + OldNormal[2]*NewNormal[2]);
             double angle2 = std::acos( -(OldNormal[0]*NewNormal[0] + OldNormal[1]*NewNormal[1] + OldNormal[2]*NewNormal[2]) );
-            if (std::min(angle1, angle2)>MaxAngle) {
+/*            if (std::min(angle1, angle2)>MaxAngle) {
                 MaxAngle = std::min(angle1, angle2);
-            }
+            }*/
+            MaxAngle = std::max(MaxAngle, angle1);
         }
     }
 
@@ -612,15 +613,6 @@ bool MeshManipulations :: CoarsenMeshImproved()
             this->Edges.push_back(epair.second);
         }
 
-
-/*        std::vector<std::pair<EdgeType *, double>> EdgeLength2;
-
-        for (EdgeType *e: this->Edges) {
-            EdgeLength2.push_back(std::make_pair (e, e->GiveLength()));
-        }
-
-        std::sort(EdgeLength2.begin(), EdgeLength2.end());*/
-
         while (i<this->Edges.size()) {
 
             STATUS("%c[2K\rCoarsening iteration %u, failcount %u", 27, iter, failcount);
@@ -644,7 +636,7 @@ bool MeshManipulations :: CoarsenMeshImproved()
 
                     if (CoarseOk) {
                         CoarseningOccurs = true;
-                        //dooutputlogmesh(*this, "/tmp/test_%u.vtp", iter);
+                        dooutputlogmesh(*this, "/tmp/Coarsening_%u.vtp", iter);
 #if SANITYCHECK == 1
 //                        this->DoSanityCheck();
 #endif
