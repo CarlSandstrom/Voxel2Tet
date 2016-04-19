@@ -134,9 +134,9 @@ void SpringSmooth(std::vector<VertexType*> Vertices, std::vector<std::array<bool
             }
         }
 
-/*        TetGenCaller Tetgen;
+        TetGenCaller Tetgen;
         Tetgen.Mesh = Mesh;
-        Tetgen.TestMesh();*/
+        Tetgen.TestMesh();
 
         if (Mesh!=NULL) {
             FileName.str(""); FileName.clear();

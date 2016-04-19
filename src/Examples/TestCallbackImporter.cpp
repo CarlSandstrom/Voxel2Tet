@@ -45,18 +45,18 @@ int GiveMaterialIDByCoordinateTwoSpheres(double x, double y, double z)
 
 int main( int argc, char *argv[] )
 {
+
     std::map <std::string, std::string> DefaultOptions;
     voxel2tet::Options *Options = new voxel2tet::Options(argc, argv, DefaultOptions);
 
     voxel2tet::Voxel2Tet v2t(Options);
 
-    double spacing=0.1;
+    double spacing=0.01;
     double length=1.0;
     int dimensions= std::ceil(length/spacing);
 
     v2t.LoadCallback(&GiveMaterialIDByCoordinateSphere, {0,0,0}, {spacing, spacing, spacing}, {dimensions, dimensions, dimensions});
     v2t.Process();
     v2t.ExportSurface("/tmp/Voxel2Tet/TetGenTest.off", voxel2tet::FT_OFF);
-
 
 }

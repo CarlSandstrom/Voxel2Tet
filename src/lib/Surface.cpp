@@ -118,7 +118,7 @@ void Surface :: MoveAsTrussStructure()
 }
 
 
-void Surface::Smooth()
+void Surface::Smooth(MeshData *Mesh)
 {
 
     double K = this->Opt->GiveDoubleValue("spring_const");
@@ -150,7 +150,7 @@ void Surface::Smooth()
 
     }
 
-    SpringSmooth(this->Vertices, FixedDirectionsList, Connections, K);
+    SpringSmooth(this->Vertices, FixedDirectionsList, Connections, K, Mesh);
 
 }
 

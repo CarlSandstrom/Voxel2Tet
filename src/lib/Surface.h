@@ -33,7 +33,7 @@ public:
     void AddVertex(VertexType* Vertex);
     void AddTriangle(TriangleType* Triangle);
 
-    void Smooth();
+    void Smooth(MeshData *Mesh);
 };
 
 }

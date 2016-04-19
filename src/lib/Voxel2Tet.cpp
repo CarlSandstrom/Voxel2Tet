@@ -583,7 +583,7 @@ void Voxel2Tet :: SmoothSurfaces()
 {
     STATUS("Smooth surfaces\n", 0);
     for (auto s: this->Surfaces) {
-        s->Smooth();
+        s->Smooth(this->Mesh);
     }
 }
 
