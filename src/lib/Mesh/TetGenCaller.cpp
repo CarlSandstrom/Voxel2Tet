@@ -135,7 +135,6 @@ void TetGenCaller :: Execute()
 
     CopyMeshFromSelf(&in);
 
-    tetrahedralize("pd", &in, &out);
     tetrahedralize("pqA", &in, &out, NULL); //pq1.414a0.1
 
     CopyMeshToSelf(&out);
@@ -144,6 +143,7 @@ void TetGenCaller :: Execute()
 
 void TetGenCaller :: TestMesh()
 {
+
     tetgenio in, out;
 
     CopyMeshFromSelf(&in);

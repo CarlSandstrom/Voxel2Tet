@@ -7,6 +7,7 @@
 
 int main( int argc, char *argv[] )
 {
+
     std::map <std::string, std::string> DefaultOptions;
     voxel2tet::Options *Options = new voxel2tet::Options(argc, argv, DefaultOptions);
 
@@ -16,6 +17,4 @@ int main( int argc, char *argv[] )
     v2t.Process();
     v2t.Tetrahedralize();
 
-    v2t.ExportSurface("/tmp/Voxel2Tet/TetGenTest.poly", voxel2tet::FT_Poly);
-    v2t.ExportSurface("/tmp/Voxel2Tet/TetGenTest.off", voxel2tet::FT_OFF);
 }

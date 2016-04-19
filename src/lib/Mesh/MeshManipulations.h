@@ -19,8 +19,6 @@ class MeshManipulations: public MeshData
 private:
     bool GetFlippedEdgeData(EdgeType *EdgeToFlip, EdgeType *NewEdge, std::array<TriangleType*, 2> *NewTriangles);
 
-
-
 public:
     MeshManipulations(BoundingBoxType BoundingBox);
 
