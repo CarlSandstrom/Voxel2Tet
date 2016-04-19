@@ -2,11 +2,11 @@
 #include <string>
 #include <stdio.h>
 
-#include "hdf5DataReader.h"
+#include "CCBuilderDataReader.h"
 
 int main( int argc, char *argv[] )
 {
-    voxel2tet :: hdf5DataReader DataReader = voxel2tet :: hdf5DataReader();
+    voxel2tet :: CCBuilderDataReader DataReader = voxel2tet :: CCBuilderDataReader();
     DataReader.LoadFile("/home/carl/dev/Voxel2Tet/ExampleInput/substructure.hdf5");
     double dt[3];
     DataReader.GiveSpacing(dt);

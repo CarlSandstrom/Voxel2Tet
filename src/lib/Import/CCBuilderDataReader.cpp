@@ -3,17 +3,17 @@
 #include<stdlib.h>
 #include<cmath>
 
-#include "hdf5DataReader.h"
+#include "CCBuilderDataReader.h"
 #include "MiscFunctions.h"
 
 namespace voxel2tet {
 
-hdf5DataReader::hdf5DataReader()
+CCBuilderDataReader::CCBuilderDataReader()
 {
 
 }
 
-void hdf5DataReader :: LoadFile(std::string FileName)
+void CCBuilderDataReader :: LoadFile(std::string FileName)
 {
     LOG ("Open file %s\n", FileName.c_str());
     H5::H5File file( FileName, H5F_ACC_RDONLY );
@@ -47,7 +47,7 @@ void hdf5DataReader :: LoadFile(std::string FileName)
 
 }
 
-int hdf5DataReader :: GiveMaterialIDByCoordinate(double x, double y, double z)
+int CCBuilderDataReader :: GiveMaterialIDByCoordinate(double x, double y, double z)
 {
     double coords[3]={x, y, z};
     int indices[3];
@@ -58,7 +58,7 @@ int hdf5DataReader :: GiveMaterialIDByCoordinate(double x, double y, double z)
     return this->GiveMaterialIDByIndex(indices[0], indices[1], indices[2]);
 }
 
-int hdf5DataReader :: GiveMaterialIDByIndex(int xi, int yi, int zi)
+int CCBuilderDataReader :: GiveMaterialIDByIndex(int xi, int yi, int zi)
 {
     if (xi == -1) {
         return -1;
@@ -79,12 +79,12 @@ int hdf5DataReader :: GiveMaterialIDByIndex(int xi, int yi, int zi)
 
 }
 
-void hdf5DataReader :: GiveSpacing(double spacing[3])
+void CCBuilderDataReader :: GiveSpacing(double spacing[3])
 {
     for (int i=0; i<3; i++) {spacing[i] = this->spacing_data[i];}
 }
 
-BoundingBoxType hdf5DataReader::GiveBoundingBox()
+BoundingBoxType CCBuilderDataReader::GiveBoundingBox()
 {
     BoundingBoxType BoundingBox;
     for (int i=0; i<3; i++) {
@@ -94,19 +94,19 @@ BoundingBoxType hdf5DataReader::GiveBoundingBox()
     return BoundingBox;
 }
 
-void hdf5DataReader :: GiveDimensions(int dimensions[3])
+void CCBuilderDataReader :: GiveDimensions(int dimensions[3])
 {
     for (int i=0; i<3; i++) {dimensions[i] = this->dimensions_data[i];}
 }
 
-void hdf5DataReader :: GiveCoordinateByIndices(int xi, int yi, int zi, DoubleTriplet Coordinate)
+void CCBuilderDataReader :: GiveCoordinateByIndices(int xi, int yi, int zi, DoubleTriplet Coordinate)
 {
     Coordinate.c[0] = xi*this->spacing_data[0] + this->origin_data[0];
     Coordinate.c[1] = yi*this->spacing_data[1] + this->origin_data[1];
     Coordinate.c[2] = zi*this->spacing_data[2] + this->origin_data[2];
 }
 
-void hdf5DataReader :: GiveOrigin(double origin[3])
+void CCBuilderDataReader :: GiveOrigin(double origin[3])
 {
     for (int i=0; i<3; i++) {origin[i] = this->origin_data[i];}
 }

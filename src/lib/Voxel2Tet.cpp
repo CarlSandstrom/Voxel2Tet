@@ -4,7 +4,7 @@
 
 #include "Voxel2Tet.h"
 #include "Importer.h"
-#include "hdf5DataReader.h"
+#include "CCBuilderDataReader.h"
 #include "CallbackImporter.h"
 #include "TetGenCaller.h"
 
@@ -41,7 +41,7 @@ void Voxel2Tet::LoadCallback(cbMaterialIDByCoordinate MaterialIDByCoordinate, st
 void Voxel2Tet::LoadFile(std::string Filename)
 {
     STATUS ("Load file %s\n", Filename.c_str());
-    hdf5DataReader *DataReader = new hdf5DataReader();
+    CCBuilderDataReader *DataReader = new CCBuilderDataReader();
     DataReader->LoadFile(Filename);
     this->Imp = DataReader;
     FinalizeLoad();

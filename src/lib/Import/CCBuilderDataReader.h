@@ -1,5 +1,5 @@
-#ifndef HDF5DATAREADER_H
-#define HDF5DATAREADER_H
+#ifndef CCBUILDERDATAREADER_H
+#define CCBUILDERDATAREADER_H
 
 #include <string>
 
@@ -8,7 +8,7 @@
 
 namespace voxel2tet {
 
-class hdf5DataReader: public Importer
+class CCBuilderDataReader: public Importer
 {
 private:
     H5::Group *VoxelDataContainer;
@@ -18,7 +18,7 @@ private:
     BoundingBoxType BoundingBox;
     int *GrainIdsData;
 public:
-    hdf5DataReader();
+    CCBuilderDataReader();
     void LoadFile(std::string FileName);
     virtual int GiveMaterialIDByCoordinate(double x, double y, double z);
     virtual int GiveMaterialIDByIndex(int xi, int yi, int zi);
@@ -31,4 +31,4 @@ public:
 
 }
 
-#endif // HDF5DATAREADER_H
+#endif // CCBUILDERDATAREADER_H
