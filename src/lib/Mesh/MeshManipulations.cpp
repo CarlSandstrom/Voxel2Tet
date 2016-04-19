@@ -49,7 +49,7 @@ void MeshManipulations :: RemoveDegenerateTriangles()
     }
 }
 
-bool MeshManipulations :: GetFlippedEdgeData(EdgeType *EdgeToFlip, EdgeType *NewEdge, std::array<TriangleType*, 2> *NewTriangles)
+FC_MESH MeshManipulations :: GetFlippedEdgeData(EdgeType *EdgeToFlip, EdgeType *NewEdge, std::array<TriangleType*, 2> *NewTriangles)
 {
     LOG("Get flipped edge data for edge %p\n", EdgeToFlip);
 
@@ -57,7 +57,7 @@ bool MeshManipulations :: GetFlippedEdgeData(EdgeType *EdgeToFlip, EdgeType *New
 
     if (EdgeTriangles.size()!=2) {
         LOG("Unable to flip edge. To many or only one triangle connected\n", 0);
-        return false;
+        return FC_TOOMANYTRIANGLES;
     }
 
     for (int i=0; i<2; i++) std::sort(EdgeTriangles.at(i)->Vertices.begin(), EdgeTriangles.at(i)->Vertices.end());
@@ -68,8 +68,8 @@ bool MeshManipulations :: GetFlippedEdgeData(EdgeType *EdgeToFlip, EdgeType *New
                                   EdgeTriangles.at(1)->Vertices.begin(), EdgeTriangles.at(1)->Vertices.end(), std::back_inserter(NewEdgeVertices));
 
     if (NewEdgeVertices.size()==0) {
-        STATUS("Edge triangles are equivalent!\n", 0);
-        return false;
+        STATUS("Edge triangles are same!\n", 0);
+        throw 0;
     }
 
     // Create triangles
@@ -96,33 +96,38 @@ bool MeshManipulations :: GetFlippedEdgeData(EdgeType *EdgeToFlip, EdgeType *New
     NewEdge->Vertices[0] = NewEdgeVertices[0];
     NewEdge->Vertices[1] = NewEdgeVertices[1];
 
-    return true;
+    return FC_OK;
 
 }
 
-bool MeshManipulations :: FlipEdge(EdgeType *Edge)
+FC_MESH MeshManipulations :: FlipEdge(EdgeType *Edge)
 {
     LOG ("\tFlip edge %p (%u, %u)\n", Edge, Edge->Vertices[0]->ID, Edge->Vertices[1]->ID);
 
     std::vector<TriangleType *> EdgeTriangles = Edge->GiveTriangles();
     if (EdgeTriangles.size()!=2) {
         LOG("Unable to flip edge. To many or only one triangle connected\n", 0);
-        return false;
+        return FC_TOOMANYTRIANGLES;
     }
 
     std::array<TriangleType*, 2> NewTriangles;
     EdgeType NewEdge;
 
-    if (!this->GetFlippedEdgeData(Edge, &NewEdge, &NewTriangles)) {
-        return false;
+    FC_MESH FC;
+
+    // Check if flipping is an ok action
+    FC = this->GetFlippedEdgeData(Edge, &NewEdge, &NewTriangles);
+    if (FC != FC_OK) {
+        return FC;
     }
 
-    if (!this->CheckFlipNormal(&EdgeTriangles, NewTriangles)) {
+    FC = this->CheckFlipNormal(&EdgeTriangles, NewTriangles);
+    if (FC != FC_OK) {
         LOG("Changes in normal direction prevents flipping\n", 0);
         for (TriangleType *t: NewTriangles) {
             delete t;
         }
-        return false;
+        return FC;
     }
 
     // Ensure that minimal angle is improved if we continue
@@ -134,7 +139,7 @@ bool MeshManipulations :: FlipEdge(EdgeType *Edge)
         for (TriangleType *t: NewTriangles) {
             delete t;
         }
-        return false;
+        return FC_WORSEMINANGLE;
     }
 
     // Check change in area of region. Should be small
@@ -146,7 +151,7 @@ bool MeshManipulations :: FlipEdge(EdgeType *Edge)
         for (TriangleType *t: NewTriangles) {
             delete t;
         }
-        return false;
+        return FC_SMALLAREA;
     }
 
     // Check if any of the new triangles already exist
@@ -162,7 +167,7 @@ bool MeshManipulations :: FlipEdge(EdgeType *Edge)
     for (unsigned int i=0; i<ConnectedTriangles.size()-1; i++) {
         if (ConnectedTriangles.at(i) == ConnectedTriangles.at(i+1)) {
             LOG("Edge already exists!\n", 0);
-            return false;
+            throw 0;
         }
     }
 
@@ -198,11 +203,11 @@ bool MeshManipulations :: FlipEdge(EdgeType *Edge)
         this->RemoveTriangle(t);
     }
 
-    return true;
+    return FC_OK;
 
 }
 
-bool MeshManipulations :: CheckFlipNormal(std::vector<TriangleType*> *OldTriangles, std::array<TriangleType *, 2> NewTriangles)
+FC_MESH MeshManipulations :: CheckFlipNormal(std::vector<TriangleType*> *OldTriangles, std::array<TriangleType *, 2> NewTriangles)
 {
     double MaxAngle = 0.0;
 
@@ -210,11 +215,14 @@ bool MeshManipulations :: CheckFlipNormal(std::vector<TriangleType*> *OldTriangl
         for (unsigned int j=0; j<NewTriangles.size(); j++) {
             TriangleType *NewTriangle = NewTriangles.at(j);
             double NewArea = NewTriangle->GiveArea();
+            // TODO: Use variable instead
             if (NewArea < 1e-8) {
-                return false;
+                return FC_SMALLAREA;
             }
             std::array<double, 3> OldNormal = OldTriangle->GiveUnitNormal(); // TODO: Move to first for loop
             std::array<double, 3> NewNormal = NewTriangle->GiveUnitNormal();
+
+            // Compute angle between new and old normal
             double angle1 = std::acos( OldNormal[0]*NewNormal[0] + OldNormal[1]*NewNormal[1] + OldNormal[2]*NewNormal[2]);
             double angle2 = std::acos( -(OldNormal[0]*NewNormal[0] + OldNormal[1]*NewNormal[1] + OldNormal[2]*NewNormal[2]) );
             if (std::min(angle1, angle2)>MaxAngle) {
@@ -224,50 +232,43 @@ bool MeshManipulations :: CheckFlipNormal(std::vector<TriangleType*> *OldTriangl
     }
 
     if (MaxAngle > (10*2*3.1415/360))
-        return false;
+        return FC_NORMAL;
     else
-        return true;
+        return FC_OK;
 
 }
 
-bool MeshManipulations :: CollapseEdgeTest(std::vector<TriangleType *> *TrianglesToSave, std::vector<TriangleType *> *NewTriangles, EdgeType *EdgeToCollapse, int RemoveVertexIndex)
+FC_MESH MeshManipulations :: CollapseEdgeTest(std::vector<TriangleType *> *TrianglesToSave, std::vector<TriangleType *> *NewTriangles, EdgeType *EdgeToCollapse, int RemoveVertexIndex)
 {
-    bool DoCollapse = true;
     int SaveVertexIndex = (RemoveVertexIndex == 0) ? 1 : 0;
 
     // Check if NewTriangles are good replacements
     LOG("Check validity of new normals...\n", 0);
-    if (!this->CheckCoarsenNormal(TrianglesToSave, NewTriangles)) {
-        LOG(" - Check failed\n", 0);
-        DoCollapse = false;
+    FC_MESH FC;
+
+    FC = this->CheckCoarsenNormal(TrianglesToSave, NewTriangles);
+    if (FC != FC_OK) {
+        return FC;
     }
 
     LOG("Check validity of new chord...\n", 0);
-    if (!this->CheckCoarsenChord(EdgeToCollapse, EdgeToCollapse->Vertices[RemoveVertexIndex], EdgeToCollapse->Vertices[SaveVertexIndex])) {
-        LOG(" - Check failed\n", 0);
-        DoCollapse = false;
+    FC = this->CheckCoarsenChord(EdgeToCollapse, EdgeToCollapse->Vertices[RemoveVertexIndex], EdgeToCollapse->Vertices[SaveVertexIndex]);
+    if (FC != FC_OK) {
+        return FC;
     }
 
     LOG("Check area of new triangles...\n", 0);
     for (TriangleType *t: *NewTriangles) {
-        if (t->GiveArea()<1e-7) {
+        if (t->GiveArea()<1e-7) { // TODO: Use variable
             LOG(" - Check failed\n", 0);
-            DoCollapse = false;
+            return FC_SMALLAREA;
         }
     }
 
-/*    LOG("Check commbined area of new vs current triangles\n", 0);
-    double NewArea=0, CurrentArea=0;
-    for (TriangleType *t: NewTriangles) NewArea = NewArea + t->GiveArea();
-    for (TriangleType *t: ConnectedTriangles) CurrentArea = CurrentArea + t->GiveArea();
-    if (fabs(NewArea-CurrentArea) > 1e-2) {
-        LOG("Area change significant. Prevent collapse\n", 0);
-        DoCollapse = false;
-    }*/
-    return DoCollapse;
+    return FC_OK;
 }
 
-bool MeshManipulations :: CollapseEdge(EdgeType *EdgeToCollapse, int RemoveVertexIndex, bool PerformTesting)
+FC_MESH MeshManipulations :: CollapseEdge(EdgeType *EdgeToCollapse, int RemoveVertexIndex, bool PerformTesting)
 {
     // TODO: In its current setting, this procedure only checks if collapsing is ok from the current topology. It should compare to the original topology, otherwise degeneration can occur gradually
 
@@ -275,7 +276,7 @@ bool MeshManipulations :: CollapseEdge(EdgeType *EdgeToCollapse, int RemoveVerte
             EdgeToCollapse->Vertices[1]->ID, RemoveVertexIndex);
 
     // Cannot remove a fixed vertex
-    if (EdgeToCollapse->Vertices[RemoveVertexIndex]->IsFixedVertex()) return false;
+    if (EdgeToCollapse->Vertices[RemoveVertexIndex]->IsFixedVertex()) return FC_FIXEDVERTEX;
 
     int SaveVertexIndex = (RemoveVertexIndex == 0) ? 1 : 0;
 
@@ -320,18 +321,18 @@ bool MeshManipulations :: CollapseEdge(EdgeType *EdgeToCollapse, int RemoveVerte
     }
 
 
-    bool DoCollapse;
+    FC_MESH FC;
     if (PerformTesting) {
-        DoCollapse = this->CollapseEdgeTest(&TrianglesToSave, &NewTriangles, EdgeToCollapse, RemoveVertexIndex );
+        FC = this->CollapseEdgeTest(&TrianglesToSave, &NewTriangles, EdgeToCollapse, RemoveVertexIndex );
     } else {
-        DoCollapse = true;
+        FC = FC_OK;
     }
 
-    if (!DoCollapse) {
+    if (FC != FC_OK) {
         for (TriangleType *t: NewTriangles) {
             delete t;
         }
-        return false;
+        return FC;
     }
 
     LOG ("Checks ok. Proceed\n", 0);
@@ -395,11 +396,11 @@ bool MeshManipulations :: CollapseEdge(EdgeType *EdgeToCollapse, int RemoveVerte
     //this->DoSanityCheck();
 #endif
 
-    return true;
+    return FC_OK;
 
 }
 
-bool MeshManipulations :: CheckCoarsenNormal(std::vector<TriangleType*> *OldTriangles, std::vector<TriangleType*> *NewTriangles)
+FC_MESH MeshManipulations :: CheckCoarsenNormal(std::vector<TriangleType*> *OldTriangles, std::vector<TriangleType*> *NewTriangles)
 {
     // Here, we use that the order of the old and new triangles are the same in both lists. I.e. NewTriangle[i] is the same triangle as OldTriangles[i] except that vD is replaced by vR.
 
@@ -417,7 +418,7 @@ bool MeshManipulations :: CheckCoarsenNormal(std::vector<TriangleType*> *OldTria
         double newarea  = NewTriangles->at(i)->GiveArea();
 
         if (newarea < 1e-8) {
-            return false; // TODO: Change to variable tol
+            return FC_SMALLAREA; // TODO: Change to variable tol
         }
 
         LOG("angle1=%f,\tangle2=%f\tOldArea=%f\tNewArea=%f\n", angle1, angle2, oldarea, newarea);
@@ -428,28 +429,28 @@ bool MeshManipulations :: CheckCoarsenNormal(std::vector<TriangleType*> *OldTria
 
         if (angle1 > (170*2*3.1415/360)) {
             LOG("Should not be collapsed...\n", 0);
-            return false;
+            return FC_NORMAL;
         }
 
 
     }
 
-    if (MaxAngle > (10*2*3.1415/360))
-        return false;
+    if (MaxAngle > (15*2*3.1415/360))
+        return FC_NORMAL;
     else
-        return true;
+        return FC_OK;
 }
 
-bool MeshManipulations :: CheckCoarsenChord(EdgeType *EdgeToCollapse, VertexType* RemoveVertex, VertexType* SaveVertex)
+FC_MESH MeshManipulations :: CheckCoarsenChord(EdgeType *EdgeToCollapse, VertexType* RemoveVertex, VertexType* SaveVertex)
 {
     // If both vertices are located on an edge, proceed wih check. If not, collapsing is ok.
     if (!(SaveVertex->IsPhaseEdgeVertex() && RemoveVertex->IsPhaseEdgeVertex())) {
-        return true;
+        return FC_OK;
     }
 
     // If RemoveVertex is fixed, prevent collapsing
     if (RemoveVertex->IsFixedVertex()) {
-        return false;
+        return FC_FIXEDVERTEX;
     }
 
     // If vertices are located on different PhaseEdges, collapsing is not ok
@@ -464,7 +465,7 @@ bool MeshManipulations :: CheckCoarsenChord(EdgeType *EdgeToCollapse, VertexType
         }
     }
 
-    if (!SamePhaseEdge) return false;
+    if (!SamePhaseEdge) return FC_VERTICESONDIFFERENTSHAPES;
 
     // Check if chord changes too much...
     std::array<VertexType*, 2> NewEdge;
@@ -492,7 +493,7 @@ bool MeshManipulations :: CheckCoarsenChord(EdgeType *EdgeToCollapse, VertexType
 
     if (OtherEdge==NULL) {
         LOG("OtherEdge not found. \n", 0);
-        return false;
+        throw 0; //return false;
     }
 
     // Compute normalized vectors
@@ -507,11 +508,11 @@ bool MeshManipulations :: CheckCoarsenChord(EdgeType *EdgeToCollapse, VertexType
         if (Alpha>MaxAngle) MaxAngle=Alpha;
     }
 
-    if (MaxAngle > 45*3.141593/360) {
-        return false;
+    if (MaxAngle > 45*3.141593/360) { // TODO: Use variable
+        return FC_CHORD;
     }
 
-    return true;
+    return FC_OK;
 
 }
 
@@ -519,25 +520,26 @@ std::vector<VertexType *> MeshManipulations :: FindIndependentSet()
 {
     std::vector<VertexType *> IndepSet;
 
-    // Add all fixed vertices
+    // Add all fixed vertices (Vertices shared between more than 2 phases)
     for (VertexType *v: this->Vertices) {
         if (v->IsFixedVertex()) {
             IndepSet.push_back(v);
         }
     }
 
-    // Create vectors of vertices on edges and faces
-    std::vector<VertexType *> EdgeVertices;
+    // Create vectors of vertices on edges and faces respectively
+    std::vector<VertexType *> PhaseEdgeVertices;
     std::vector<VertexType *> FaceVertices;
     for (VertexType *v: this->Vertices) {
         if (v->IsPhaseEdgeVertex()) {
-            EdgeVertices.push_back(v);
+            PhaseEdgeVertices.push_back(v);
         } else {
             FaceVertices.push_back(v);
         }
     }
 
-    for (std::vector<VertexType *> vl: {EdgeVertices, FaceVertices}) {
+
+    for (std::vector<VertexType *> vl: {PhaseEdgeVertices, FaceVertices}) {
         for (VertexType *v: vl) {
 
             if (std::find(IndepSet.begin(), IndepSet.end(), v) == IndepSet.end()) {
@@ -596,6 +598,29 @@ bool MeshManipulations :: CoarsenMeshImproved()
         std::vector<VertexType*> IndepSet = FindIndependentSet();
         failcount=0;
         unsigned int i=0;
+
+        std::vector<std::pair<double, EdgeType *>> EdgeLength;
+
+        for (EdgeType *e: this->Edges) {
+            EdgeLength.push_back(std::make_pair (e->GiveLength(), e));
+        }
+
+        std::sort(EdgeLength.begin(), EdgeLength.end());
+
+        this->Edges.clear();
+        for (std::pair<double, EdgeType *> epair: EdgeLength) {
+            this->Edges.push_back(epair.second);
+        }
+
+
+/*        std::vector<std::pair<EdgeType *, double>> EdgeLength2;
+
+        for (EdgeType *e: this->Edges) {
+            EdgeLength2.push_back(std::make_pair (e, e->GiveLength()));
+        }
+
+        std::sort(EdgeLength2.begin(), EdgeLength2.end());*/
+
         while (i<this->Edges.size()) {
 
             STATUS("%c[2K\rCoarsening iteration %u, failcount %u", 27, iter, failcount);
@@ -610,11 +635,11 @@ bool MeshManipulations :: CoarsenMeshImproved()
                         D = 1;
                     }
 
-                    bool CoarseOk = this->CollapseEdge(e, D);
+                    bool CoarseOk = (this->CollapseEdge(e, D) == FC_OK);
 
                     if (!CoarseOk) {
                         D = 1 ? 0 : 1;
-                        CoarseOk = this->CollapseEdge(e, D);
+                        CoarseOk = (this->CollapseEdge(e, D) == FC_OK);
                     }
 
                     if (CoarseOk) {
