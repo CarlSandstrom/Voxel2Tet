@@ -444,7 +444,7 @@ FC_MESH MeshManipulations :: CheckCoarsenNormal(std::vector<TriangleType*> *OldT
 
 FC_MESH MeshManipulations :: CheckCoarsenChord(EdgeType *EdgeToCollapse, VertexType* RemoveVertex, VertexType* SaveVertex)
 {
-    // If both vertices are located on an edge, proceed wih check. If not, collapsing is ok.
+    // If both vertices are located on an edge, proceed wih check. If not, collapsing is ok since this is not a chord.
     if (!(SaveVertex->IsPhaseEdgeVertex() && RemoveVertex->IsPhaseEdgeVertex())) {
         return FC_OK;
     }
@@ -456,7 +456,7 @@ FC_MESH MeshManipulations :: CheckCoarsenChord(EdgeType *EdgeToCollapse, VertexT
 
     // If vertices are located on different PhaseEdges, collapsing is not ok
 
-    // Here we know that RemoveVertex only contains one PhaseEdge and both vertices are located on edges.
+    // Here we know that RemoveVertex only contains one PhaseEdge and both vertices are located on the chord.
     PhaseEdge* RemoveVertexPhaseEdge = RemoveVertex->PhaseEdges.at(0);
     bool SamePhaseEdge = false;
     for (PhaseEdge* pe: SaveVertex->PhaseEdges) {

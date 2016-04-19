@@ -92,6 +92,19 @@ vtkIntArray *VTKExporter :: SetupTetIDs()
     }
     return TetIDs;
 }
+
+vtkIntArray *VTKExporter :: SetupVertexIDs()
+{
+    vtkIntArray *VertexIDs = vtkIntArray::New();
+    VertexIDs->SetNumberOfComponents(1);
+    VertexIDs->SetName("Vertex ID");
+    for (unsigned int i=0; i<this->Vertices->size(); i++) {
+        VertexType *v=this->Vertices->at(i);
+        VertexIDs->InsertNextTuple1(v->ID);
+    }
+    return VertexIDs;
+}
+
 void VTKExporter :: WriteSurfaceData(std::string Filename)
 {
 
@@ -102,6 +115,11 @@ void VTKExporter :: WriteSurfaceData(std::string Filename)
 
     vtkSmartPointer<vtkPolyData> PolyData = vtkSmartPointer<vtkPolyData>::New();
     PolyData->SetPoints (Points);
+
+    vtkSmartPointer<vtkIntArray> VertexID;
+    VertexID.TakeReference(this->SetupVertexIDs());
+    PolyData->GetPointData().AddArray(VertexID);
+
     PolyData->SetPolys( TriangleArrays );
 
     vtkSmartPointer<vtkIntArray> InterfaceID;

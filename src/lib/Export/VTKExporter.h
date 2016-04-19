@@ -32,6 +32,7 @@ private:
     vtkIntArray *SetupInterfaceIDs();
     vtkIntArray *SetupTriangleIDs();
     vtkIntArray *SetupTetIDs();
+    vtkIntArray *SetupVertexIDs();
 public:
     VTKExporter();
     VTKExporter(std :: vector <TriangleType*> *Triangles, std :: vector <VertexType*> *Vertices, std :: vector <EdgeType*> *Edges, std::vector<TetType *> *Tets);
