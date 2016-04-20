@@ -464,36 +464,23 @@ FC_MESH MeshManipulations :: CheckCoarsenChord(EdgeType *EdgeToCollapse, VertexT
 
     // Check if chord changes too much...
     std::array<VertexType*, 2> NewEdge;
-    std::array<VertexType*, 2> *OtherEdge = NULL;
+    std::array<VertexType*, 2> OtherEdge;
+
 
     // Find the other edge connected to RemoveVertex (the one connected to the same PhaseEdge)
-    for (std::array<VertexType*, 2> e: RemoveVertexPhaseEdge->EdgeSegments) {
-        int OtherIndex = -1;
-        if (e.at(0) == RemoveVertex) OtherIndex = 1;
-        if (e.at(1) == RemoveVertex) OtherIndex = 0;
-
-        if ( OtherIndex != -1 ) {
-            // Is 'e' the edge that will be collapsed?
-            if ( ( (e.at(0)==EdgeToCollapse->Vertices.at(0)) && (e.at(1)==EdgeToCollapse->Vertices.at(1)) ) ||
-                 ( (e.at(1)==EdgeToCollapse->Vertices.at(0)) && (e.at(0)==EdgeToCollapse->Vertices.at(1)) ) ) {
-                // This is the current edge. Pass
-            } else {
-                NewEdge.at(0) = SaveVertex;
-                NewEdge.at(1) = e.at(OtherIndex);
-                OtherEdge = &e;
-                break;
-            }
-        }
-    }
-
-    if (OtherEdge==NULL) {
+    // TODO: Can probably move some of this stuff to PhaseEdge.
+    std::vector<VertexType*> ConnectedVertices = RemoveVertexPhaseEdge->GiveVerticesConnectedToVertex(RemoveVertex);
+    if (ConnectedVertices.size()==1) {
         // This should be ok if the edge is small. This simply removes the (very small) chord.
         return FC_OK;
     }
+    VertexType *OtherVertex = (ConnectedVertices[0] == SaveVertex) ? ConnectedVertices[1] : ConnectedVertices[0];
+    NewEdge={SaveVertex, OtherVertex};
+    OtherEdge = {RemoveVertex, OtherVertex};
 
     // Compute normalized vectors
     std::array<double, 3> NewNormal = ComputeNormalizedVector(NewEdge.at(0), NewEdge.at(1));
-    std::array<std::array<double, 3>, 2> Normals = {ComputeNormalizedVector(OtherEdge->at(0), OtherEdge->at(1)),
+    std::array<std::array<double, 3>, 2> Normals = {ComputeNormalizedVector(OtherEdge.at(0), OtherEdge.at(1)),
                                                     ComputeNormalizedVector(EdgeToCollapse->Vertices.at(0), EdgeToCollapse->Vertices.at(1)) };
     double MaxAngle = 0.0;
 

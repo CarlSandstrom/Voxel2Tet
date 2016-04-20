@@ -50,6 +50,16 @@ bool PhaseEdge :: SplitAtVertex(VertexType *Vertex, std::vector<PhaseEdge*> *Spl
 
 }
 
+std::vector<VertexType *> PhaseEdge :: GiveVerticesConnectedToVertex(VertexType *v)
+{
+    std::vector<VertexType *> ResultsList;
+    for (std::array<VertexType*, 2> e: this->EdgeSegments) {
+        if (e[0]==v) ResultsList.push_back(e[1]);
+        if (e[1]==v) ResultsList.push_back(e[0]);
+    }
+    return ResultsList;
+}
+
 void PhaseEdge :: SortAndFixBrokenEdge(std::vector<PhaseEdge*> *FixedEdges)
 {
 

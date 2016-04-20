@@ -21,6 +21,7 @@ public:
     void SortAndFixBrokenEdge(std::vector<PhaseEdge*> *FixedEdges);
     bool SplitAtVertex(VertexType *Vertex, std::vector<PhaseEdge*> *SplitEdges);
     void GiveTopologyLists(std::vector<std::vector<VertexType *>> *Connections, std::vector<std::array<bool,3>> *FixedDirections);
+    std::vector<VertexType *> GiveVerticesConnectedToVertex(VertexType *v);
     void Smooth(MeshData *Mesh);
 
     bool IsClosed();
