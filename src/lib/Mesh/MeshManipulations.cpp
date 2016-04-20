@@ -274,7 +274,7 @@ FC_MESH MeshManipulations :: CollapseEdge(EdgeType *EdgeToCollapse, int RemoveVe
     // TODO: In its current setting, this procedure only checks if collapsing is ok from the current topology. It should compare to the original topology, otherwise degeneration can occur gradually
 
     LOG("Collapse edge %p (%u, %u) by removing vertex %u\n", EdgeToCollapse, EdgeToCollapse->Vertices[0]->ID,
-            EdgeToCollapse->Vertices[1]->ID, RemoveVertexIndex);
+            EdgeToCollapse->Vertices[1]->ID, EdgeToCollapse->Vertices[RemoveVertexIndex]->ID);
 
     // Cannot remove a fixed vertex
     if (EdgeToCollapse->Vertices[RemoveVertexIndex]->IsFixedVertex()) return FC_FIXEDVERTEX;
@@ -458,15 +458,9 @@ FC_MESH MeshManipulations :: CheckCoarsenChord(EdgeType *EdgeToCollapse, VertexT
 
     // Here we know that RemoveVertex only contains one PhaseEdge and both vertices are located on the chord.
     PhaseEdge* RemoveVertexPhaseEdge = RemoveVertex->PhaseEdges.at(0);
-    bool SamePhaseEdge = false;
-    for (PhaseEdge* pe: SaveVertex->PhaseEdges) {
-        if (pe == RemoveVertexPhaseEdge) {
-            SamePhaseEdge = true;
-            break;
-        }
+    if ( std::find(SaveVertex->PhaseEdges.begin(), SaveVertex->PhaseEdges.end(), RemoveVertexPhaseEdge) == SaveVertex->PhaseEdges.end() ) {
+        return FC_VERTICESONDIFFERENTSHAPES;
     }
-
-    if (!SamePhaseEdge) return FC_VERTICESONDIFFERENTSHAPES;
 
     // Check if chord changes too much...
     std::array<VertexType*, 2> NewEdge;
@@ -493,8 +487,8 @@ FC_MESH MeshManipulations :: CheckCoarsenChord(EdgeType *EdgeToCollapse, VertexT
     }
 
     if (OtherEdge==NULL) {
-        LOG("OtherEdge not found. \n", 0);
-        throw 0; //return false;
+        // This should be ok if the edge is small. This simply removes the (very small) chord.
+        return FC_OK;
     }
 
     // Compute normalized vectors
