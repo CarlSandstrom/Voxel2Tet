@@ -14,6 +14,7 @@
 #include <vtkCellArray.h>
 #include <vtkCellData.h>
 #include <vtkPolyData.h>
+#include <vtkPointData.h>
 #include <vtkXMLPolyDataWriter.h>
 #include <vtkXMLUnstructuredGridWriter.h>
 #include <vtkUnstructuredGrid.h>
