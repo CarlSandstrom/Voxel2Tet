@@ -271,7 +271,7 @@ FC_MESH MeshManipulations :: CollapseEdgeTest(std::vector<TriangleType *> *Trian
 
     // Collect all point close to the centerpoint of the edge to collapse. The, form a list of all triangles connected to those points and perform check on all triangles in that list (except with triangles to remove).
     std::array<double, 3> cp = EdgeToCollapse->GiveCenterPoint();
-    std::vector<VertexType *> VerticesNear = this->VertexOctreeRoot->GiveVerticesWithinSphere(cp[0], cp[1], cp[2], EdgeToCollapse->GiveLength());
+    std::vector<VertexType *> VerticesNear = this->VertexOctreeRoot->GiveVerticesWithinSphere(cp[0], cp[1], cp[2], EdgeToCollapse->GiveLength()*2);
     std::vector<TriangleType *> TrianglesNear;
 
     for (VertexType *v: VerticesNear) {
@@ -282,7 +282,7 @@ FC_MESH MeshManipulations :: CollapseEdgeTest(std::vector<TriangleType *> *Trian
 
     std::sort(TrianglesNear.begin(), TrianglesNear.end());
     TrianglesNear.erase( std::unique(TrianglesNear.begin(), TrianglesNear.end()), TrianglesNear.end());
-
+//EdgeToCollapse.Vertices[RemoveVertexIndex]->ID==697
     for (TriangleType *t: TrianglesNear) {
         bool DoCheck = true;
 
@@ -328,8 +328,36 @@ FC_MESH MeshManipulations :: CollapseEdgeTest(std::vector<TriangleType *> *Trian
                     if (intersects==1) {
                         return FC_TRIANGLESINTERSECT;
                     } else {
-                        LOG("Triangles does not intersect\n", 0);
+                        //LOG("Triangles does not intersect\n", 0);
                     }
+                } else if (sharedvertices==2) {
+                    // If two triangles share an edge, check if the each remaining vertex is located within the other triangle
+
+                    // Ensure that normals point in different directions, otherwise, we have intersection
+                    LOG("Check normals\n", 0);
+                    std::array<double, 3> edge0, edge1, NearNormal, newtNormal;
+                    edge0 = {NearTriVertices[0]->get_c(0)-NearTriVertices[1]->get_c(0),
+                             NearTriVertices[0]->get_c(1)-NearTriVertices[1]->get_c(1),
+                             NearTriVertices[0]->get_c(2)-NearTriVertices[1]->get_c(2)};
+                    edge1 = {NearTriVertices[0]->get_c(0)-NearTriVertices[2]->get_c(0),
+                             NearTriVertices[0]->get_c(1)-NearTriVertices[2]->get_c(1),
+                             NearTriVertices[0]->get_c(2)-NearTriVertices[2]->get_c(2)};
+                    NearNormal[0] = edge0[1]*edge1[2]-edge1[1]*edge0[2];
+                    NearNormal[1] = -edge0[0]*edge1[2]+edge1[0]*edge0[2];
+                    NearNormal[2] = edge0[0]*edge1[1]-edge1[0]*edge0[1];
+                    double NormalLength = std::sqrt(NearNormal[0]*NearNormal[0] + NearNormal[1]*NearNormal[1] + NearNormal[2]*NearNormal[2]);
+                    for (int i=0; i<3; i++) {
+                        NearNormal[i]=NearNormal[i]/NormalLength;
+                    }
+
+                    newt->UpdateNormal();
+                    newtNormal = newt->GiveUnitNormal();
+
+                    double angle1 = std::acos( NearNormal[0]*newtNormal[0] + NearNormal[1]*newtNormal[1] + NearNormal[2]*newtNormal[2]);
+                    double angle2 = std::acos( -(NearNormal[0]*newtNormal[0] + NearNormal[1]*newtNormal[1] + NearNormal[2]*newtNormal[2]) );
+
+                    LOG("Smallest angle: %f\n", std::min(angle1, angle2));
+
                 } else if (sharedvertices==3) {
 
                     LOG ("Duplicate triangle, newt.id=%i, t.id=%i\n", newt->ID, t->ID);
