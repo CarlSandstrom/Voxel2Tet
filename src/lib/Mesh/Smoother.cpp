@@ -134,16 +134,18 @@ void SpringSmooth(std::vector<VertexType*> Vertices, std::vector<std::array<bool
             }
         }
 
-        TetGenCaller Tetgen;
-        Tetgen.Mesh = Mesh;
-        Tetgen.TestMesh();
-
         if (Mesh!=NULL) {
             FileName.str(""); FileName.clear();
             FileName << "/tmp/Smoothing" << itercount++ << ".vtp";
             Mesh->ExportSurface(FileName.str(), FT_VTK);
         }
         // ************************** /DEBUG STUFF
+#endif
+
+#if TEST_MESH_FOR_EACH_SMOOTHING
+        TetGenCaller Tetgen;
+        Tetgen.Mesh = Mesh;
+        Tetgen.TestMesh();
 #endif
     }
 
