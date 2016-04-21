@@ -14,7 +14,7 @@ VertexOctreeNode::VertexOctreeNode(BoundingBoxType BoundingBox, std::vector <Ver
     this->Vertices = Vertices;
     this->level = level;
 
-    this->maxvertices = 5;
+    this->maxvertices = 20;
     this->eps=1e-12;
 }
 
@@ -163,17 +163,38 @@ std::vector<VertexType *> VertexOctreeNode :: GiveVerticesWithinSphere(double x,
     if (this->children.size()==0) { // If this is a leaf, check all vertices
         for (int VertexId: this->VertexIds ) {
             VertexType *v = this->Vertices->at(VertexId);
-            double distance = std::sqrt(v->get_c(0)*v->get_c(0) + v->get_c(1)*v->get_c(1) + v->get_c(2)*v->get_c(2));
+            double distance = std::sqrt((v->get_c(0)-x)*(v->get_c(0)-x) + (v->get_c(1)-y)*(v->get_c(1)-y) + (v->get_c(2)-z)*(v->get_c(2)-z)) ;
             if (distance<r) {
                 ResultList.push_back(v);
             }
         }
-    } else { // Check children
-        BoundingBoxType CircumBox;
-        CircumBox.maxvalues = {x+r, y+r, z+r};
-        CircumBox.minvalues = {x-r, y-r, z-r};
+    } else { // Check which children is, fully or partly, within the sphere
+        double P[3]={x, y, z};
+        double d[3];
+
         for (VertexOctreeNode *von: this->children) {
-            BoundingBoxType *NodeBox=&von->BoundingBox;
+
+            for (int i: {0,1,2}) {
+                if (P[i]>von->BoundingBox.maxvalues[i]) {
+                    d[i] = P[i]-von->BoundingBox.maxvalues[i];
+                } else if (P[i]<von->BoundingBox.minvalues[i]) {
+                    d[i] = von->BoundingBox.minvalues[i] - P[i];
+                } else {
+                    d[i] = 0.0;
+                }
+            }
+
+            double d_scalar = std::sqrt(d[0]*d[0] + d[1]*d[1] + d[2]*d[2]);
+
+            if (von->IsInBoundingBox(x, y, z)) d_scalar = 0.0;
+
+            if (d_scalar<=r) {
+                std::vector<VertexType *> ChildNodes = von->GiveVerticesWithinSphere(x, y, z, r);
+                for (VertexType *v: ChildNodes) {
+                    ResultList.push_back(v);
+                }
+            }
+
         }
     }
     return ResultList;
