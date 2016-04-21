@@ -24,4 +24,6 @@ int main()
     RootNode.AddVertex(0.9, 0.15, 0.1);
     RootNode.printself();
 
+    RootNode.GiveVerticesWithinSphere(0,0,0,.5);
+
 }

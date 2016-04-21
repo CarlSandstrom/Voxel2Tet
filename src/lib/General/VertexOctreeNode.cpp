@@ -155,6 +155,30 @@ bool VertexOctreeNode :: IsInBoundingBox(double x, double y, double z)
     return false;
 }
 
+std::vector<VertexType *> VertexOctreeNode :: GiveVerticesWithinSphere(double x, double y, double z, double r)
+{
+
+    std::vector<VertexType *> ResultList;
+
+    if (this->children.size()==0) { // If this is a leaf, check all vertices
+        for (int VertexId: this->VertexIds ) {
+            VertexType *v = this->Vertices->at(VertexId);
+            double distance = std::sqrt(v->get_c(0)*v->get_c(0) + v->get_c(1)*v->get_c(1) + v->get_c(2)*v->get_c(2));
+            if (distance<r) {
+                ResultList.push_back(v);
+            }
+        }
+    } else { // Check children
+        BoundingBoxType CircumBox;
+        CircumBox.maxvalues = {x+r, y+r, z+r};
+        CircumBox.minvalues = {x-r, y-r, z-r};
+        for (VertexOctreeNode *von: this->children) {
+            BoundingBoxType *NodeBox=&von->BoundingBox;
+        }
+    }
+    return ResultList;
+}
+
 void VertexOctreeNode :: printself()
 {
     std::string tab;

@@ -12,6 +12,11 @@
 namespace voxel2tet
 {
 
+/**
+ * @brief The Surface class
+ *
+ * One surface object for each pair of materials
+ */
 class Surface
 {
 private:
@@ -20,6 +25,7 @@ public:
     std::vector <VertexType*> FixedVertices;
 
     Surface(int Phase1, int Phase2, Options *Opt);
+
     int Phases[2];
     std::vector <VertexType*> Vertices;
     std::vector <TriangleType*> Triangles;

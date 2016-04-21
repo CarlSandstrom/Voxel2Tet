@@ -12,11 +12,13 @@
 #include "MeshData.h"
 #include "MiscFunctions.h"
 #include "MeshComponents.h"
+#include "TetGenCaller.h"
 
 namespace voxel2tet
 {
 
-enum FC_MESH {FC_OK, FC_FIXEDVERTEX, FC_NORMAL, FC_CHORD, FC_SMALLAREA, FC_TOOMANYTRIANGLES, FC_WORSEMINANGLE, FC_VERTICESONDIFFERENTSHAPES};
+enum FC_MESH {FC_OK, FC_FIXEDVERTEX, FC_NORMAL, FC_CHORD, FC_SMALLAREA, FC_TOOMANYTRIANGLES,
+              FC_WORSEMINANGLE, FC_VERTICESONDIFFERENTSHAPES};
 
 class MeshManipulations: public MeshData
 {

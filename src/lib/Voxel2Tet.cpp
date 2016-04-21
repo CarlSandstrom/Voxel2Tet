@@ -764,7 +764,7 @@ void Voxel2Tet::Process()
     this->Mesh->ExportSurface(strfmt("/tmp/Voxeltest%u.vtp", outputindex++), FT_VTK);
 
     int iter = 0;
-#if EXPORTMESHCOARSENING == 1
+#if EXPORT_MESH_COARSENING == 1
     dooutputlogmesh(*this->Mesh, (char*) "/tmp/finalcoarsening%u.vtp", 0);
 #endif
 
@@ -799,7 +799,7 @@ void Voxel2Tet::Process()
 
             }
 
-#if EXPORTMESHCOARSENING == 1
+#if EXPORT_MESH_COARSENING == 1
             dooutputlogmesh(*this->Mesh, (char*) "/tmp/finalcoarsening%u.vtp", iter);
 #endif
             iter++;

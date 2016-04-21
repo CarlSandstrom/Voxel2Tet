@@ -468,11 +468,11 @@ FC_MESH MeshManipulations :: CheckCoarsenChord(EdgeType *EdgeToCollapse, VertexT
 
 
     // Find the other edge connected to RemoveVertex (the one connected to the same PhaseEdge)
-    // TODO: Can probably move some of this stuff to PhaseEdge.
     std::vector<VertexType*> ConnectedVertices = RemoveVertexPhaseEdge->GiveVerticesConnectedToVertex(RemoveVertex);
     if (ConnectedVertices.size()==1) {
         // This should be ok if the edge is small. This simply removes the (very small) chord.
-        return FC_OK;
+        // Note that this can imply duplicate triangles and it is quite cumbersome to solve this. Thus, we push this feature forward
+        return FC_CHORD;
     }
     VertexType *OtherVertex = (ConnectedVertices[0] == SaveVertex) ? ConnectedVertices[1] : ConnectedVertices[0];
     NewEdge={SaveVertex, OtherVertex};
@@ -620,6 +620,12 @@ bool MeshManipulations :: CoarsenMeshImproved()
                         dooutputlogmesh(*this, "/tmp/Coarsening_%u.vtp", iter);
 #if SANITYCHECK == 1
 //                        this->DoSanityCheck();
+#endif
+
+#if TEST_MESH_FOR_EACH_COARSENING_ITERATION
+                        TetGenCaller Generator;
+                        Generator.Mesh = this;
+                        Generator.TestMesh();
 #endif
                         iter++;
                     } else {

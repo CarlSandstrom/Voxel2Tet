@@ -43,6 +43,8 @@ public:
     // Find vertex object by coordinates
     VertexType *FindVertexByCoords(double x, double y, double z);
 
+    std::vector<VertexType *> GiveVerticesWithinSphere(double x, double y, double z, double r);
+
     void printself();
 };
 
