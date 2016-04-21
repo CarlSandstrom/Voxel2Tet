@@ -115,6 +115,13 @@ double EdgeType :: GiveLength()
     return std::sqrt(v[0]*v[0] + v[1]*v[1] + v[2]*v[2]);
 }
 
+std::array<double, 3> EdgeType :: GiveCenterPoint()
+{
+    double x = (this->Vertices[0]->get_c(0)+this->Vertices[1]->get_c(0)) / 2.0;
+    double y = (this->Vertices[0]->get_c(1)+this->Vertices[1]->get_c(1)) / 2.0;
+    double z = (this->Vertices[0]->get_c(2)+this->Vertices[1]->get_c(2)) / 2.0;
+    return {x, y, z};
+}
 
 // TriangleType
 

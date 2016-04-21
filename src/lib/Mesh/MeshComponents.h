@@ -59,7 +59,9 @@ public:
     std::array<VertexType *, 2> Vertices;
 
     std::vector<TriangleType *> GiveTriangles();
+
     double GiveLength();
+    std::array<double, 3> GiveCenterPoint();
 };
 
 
