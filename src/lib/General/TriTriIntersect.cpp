@@ -13,6 +13,7 @@
  */
 
 #include <math.h>
+#include <stdio.h>
 
 
 /* if USE_EPSILON_TEST is true then we do a check:
@@ -288,4 +289,102 @@ int tri_tri_intersect(double V0[3],double V1[3],double V2[3],
 
   if(isect1[1]<isect2[0] || isect2[1]<isect1[0]) return 0;
   return 1;
+}
+
+#define VECTOR_LENGTH(L, V) \
+    L=sqrt(V[0]*V[0] + V[1]*V[1] + V[2]*V[2])
+
+#define NORMALIZE(N, V) {\
+    double L; \
+    VECTOR_LENGTH(L, V); \
+    for (int i=0; i<3; i++) { \
+        N[i]=V[i]/L;\
+    } \
+    }
+
+
+bool point_in_tri(double V0[3],double V1[3],double V2[3], double P[3])
+// By Carl Sandström
+{
+    double e0[3], e1[3], e2[3];
+
+    // Compute edge vectors
+    SUB(e0, V1, V0);
+    SUB(e1, V2, V1);
+    SUB(e2, V0, V2);
+
+    // Compute area of triangle
+    double n0[3];
+    CROSS(n0, e0, e2);
+
+    double L;
+    VECTOR_LENGTH(L, n0);
+    double A = .5*L;
+
+    // Compute cross product (normals) for each edge and point P
+    double d0[3], d1[3], d2[3];
+    SUB(d0, P, V0);
+    SUB(d1, P, V1);
+    SUB(d2, P, V2);
+
+    double b0[3], b1[3], b2[3];
+    CROSS(b0, e0, d0);
+    CROSS(b1, e1, d1);
+    CROSS(b2, e2, d2);
+
+    // Compute areas of each triangle
+    double l0, l1, l2;
+    VECTOR_LENGTH(l0, b0);
+    VECTOR_LENGTH(l1, b1);
+    VECTOR_LENGTH(l2, b2);
+
+    double a0, a1, a2;
+    a0=l0/2;
+    a1=l1/2;
+    a2=l2/2;
+
+    double asum = a0 + a1 + a2;
+
+    if (fabs(A-asum) < 1e-7) {
+        return true;
+    }
+
+    return false;
+
+}
+
+bool tri_tri_intersect_shared_edge(double s0[3], double s1[3], double u0[3], double u1[3])
+{
+    // Compute vectors from s0
+    double se[3];
+    SUB(se, s0, s1);
+
+    double s0u0[3], s0u1[3];
+    SUB(s0u0, u0, s0);
+    SUB(s0u1, u1, s0);
+
+    // Compute unit normal to the two triangles
+
+    double n0[3], n1[3];
+    CROSS(n0, se, s0u0);
+    CROSS(n1, se, s0u1);
+
+    NORMALIZE(n0, n0);
+    NORMALIZE(n1, n1);
+
+    printf("n0 =(%f, %f, %f)\n", n0[0], n0[1], n0[2]);
+    printf("n1 =(%f, %f, %f)\n", n1[0], n1[1], n1[2]);
+
+    // Compute difference
+    double d[3];
+    SUB(d, n0, n1);
+    double L;
+
+    VECTOR_LENGTH(L, d);
+    printf ("|n0-n1| = %f\n", L);
+
+    if (L<.05) return true; // .01 does not work. investigate
+
+    return false;
+
 }

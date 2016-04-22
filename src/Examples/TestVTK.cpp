@@ -1,40 +1,15 @@
-#include <vtkSmartPointer.h>
-#include <vtkTriangle.h>
-#include <vtkCellArray.h>
-#include <vtkPolyData.h>
+#include <stdio.h>
+
+#include "TriTriIntersect.h"
 
 int main(int , char *[])
 {
-  // Create a triangle
-  vtkSmartPointer<vtkPoints> points =
-    vtkSmartPointer<vtkPoints>::New();
-  points->InsertNextPoint ( 1.0, 0.0, 0.0 );
-  points->InsertNextPoint ( 0.0, 0.0, 0.0 );
-  points->InsertNextPoint ( 0.0, 1.0, 0.0 );
 
-  vtkSmartPointer<vtkTriangle> triangle =
-    vtkSmartPointer<vtkTriangle>::New();
-  triangle->GetPointIds()->SetId ( 0, 0 );
-  triangle->GetPointIds()->SetId ( 1, 1 );
-  triangle->GetPointIds()->SetId ( 2, 2 );
+    double V0[3]={0,0,0};
+    double V1[3]={1,0,0};
+    double V2[3]={0,1,0};
 
-  vtkSmartPointer<vtkCellArray> triangles =
-    vtkSmartPointer<vtkCellArray>::New();
-  triangles->InsertNextCell ( triangle );
+    double P[3]={0.5,.5,0.01};
 
-  // Create a polydata object
-  vtkSmartPointer<vtkPolyData> polyData =
-    vtkSmartPointer<vtkPolyData>::New();
-
-  // Add the geometry and topology to the polydata
-  polyData->SetPoints ( points );
-  polyData->SetPolys ( triangles );
-
-  std::cout << "There are " << polyData->GetNumberOfCells() << " cells." << std::endl;
-
-  polyData->GetPolys()->InsertNextCell(triangle);
-
-  std::cout << "There are " << polyData->GetNumberOfCells() << " cells." << std::endl;
-
-  return EXIT_SUCCESS;
+    point_in_tri(V0, V1, V2, P);
 }
