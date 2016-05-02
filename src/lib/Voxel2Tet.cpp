@@ -29,6 +29,10 @@ Voxel2Tet::~Voxel2Tet()
 
     delete this->Mesh;
 
+    //delete this->Imp;
+
+    for (auto p: this->PhaseEdges) delete p;
+
 }
 
 void Voxel2Tet::LoadCallback(cbMaterialIDByCoordinate MaterialIDByCoordinate, std::array<double,3> origin, std::array<double,3> spacing, std::array<int,3> dimensions)
@@ -771,7 +775,7 @@ void Voxel2Tet::Process()
 //#if SANITYCHECK == 1
     //this->Mesh->DoSanityCheck();
 //#endif
-
+/*
     for (unsigned int i=0; i<this->Mesh->Triangles.size(); i++) {
         TriangleType *t = this->Mesh->Triangles.at(i);
         double smallestangle = t->GiveSmallestAngle();
@@ -814,7 +818,7 @@ void Voxel2Tet::Process()
             STATUS ("Still very small angle (%f) on triangle #%u (ID %u)\n", iter, smallestangle, i, t->ID);
         }
     }
-
+*/
 }
 
 }

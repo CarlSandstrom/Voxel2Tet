@@ -27,6 +27,8 @@ MeshData::~MeshData()
 
     for (auto v: this->Vertices) delete v;
 
+    for (auto t: this->Tets) delete t;
+
     delete this->VertexOctreeRoot;
 }
 

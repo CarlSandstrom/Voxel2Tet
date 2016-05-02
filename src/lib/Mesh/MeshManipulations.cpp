@@ -667,12 +667,14 @@ bool MeshManipulations :: CoarsenMeshImproved()
 
     bool CoarseningOccurs=true;
     int iter=0;
+
     int failcount;
 
+#if EXPORT_MESH_COARSENING
     dooutputlogmesh(*this, "/tmp/Coarsening_%u.vtp", 0);
+#endif
 
-    while (CoarseningOccurs) {
-
+    while (CoarseningOccurs ) {
 
         CoarseningOccurs = false;
         std::vector<VertexType*> IndepSet = FindIndependentSet();
@@ -693,6 +695,8 @@ bool MeshManipulations :: CoarsenMeshImproved()
         }
 
         while (i<this->Edges.size()) {
+
+            if (iter>=10) break;
 
             STATUS("%c[2K\rCoarsening iteration %u, failcount %u", 27, iter, failcount);
             fflush(stdout);
@@ -715,7 +719,10 @@ bool MeshManipulations :: CoarsenMeshImproved()
 
                     if (CoarseOk) {
                         CoarseningOccurs = true;
+#if EXPORT_MESH_COARSENING
                         dooutputlogmesh(*this, "/tmp/Coarsening_%u.vtp", iter+1);
+#endif
+
 #if SANITYCHECK == 1
 //                        this->DoSanityCheck();
 #endif
