@@ -40,6 +40,8 @@ public:
     void AddTriangle(TriangleType* Triangle);
 
     void Smooth(MeshData *Mesh);
+
+    double ComputeArea();
 };
 
 }

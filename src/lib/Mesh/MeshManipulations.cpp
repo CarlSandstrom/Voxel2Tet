@@ -10,6 +10,51 @@ MeshManipulations::MeshManipulations(BoundingBoxType BoundingBox) : MeshData(Bou
 
 }
 
+void MeshManipulations :: SortEdgesByLength()
+{
+    std::vector<std::pair<double, EdgeType *>> EdgeLength;
+
+    for (EdgeType *e: this->Edges) {
+        EdgeLength.push_back(std::make_pair (e->GiveLength(), e));
+    }
+
+    std::sort(EdgeLength.begin(), EdgeLength.end());
+
+    this->Edges.clear();
+    for (std::pair<double, EdgeType *> epair: EdgeLength) {
+        this->Edges.push_back(epair.second);
+    }
+}
+
+void MeshManipulations :: SortEdgesByMinArea()
+{
+    std::vector<std::pair<double, EdgeType *>> EdgeArea;
+
+    for (EdgeType *e: this->Edges) {
+        std::vector<TriangleType *> ts = e->GiveTriangles();
+
+        int i, smallestindex=0;
+        double smallestarea = 0.0;
+
+        for (i=0; i<ts.size(); i++) {
+            if (ts.at(i)->GiveArea()<smallestarea) {
+                smallestarea = ts.at(i)->GiveArea();
+                smallestindex = i;
+            }
+        }
+
+        EdgeArea.push_back(std::make_pair (smallestarea, e));
+    }
+
+    std::sort(EdgeArea.begin(), EdgeArea.end());
+
+    this->Edges.clear();
+    for (std::pair<double, EdgeType *> epair: EdgeArea) {
+        this->Edges.push_back(epair.second);
+    }
+}
+
+
 void MeshManipulations :: RemoveDegenerateTriangles()
 {
     STATUS("Remove degenerate triangles...\n", 0);
@@ -514,8 +559,8 @@ FC_MESH MeshManipulations :: CheckCoarsenNormal(std::vector<TriangleType*> *OldT
         double oldarea  = OldTriangles->at(i)->GiveArea();
         double newarea  = NewTriangles->at(i)->GiveArea();
 
-        if (newarea < 1e-8) {
-            return FC_SMALLAREA; // TODO: Change to variable tol
+        if (newarea < 1e-8) {  // TODO: Change to variable tol
+            return FC_SMALLAREA;
         }
 
         LOG("angle1=%f,\tangle2=%f\tOldArea=%f\tNewArea=%f\n", angle1, angle2, oldarea, newarea);
@@ -524,7 +569,7 @@ FC_MESH MeshManipulations :: CheckCoarsenNormal(std::vector<TriangleType*> *OldT
             MaxAngle = std::min(angle1, angle2);
         }
 
-        if (angle1 > (170*2*3.1415/360)) {
+        if (angle1 > (20*2*3.1415/360)) { // TODO: Change to variable
             LOG("Should not be collapsed...\n", 0);
             return FC_NORMAL;
         }
@@ -681,22 +726,10 @@ bool MeshManipulations :: CoarsenMeshImproved()
         failcount=0;
         unsigned int i=0;
 
-        std::vector<std::pair<double, EdgeType *>> EdgeLength;
-
-        for (EdgeType *e: this->Edges) {
-            EdgeLength.push_back(std::make_pair (e->GiveLength(), e));
-        }
-
-        std::sort(EdgeLength.begin(), EdgeLength.end());
-
-        this->Edges.clear();
-        for (std::pair<double, EdgeType *> epair: EdgeLength) {
-            this->Edges.push_back(epair.second);
-        }
+        //this->SortEdgesByLength();
+        this->SortEdgesByMinArea();
 
         while (i<this->Edges.size()) {
-
-            if (iter>=10) break;
 
             STATUS("%c[2K\rCoarsening iteration %u, failcount %u", 27, iter, failcount);
             fflush(stdout);
@@ -733,6 +766,7 @@ bool MeshManipulations :: CoarsenMeshImproved()
                         Generator.TestMesh();
 #endif
                         iter++;
+                        break;
                     } else {
                         failcount++;
                     }
@@ -756,26 +790,6 @@ bool MeshManipulations :: CoarsenMeshImproved()
 #endif
     }
     STATUS("\n",0);
-
-    //return true;
-
-    for (TriangleType *t: this->Triangles) {
-        double A = t->GiveArea();
-        if (A<1e-3) {
-            STATUS("Triangle %u has a too small area (A=%f)\n", t->ID, A);
-            for (EdgeType *e: t->GiveEdges()) {
-                bool CollapseOk = this->CollapseEdge(e, 0);
-                if (!CollapseOk) {
-                    CollapseOk = this->CollapseEdge(e, 1);
-                }
-                if (CollapseOk) {
-                    break;
-                } else {
-                    STATUS("Collapse failed\n", 0);
-                }
-            }
-        }
-    }
 
     return true;
 }

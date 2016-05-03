@@ -31,7 +31,7 @@ Voxel2Tet::~Voxel2Tet()
 
     //delete this->Imp;
 
-    for (auto p: this->PhaseEdges) delete p;
+    //for (auto p: this->PhaseEdges) delete p;
 
 }
 
@@ -69,7 +69,7 @@ void Voxel2Tet :: FinalizeLoad()
     }
 
     if (!this->Opt->has_key("edge_spring_const")) {
-        edge_spring_const = spring_const/30.0;
+        edge_spring_const = spring_const/15.0;
         Opt->AddDefaultMap("edge_spring_const", std::to_string(edge_spring_const));
     } else {
         edge_spring_const = Opt->GiveDoubleValue("edge_spring_const");
@@ -99,6 +99,17 @@ void Voxel2Tet::LoadData()
         LoadFile(this->Opt->GiveStringValue("i"));
     }
 
+}
+
+void Voxel2Tet :: UpdateSurfaces()
+{
+    for (Surface *s: this->Surfaces) {
+        s->Triangles.clear();
+    }
+
+    for (TriangleType *t: this->Mesh->Triangles) {
+        this->Surfaces.at(t->InterfaceID)->Triangles.push_back(t);
+    }
 }
 
 void Voxel2Tet::ExportSurface(std::string FileName, Exporter_FileTypes FileType)
@@ -727,6 +738,14 @@ void Voxel2Tet::Process()
 
     this->FindSurfaces();
 
+    int i=0;
+    this->UpdateSurfaces();
+    for (Surface *s: this->Surfaces) {
+        double Area = s->ComputeArea();
+        STATUS("Area for surface %u: %f\n", i, Area);
+        i++;
+    }
+
     this->Mesh->ExportSurface(strfmt("/tmp/Voxeltest%u.vtp", outputindex++) , FT_VTK );
 
     if (true) {  // Carl's suggestion
@@ -738,7 +757,6 @@ void Voxel2Tet::Process()
 #else
         this->SmoothEdgesSimultaneously();
 #endif
-
 
         this->Mesh->ExportSurface(strfmt("/tmp/Voxeltest%u.vtp", outputindex++), FT_VTK);
         this->SmoothSurfaces();
@@ -765,7 +783,15 @@ void Voxel2Tet::Process()
         this->SmoothAllAtOnce();
     }
 
-    this->Mesh->ExportSurface(strfmt("/tmp/Voxeltest%u.vtp", outputindex++), FT_VTK);
+    i=0;
+    this->UpdateSurfaces();
+    for (Surface *s: this->Surfaces) {
+        double Area = s->ComputeArea();
+        STATUS("Area for surface %u: %f\n", i, Area);
+        i++;
+    }
+
+    //this->Mesh->ExportSurface(strfmt("/tmp/Voxeltest%u.vtp", outputindex++), FT_VTK);
 
     int iter = 0;
 #if EXPORT_MESH_COARSENING == 1

@@ -42,6 +42,8 @@ private:
     template <typename T>
     std::vector<int> FindSubsetIndices(std::vector<T> Container, std::vector<T> Subset);
 
+    void UpdateSurfaces();
+
     double eps=1e-6;
 
 public:

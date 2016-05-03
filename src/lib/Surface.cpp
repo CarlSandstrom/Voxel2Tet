@@ -154,4 +154,13 @@ void Surface::Smooth(MeshData *Mesh)
 
 }
 
+double Surface::ComputeArea()
+{
+    double Area = 0;
+    for (TriangleType *t: this->Triangles) {
+        Area=Area+t->GiveArea();
+    }
+    return Area;
+}
+
 }
