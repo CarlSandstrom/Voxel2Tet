@@ -7,7 +7,14 @@ namespace voxel2tet
 
 MeshManipulations::MeshManipulations(BoundingBoxType BoundingBox) : MeshData(BoundingBox)
 {
+    TOL_MAXAREACHANGE = 1e-5;
 
+    TOL_COL_SMALLESTAREA = 1e-8;
+    TOL_COL_MAXNORMALCHANGE = 10*2*3.1415/360;
+    TOL_COL_CHORD_MAXNORMALCHANGE = 45*3.141593/360;
+
+    TOL_FLIP_SMALLESTAREA = 1e-8;
+    TOL_FLIP_MAXNORMALCHANGE = 10*2*3.1415/360;
 }
 
 void MeshManipulations :: SortEdgesByLength()
@@ -33,13 +40,12 @@ void MeshManipulations :: SortEdgesByMinArea()
     for (EdgeType *e: this->Edges) {
         std::vector<TriangleType *> ts = e->GiveTriangles();
 
-        int i, smallestindex=0;
+        unsigned int i;
         double smallestarea = 0.0;
 
         for (i=0; i<ts.size(); i++) {
             if (ts.at(i)->GiveArea()<smallestarea) {
                 smallestarea = ts.at(i)->GiveArea();
-                smallestindex = i;
             }
         }
 
@@ -191,12 +197,12 @@ FC_MESH MeshManipulations :: FlipEdge(EdgeType *Edge)
     double CurrentArea = EdgeTriangles.at(0)->GiveArea()+EdgeTriangles.at(1)->GiveArea();
     double NewArea = NewTriangles.at(0)->GiveArea()+NewTriangles.at(1)->GiveArea();
 
-    if (std::fabs(CurrentArea-NewArea)>1e-4) { // TODO: Use variable instead of fixed value
+    if (std::fabs(CurrentArea-NewArea) > TOL_MAXAREACHANGE) {
         LOG("The combined area of the triangles changes too much. Prevent flipping.\n", 0);
         for (TriangleType *t: NewTriangles) {
             delete t;
         }
-        return FC_SMALLAREA;
+        return FC_AREACHANGETOOLARGE;
     }
 
     // Check if any of the new triangles already exist
@@ -257,19 +263,22 @@ FC_MESH MeshManipulations :: CheckFlipNormal(std::vector<TriangleType*> *OldTria
     double MaxAngle = 0.0;
 
     for (TriangleType *OldTriangle: *OldTriangles) {
+
+        std::array<double, 3> OldNormal = OldTriangle->GiveUnitNormal();
+
         for (unsigned int j=0; j<NewTriangles.size(); j++) {
             TriangleType *NewTriangle = NewTriangles.at(j);
             double NewArea = NewTriangle->GiveArea();
-            // TODO: Use variable instead
-            if (NewArea < 1e-8) {
+
+            if (NewArea < TOL_FLIP_SMALLESTAREA) {
                 return FC_SMALLAREA;
             }
-            std::array<double, 3> OldNormal = OldTriangle->GiveUnitNormal(); // TODO: Move to first for loop
+
             std::array<double, 3> NewNormal = NewTriangle->GiveUnitNormal();
 
             // Compute angle between new and old normal
             double angle1 = std::acos( OldNormal[0]*NewNormal[0] + OldNormal[1]*NewNormal[1] + OldNormal[2]*NewNormal[2]);
-            double angle2 = std::acos( -(OldNormal[0]*NewNormal[0] + OldNormal[1]*NewNormal[1] + OldNormal[2]*NewNormal[2]) );
+//            double angle2 = std::acos( -(OldNormal[0]*NewNormal[0] + OldNormal[1]*NewNormal[1] + OldNormal[2]*NewNormal[2]) );
 /*            if (std::min(angle1, angle2)>MaxAngle) {
                 MaxAngle = std::min(angle1, angle2);
             }*/
@@ -277,7 +286,7 @@ FC_MESH MeshManipulations :: CheckFlipNormal(std::vector<TriangleType*> *OldTria
         }
     }
 
-    if (MaxAngle > (10*2*3.1415/360))
+    if (MaxAngle > TOL_FLIP_MAXNORMALCHANGE)
         return FC_NORMAL;
     else
         return FC_OK;
@@ -305,7 +314,7 @@ FC_MESH MeshManipulations :: CollapseEdgeTest(std::vector<TriangleType *> *Trian
 
     LOG("Check area of new triangles...\n", 0);
     for (TriangleType *t: *NewTriangles) {
-        if (t->GiveArea()<1e-7) { // TODO: Use variable
+        if (t->GiveArea() < TOL_COL_SMALLESTAREA ) {
             LOG(" - Check failed\n", 0);
             return FC_SMALLAREA;
         }
@@ -326,7 +335,7 @@ FC_MESH MeshManipulations :: CollapseEdgeTest(std::vector<TriangleType *> *Trian
 
     std::sort(TrianglesNear.begin(), TrianglesNear.end());
     TrianglesNear.erase( std::unique(TrianglesNear.begin(), TrianglesNear.end()), TrianglesNear.end());
-//EdgeToCollapse.Vertices[RemoveVertexIndex]->ID==697
+
     for (TriangleType *t: TrianglesNear) {
         bool DoCheck = true;
 
@@ -559,7 +568,7 @@ FC_MESH MeshManipulations :: CheckCoarsenNormal(std::vector<TriangleType*> *OldT
         double oldarea  = OldTriangles->at(i)->GiveArea();
         double newarea  = NewTriangles->at(i)->GiveArea();
 
-        if (newarea < 1e-8) {  // TODO: Change to variable tol
+        if (newarea < TOL_COL_SMALLESTAREA) {
             return FC_SMALLAREA;
         }
 
@@ -569,7 +578,7 @@ FC_MESH MeshManipulations :: CheckCoarsenNormal(std::vector<TriangleType*> *OldT
             MaxAngle = std::min(angle1, angle2);
         }
 
-        if (angle1 > (20*2*3.1415/360)) { // TODO: Change to variable
+        if (angle1 > TOL_COL_MAXNORMALCHANGE) {
             LOG("Should not be collapsed...\n", 0);
             return FC_NORMAL;
         }
@@ -631,7 +640,7 @@ FC_MESH MeshManipulations :: CheckCoarsenChord(EdgeType *EdgeToCollapse, VertexT
         if (Alpha>MaxAngle) MaxAngle=Alpha;
     }
 
-    if (MaxAngle > 45*3.141593/360) { // TODO: Use variable
+    if (MaxAngle > TOL_COL_CHORD_MAXNORMALCHANGE) {
         return FC_CHORD;
     }
 
@@ -766,7 +775,7 @@ bool MeshManipulations :: CoarsenMeshImproved()
                         Generator.TestMesh();
 #endif
                         iter++;
-                        break;
+                        //break;
                     } else {
                         failcount++;
                     }

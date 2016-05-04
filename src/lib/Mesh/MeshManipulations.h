@@ -18,7 +18,7 @@
 namespace voxel2tet
 {
 
-enum FC_MESH {FC_OK, FC_FIXEDVERTEX, FC_NORMAL, FC_CHORD, FC_SMALLAREA, FC_TOOMANYTRIANGLES,
+enum FC_MESH {FC_OK, FC_FIXEDVERTEX, FC_NORMAL, FC_CHORD, FC_SMALLAREA, FC_AREACHANGETOOLARGE, FC_TOOMANYTRIANGLES,
               FC_WORSEMINANGLE, FC_VERTICESONDIFFERENTSHAPES, FC_TRIANGLESINTERSECT, FC_DUPLICATETRIANGLE};
 
 class MeshManipulations: public MeshData
@@ -37,6 +37,36 @@ private:
     void SortEdgesByMinArea();
 
 public:
+    /**
+     * @brief TOL_MAXAREACHANGE determines the maximum change in area of triangles associated with the collapse of n edge
+     */
+    double TOL_MAXAREACHANGE;
+
+    /**
+     * @brief TOL_COL_SMALLESTAREA Smallest allowed area for triangles in edge collapsing
+     */
+    double TOL_COL_SMALLESTAREA;
+
+    /**
+     * @brief TOL_COL_MAXNORMALCHANGE Maximum allowed change in normal angle during collapse (rad)
+     */
+    double TOL_COL_MAXNORMALCHANGE;
+
+    /**
+     * @brief TOL_COL_CHORD_MAXNORMALCHANGE Maximum change in normal for elements connected to a chord during collapsing
+     */
+    double TOL_COL_CHORD_MAXNORMALCHANGE;
+
+    /**
+     * @brief TOL_SMALLESTAREA determines the smallest allowed area of a triangle in edge flipping
+     */
+    double TOL_FLIP_SMALLESTAREA;
+
+    /**
+     * @brief TOL_FLIP_MAXNORMALCHANGE Maximum change in angle for formal in flipping (rad)
+     */
+    double TOL_FLIP_MAXNORMALCHANGE;
+
     MeshManipulations(BoundingBoxType BoundingBox);
 
     void RemoveDegenerateTriangles();
@@ -48,18 +78,11 @@ public:
      */
     FC_MESH CheckFlipNormal(std::vector<TriangleType*> *OldTriangles, std::array<TriangleType*, 2> NewTriangles);
 
-    /* Collapses an edge. Return values
-     *
-     *  0   Edge Collapsed
-     *  -1  Failes due to fixed vertex
-     *  -2  Failed due to a too large change in normal
-     *  -3  Failed due to a too large change in chord
-     *  -4  Failed due to a too small area of new triangle(s)
+    /* Collapses an edge. Returns FC_MESH value
      *
      */
     FC_MESH CollapseEdge(EdgeType *EdgeToCollapse, int RemoveVertexIndex, bool PerformTesting = true);
     FC_MESH CollapseEdgeTest(std::vector<TriangleType *> *TrianglesToSave, std::vector<TriangleType *> *TrianglesToRemove, std::vector<TriangleType *> *NewTriangles, EdgeType *EdgeToCollapse, int RemoveVertexIndex);
-    //CollapseEdgeTest(std::vector<TriangleType *> *TrianglesToSave, std::vector<TriangleType *> *NewTriangles, EdgeType *EdgeToCollapse, int RemoveVertexIndex);
     FC_MESH CheckCoarsenNormal(std::vector<TriangleType*> *OldTriangles, std::vector<TriangleType*> *NewTriangles);
     FC_MESH CheckCoarsenChord(EdgeType *EdgeToCollapse, VertexType* RemoveVertex, VertexType* SaveVertex);
 

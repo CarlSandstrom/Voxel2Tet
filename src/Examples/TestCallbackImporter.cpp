@@ -57,6 +57,6 @@ int main( int argc, char *argv[] )
 
     v2t.LoadCallback(&GiveMaterialIDByCoordinateSphere, {0,0,0}, {spacing, spacing, spacing}, {dimensions, dimensions, dimensions});
     v2t.Process();
-    v2t.ExportSurface("/tmp/Voxel2Tet/TetGenTest.off", voxel2tet::FT_OFF);
+    v2t.Tetrahedralize();
 
 }
