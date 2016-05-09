@@ -85,18 +85,18 @@ int main( int argc, char *argv[] ) {
 
     for (voxel2tet::EdgeType* e: mesh->Edges) {
          if ((e->Vertices.at(0)->get_c(1) == 0.0) && (e->Vertices.at(1)->get_c(1) == 0.0)){
-             South.EdgeSegments.push_back(e->Vertices);
+             South.AddPhaseEdgeSegment(e->Vertices[0], e->Vertices[1]);
          }
          if ((e->Vertices.at(0)->get_c(0) == 0.0) && (e->Vertices.at(1)->get_c(0) == 0.0)){
-             West.EdgeSegments.push_back(e->Vertices);
+             West.AddPhaseEdgeSegment(e->Vertices[0], e->Vertices[1]);
          }
 
          if ((e->Vertices.at(0)->get_c(1) > double(vertexsidecount-1) - 1e-8) && (e->Vertices.at(1)->get_c(1) > double(vertexsidecount-1) - 1e-8)){
-             North.EdgeSegments.push_back(e->Vertices);
+             North.AddPhaseEdgeSegment(e->Vertices[0], e->Vertices[1]);
          }
 
          if ((e->Vertices.at(0)->get_c(0) > double(vertexsidecount-1) - 1e-8) && (e->Vertices.at(1)->get_c(0) > double(vertexsidecount-1) - 1e-8)){
-             East.EdgeSegments.push_back(e->Vertices);
+             East.AddPhaseEdgeSegment(e->Vertices[0], e->Vertices[1]);
          }
     }
 

@@ -67,6 +67,8 @@ void PhaseEdge :: SortAndFixBrokenEdge(std::vector<PhaseEdge*> *FixedEdges)
     // to the end vertices of a chain of segments cannot be found while there are segments in the list, a new
     // list of segments is created.
 
+    FixedEdges->clear();
+
     while (this->EdgeSegments.size()>0) {
         std::array<VertexType*, 2> ThisLink = this->EdgeSegments.at(0);
         this->EdgeSegments.erase(this->EdgeSegments.begin(), this->EdgeSegments.begin()+1);
@@ -182,12 +184,9 @@ void PhaseEdge :: GiveTopologyLists(std::vector<std::vector<VertexType *>> *Conn
         if (nextindex!=FlatList.size()) MyConnections.push_back(FlatList.at(nextindex));
 
         // Ignore edges not aligned with the principal axes
-
-
         Connections->push_back(MyConnections);
 
         std::array<bool,3> FixedDirections;
-
 
         if (std::find(this->FixedVertices.begin(), this->FixedVertices.end(), FlatList.at(i))==this->FixedVertices.end()  ) {//if ((i!=0) & (i!=(FlatList.size()-1))) {
             FixedDirections = {false, false, false};
@@ -216,6 +215,11 @@ void PhaseEdge :: Smooth(MeshData *Mesh)
 
     SpringSmooth(FlatList, FixedDirectionsList, Connections, K, Mesh);
 
+}
+
+void PhaseEdge :: AddPhaseEdgeSegment(VertexType *v1, VertexType *v2)
+{
+    EdgeSegments.push_back({v1, v2});
 }
 
 }

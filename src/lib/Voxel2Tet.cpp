@@ -447,7 +447,7 @@ void Voxel2Tet :: FindEdges()
 
 
     // Add PhaseEdges to surfaces
-    // TODO: Performance can be increased by making sure that the verices in Surfaces and PhaseEdges are sorted. Also, save the sorted list in PhaseEdges
+    // TODO: Performance can be increased by making sure that the vertices in Surfaces and PhaseEdges are sorted. Also, save the sorted list in PhaseEdges
     int x=0;
     for (Surface* s: this->Surfaces) {
         std::vector <VertexType *> SurfaceVertices;
@@ -675,7 +675,8 @@ PhaseEdge* Voxel2Tet :: AddPhaseEdge(std::vector<VertexType*> EdgeSegment, std::
         v->AddPhaseEdge(ThisPhaseEdge);
     }
 
-    ThisPhaseEdge->EdgeSegments.push_back({EdgeSegment.at(0), EdgeSegment.at(1)});
+    ThisPhaseEdge->AddPhaseEdgeSegment(EdgeSegment.at(0), EdgeSegment.at(1));
+    //ThisPhaseEdge->EdgeSegments.push_back({EdgeSegment.at(0), EdgeSegment.at(1)});
     return ThisPhaseEdge;
 
 }
