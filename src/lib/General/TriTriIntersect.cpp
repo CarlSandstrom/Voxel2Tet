@@ -372,8 +372,8 @@ bool tri_tri_intersect_shared_edge(double s0[3], double s1[3], double u0[3], dou
     NORMALIZE(n0, n0);
     NORMALIZE(n1, n1);
 
-    printf("n0 =(%f, %f, %f)\n", n0[0], n0[1], n0[2]);
-    printf("n1 =(%f, %f, %f)\n", n1[0], n1[1], n1[2]);
+    //printf("n0 =(%f, %f, %f)\n", n0[0], n0[1], n0[2]);
+    //printf("n1 =(%f, %f, %f)\n", n1[0], n1[1], n1[2]);
 
     // Compute difference
     double d[3];
@@ -381,9 +381,9 @@ bool tri_tri_intersect_shared_edge(double s0[3], double s1[3], double u0[3], dou
     double L;
 
     VECTOR_LENGTH(L, d);
-    printf ("|n0-n1| = %f\n", L);
+    //printf ("|n0-n1| = %f\n", L);
 
-    if (L<.05) return true; // .01 does not work. investigate
+    if (L<.05) return true; // TODO: .01 does not work. investigate
 
     return false;
 

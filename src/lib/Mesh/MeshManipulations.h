@@ -33,6 +33,9 @@ private:
      */
     FC_MESH GetFlippedEdgeData(EdgeType *EdgeToFlip, EdgeType *NewEdge, std::array<TriangleType*, 2> *NewTriangles);
 
+    void SortEdgesByLength();
+    void SortEdgesByMinArea();
+
 public:
     MeshManipulations(BoundingBoxType BoundingBox);
 
