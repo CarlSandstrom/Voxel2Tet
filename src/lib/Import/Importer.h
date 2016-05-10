@@ -4,6 +4,8 @@
 #include <vector>
 #include <array>
 
+#include "Options.h"
+
 namespace voxel2tet {
 
 typedef int IntTriplet[3];
@@ -22,7 +24,6 @@ class Importer
 private:
     std :: vector <double> Spacing;
 public:
-    Importer();
     virtual int GiveMaterialIDByCoordinate(double x, double y, double z) = 0;
     virtual int GiveMaterialIDByIndex(int xi, int yi, int zi) = 0;
     virtual void GiveSpacing(double spacing[3]) = 0;
