@@ -7,7 +7,7 @@
 #include "Options.h"
 #include "Importer.h"
 #include "CallbackImporter.h"
-#include "CCBuilderDataReader.h"
+#include "Dream3DDataReader.h"
 #include "MiscFunctions.h"
 #include "MeshComponents.h"
 #include "MeshManipulations.h"
@@ -19,6 +19,9 @@
 namespace voxel2tet
 {
 
+/**
+ * @brief The Voxel2Tet class
+ */
 class Voxel2Tet
 {
 private:

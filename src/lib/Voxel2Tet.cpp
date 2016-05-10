@@ -5,7 +5,7 @@
 
 #include "Voxel2Tet.h"
 #include "Importer.h"
-#include "CCBuilderDataReader.h"
+#include "Dream3DDataReader.h"
 #include "CallbackImporter.h"
 #include "TetGenCaller.h"
 
@@ -46,7 +46,7 @@ void Voxel2Tet::LoadCallback(cbMaterialIDByCoordinate MaterialIDByCoordinate, st
 void Voxel2Tet::LoadFile(std::string Filename)
 {
     STATUS ("Load file %s\n", Filename.c_str());
-    CCBuilderDataReader *DataReader = new CCBuilderDataReader();
+    Dream3DDataReader *DataReader = new Dream3DDataReader(this->Opt->GiveStringValue("DataContainer"), this->Opt->GiveStringValue("MaterialId") );
     DataReader->LoadFile(Filename);
     this->Imp = DataReader;
     FinalizeLoad();
@@ -69,7 +69,7 @@ void Voxel2Tet :: FinalizeLoad()
     }
 
     if (!this->Opt->has_key("edge_spring_const")) {
-        edge_spring_const = spring_const/15.0;
+        edge_spring_const = spring_const/30.0;
         Opt->AddDefaultMap("edge_spring_const", std::to_string(edge_spring_const));
     } else {
         edge_spring_const = Opt->GiveDoubleValue("edge_spring_const");
@@ -533,9 +533,6 @@ void Voxel2Tet :: SmoothEdgesSimultaneously()
 
         for (unsigned int i=0; i<EdgeVertices.size(); i++) {
             VertexType *v = EdgeVertices.at(i);
-            if (v->ID==168) {
-                LOG("Vertex 168 found\n", 0);
-            }
             VertexConnectivity *vc = new VertexConnectivity;
             vc->v = v;
             vc->Connections.insert(vc->Connections.begin(), Connections.at(i).begin(), Connections.at(i).end());

@@ -5,6 +5,9 @@ namespace voxel2tet
 
 void SpringSmooth(std::vector<VertexType*> Vertices, std::vector<std::array<bool,3>> FixedDirections, std::vector<std::vector<VertexType*>> Connections, double K, voxel2tet::MeshData *Mesh)
 {
+    int MAX_ITER_COUNT=10000;
+    double NEWTON_TOL=1e-10;
+
     std::vector<std::array<double, 3>> CurrentPositions;
     std::vector<std::array<double, 3>> PreviousPositions;
 
@@ -29,7 +32,7 @@ void SpringSmooth(std::vector<VertexType*> Vertices, std::vector<std::array<bool
     }
 #endif
 
-    while ((itercount < 1000) & (deltamax>1e-4)){
+    while ((itercount < MAX_ITER_COUNT) & (deltamax>1e-4)){
 
         deltamax=0.0;
         int deltamaxnode = -1;
@@ -70,7 +73,7 @@ void SpringSmooth(std::vector<VertexType*> Vertices, std::vector<std::array<bool
                 d=0;
                 double fval=F-d*exp(d*d/K);
 
-                while (std::fabs(fval)>1e-10) {
+                while (std::fabs(fval)>NEWTON_TOL) {
                     double update = fval/(std::exp(d*d/K)*(1+2*d*d/K));
                     d=d+update;
                     fval=F-d*exp(d*d/K);
@@ -118,7 +121,7 @@ void SpringSmooth(std::vector<VertexType*> Vertices, std::vector<std::array<bool
 
         }
 
-        LOG("Iteration %i end with delta=%f at node %i\n", itercount, deltamax, deltamaxnode);
+        STATUS("Iteration %i end with deltamax=%f at node %i\n", itercount, deltamax, deltamaxnode);
 
         itercount ++;
 

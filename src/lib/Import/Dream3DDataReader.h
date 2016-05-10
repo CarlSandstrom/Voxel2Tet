@@ -8,7 +8,7 @@
 
 namespace voxel2tet {
 
-class CCBuilderDataReader: public Importer
+class Dream3DDataReader: public Importer
 {
 private:
     H5::Group *VoxelDataContainer;
@@ -17,8 +17,11 @@ private:
     int dimensions_data[3];
     BoundingBoxType BoundingBox;
     int *GrainIdsData;
+    std::string DataContainer;
+    std::string MaterialGroup;
 public:
-    CCBuilderDataReader();
+    Dream3DDataReader();
+    Dream3DDataReader(std::string DataContainer, std::string MaterialGroup);
     void LoadFile(std::string FileName);
     virtual int GiveMaterialIDByCoordinate(double x, double y, double z);
     virtual int GiveMaterialIDByIndex(int xi, int yi, int zi);

@@ -3,25 +3,32 @@
 #include<stdlib.h>
 #include<cmath>
 
-#include "CCBuilderDataReader.h"
+#include "Dream3DDataReader.h"
 #include "MiscFunctions.h"
 
 namespace voxel2tet {
 
-CCBuilderDataReader::CCBuilderDataReader()
+Dream3DDataReader::Dream3DDataReader()
 {
-
+    this->DataContainer = "DataContainer";
+    this->MaterialGroup = "GrainIds";
 }
 
-void CCBuilderDataReader :: LoadFile(std::string FileName)
+Dream3DDataReader::Dream3DDataReader(std::string DataContainer, std::string MaterialGroup) : Importer()
 {
+    this->DataContainer = DataContainer;
+    this->MaterialGroup = MaterialGroup;
+}
+
+void Dream3DDataReader :: LoadFile(std::string FileName)
+{
+
     LOG ("Open file %s\n", FileName.c_str());
     H5::H5File file( FileName, H5F_ACC_RDONLY );
-    //VoxelDataContainer = new H5 :: Group ( file.openGroup("VoxelDataContainer") );
     H5::Group DataContainers;
 
     DataContainers = H5 :: Group ( file.openGroup("DataContainers") );
-    VoxelDataContainer = new H5 :: Group ( DataContainers.openGroup("VoxelDataContainer") );
+    VoxelDataContainer = new H5 :: Group ( DataContainers.openGroup(this->DataContainer) );
 
 
     // Load dimensional/spatial data
@@ -33,21 +40,20 @@ void CCBuilderDataReader :: LoadFile(std::string FileName)
     for (int i=0; i<3; i++) this->BoundingBox.maxvalues[i] = this->origin_data[i]+this->dimensions_data[i]*this->spacing_data[i];
 
     // Load voxel data.
-    H5 :: DataSet GrainIds = VoxelDataContainer->openGroup("CellData").openDataSet("GrainIds");
+    H5 :: DataSet GrainIds = VoxelDataContainer->openGroup("CellData").openDataSet(this->MaterialGroup);
     H5 :: DataSpace space = GrainIds.getSpace();
-    hsize_t dims[1];
+
+    int Ndims = space.getSimpleExtentNdims();
+    hsize_t dims[Ndims];
+
     space.getSimpleExtentDims(dims);
 
-    GrainIdsData = (int*) malloc(sizeof(int)*dims[0]);
+    GrainIdsData = (int*) malloc(sizeof(int)*dims[0]*dims[1]*dims[2]*dims[3]);
     GrainIds.read( GrainIdsData, H5::PredType::NATIVE_INT);
-
-/*    for (int i=0; i<dims[0]; i++) {
-        printf("%u\n", GrainIdsData[i]);
-    } */
 
 }
 
-int CCBuilderDataReader :: GiveMaterialIDByCoordinate(double x, double y, double z)
+int Dream3DDataReader :: GiveMaterialIDByCoordinate(double x, double y, double z)
 {
     double coords[3]={x, y, z};
     int indices[3];
@@ -58,7 +64,7 @@ int CCBuilderDataReader :: GiveMaterialIDByCoordinate(double x, double y, double
     return this->GiveMaterialIDByIndex(indices[0], indices[1], indices[2]);
 }
 
-int CCBuilderDataReader :: GiveMaterialIDByIndex(int xi, int yi, int zi)
+int Dream3DDataReader :: GiveMaterialIDByIndex(int xi, int yi, int zi)
 {
     if (xi == -1) {
         return -1;
@@ -79,12 +85,12 @@ int CCBuilderDataReader :: GiveMaterialIDByIndex(int xi, int yi, int zi)
 
 }
 
-void CCBuilderDataReader :: GiveSpacing(double spacing[3])
+void Dream3DDataReader :: GiveSpacing(double spacing[3])
 {
     for (int i=0; i<3; i++) {spacing[i] = this->spacing_data[i];}
 }
 
-BoundingBoxType CCBuilderDataReader::GiveBoundingBox()
+BoundingBoxType Dream3DDataReader::GiveBoundingBox()
 {
     BoundingBoxType BoundingBox;
     for (int i=0; i<3; i++) {
@@ -94,19 +100,19 @@ BoundingBoxType CCBuilderDataReader::GiveBoundingBox()
     return BoundingBox;
 }
 
-void CCBuilderDataReader :: GiveDimensions(int dimensions[3])
+void Dream3DDataReader :: GiveDimensions(int dimensions[3])
 {
     for (int i=0; i<3; i++) {dimensions[i] = this->dimensions_data[i];}
 }
 
-void CCBuilderDataReader :: GiveCoordinateByIndices(int xi, int yi, int zi, DoubleTriplet Coordinate)
+void Dream3DDataReader :: GiveCoordinateByIndices(int xi, int yi, int zi, DoubleTriplet Coordinate)
 {
     Coordinate.c[0] = xi*this->spacing_data[0] + this->origin_data[0];
     Coordinate.c[1] = yi*this->spacing_data[1] + this->origin_data[1];
     Coordinate.c[2] = zi*this->spacing_data[2] + this->origin_data[2];
 }
 
-void CCBuilderDataReader :: GiveOrigin(double origin[3])
+void Dream3DDataReader :: GiveOrigin(double origin[3])
 {
     for (int i=0; i<3; i++) {origin[i] = this->origin_data[i];}
 }

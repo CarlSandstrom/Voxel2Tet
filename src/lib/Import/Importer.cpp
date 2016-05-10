@@ -2,10 +2,5 @@
 
 namespace voxel2tet {
 
-Importer::Importer()
-{
-
-}
-
 }
 
