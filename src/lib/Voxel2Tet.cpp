@@ -69,7 +69,7 @@ void Voxel2Tet :: FinalizeLoad()
     }
 
     if (!this->Opt->has_key("edge_spring_const")) {
-        edge_spring_const = spring_const/15.0;
+        edge_spring_const = spring_const/30.0;
         Opt->AddDefaultMap("edge_spring_const", std::to_string(edge_spring_const));
     } else {
         edge_spring_const = Opt->GiveDoubleValue("edge_spring_const");

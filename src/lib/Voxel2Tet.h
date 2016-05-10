@@ -19,6 +19,9 @@
 namespace voxel2tet
 {
 
+/**
+ * @brief The Voxel2Tet class
+ */
 class Voxel2Tet
 {
 private:
