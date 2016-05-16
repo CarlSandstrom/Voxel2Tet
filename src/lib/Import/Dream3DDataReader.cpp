@@ -48,7 +48,13 @@ void Dream3DDataReader :: LoadFile(std::string FileName)
 
     space.getSimpleExtentDims(dims);
 
-    GrainIdsData = (int*) malloc(sizeof(int)*dims[0]*dims[1]*dims[2]*dims[3]);
+    int DataLength = 1;
+    for (int i=0; i<Ndims; i++) {
+        DataLength = DataLength*dims[i];
+    }
+
+
+    GrainIdsData = (int*) malloc(sizeof(int)*DataLength);
     GrainIds.read( GrainIdsData, H5::PredType::NATIVE_INT);
 
 }
