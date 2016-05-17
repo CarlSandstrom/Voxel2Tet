@@ -11,10 +11,10 @@ MeshManipulations::MeshManipulations(BoundingBoxType BoundingBox) : MeshData(Bou
 
     TOL_COL_SMALLESTAREA = 1e-8;
     TOL_COL_MAXNORMALCHANGE = 10*2*3.1415/360;
-    TOL_COL_CHORD_MAXNORMALCHANGE = 45*3.141593/360;
+    TOL_COL_CHORD_MAXNORMALCHANGE = 10*3.141593/360;
 
     TOL_FLIP_SMALLESTAREA = 1e-8;
-    TOL_FLIP_MAXNORMALCHANGE = 10*2*3.1415/360;
+    TOL_FLIP_MAXNORMALCHANGE = 10*2*3.141593/360;
 }
 
 void MeshManipulations :: SortEdgesByLength()
@@ -775,11 +775,9 @@ bool MeshManipulations :: CoarsenMeshImproved()
                         Generator.TestMesh();
 #endif
                         iter++;
-                        //break;
                     } else {
                         failcount++;
                     }
-
                 }
             }
             i++;

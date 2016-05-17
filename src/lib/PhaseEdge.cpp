@@ -188,7 +188,8 @@ void PhaseEdge :: GiveTopologyLists(std::vector<std::vector<VertexType *>> *Conn
 
         std::array<bool,3> FixedDirections;
 
-        if (std::find(this->FixedVertices.begin(), this->FixedVertices.end(), FlatList.at(i))==this->FixedVertices.end()  ) {//if ((i!=0) & (i!=(FlatList.size()-1))) {
+        // Set start and end points to fixed
+        if (std::find(this->FixedVertices.begin(), this->FixedVertices.end(), FlatList.at(i))==this->FixedVertices.end()  ) {
             FixedDirections = {false, false, false};
         } else {
             FixedDirections = {true, true, true};

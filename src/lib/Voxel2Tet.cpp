@@ -62,14 +62,14 @@ void Voxel2Tet :: FinalizeLoad()
     if (!this->Opt->has_key("spring_const")) {
         double cellspace[3];
         this->Imp->GiveSpacing(cellspace);
-        spring_const = cellspace[0];
+        spring_const = cellspace[0]*2;
         Opt->AddDefaultMap("spring_const", std::to_string(spring_const));
     } else {
          spring_const = Opt->GiveDoubleValue("spring_const");
     }
 
     if (!this->Opt->has_key("edge_spring_const")) {
-        edge_spring_const = spring_const/30.0;
+        edge_spring_const = spring_const/10.0;
         Opt->AddDefaultMap("edge_spring_const", std::to_string(edge_spring_const));
     } else {
         edge_spring_const = Opt->GiveDoubleValue("edge_spring_const");
@@ -753,12 +753,16 @@ void Voxel2Tet::Process()
 #if SMOOTH_EDGES_INDIVIDUALLY==1
         this->SmoothEdgesIndividually();
 #else
+        clock_t t1 = clock();
         this->SmoothEdgesSimultaneously();
 #endif
 
         this->Mesh->ExportSurface(strfmt("/tmp/Voxeltest%u.vtp", outputindex++), FT_VTK);
         this->SmoothSurfaces();
+        clock_t t2 = clock();
+        LOG("Edges smoothing in %fs\n", float(t2-t1)/CLOCKS_PER_SEC);
 
+        return;
 
         this->Mesh->ExportSurface(strfmt("/tmp/Voxeltest%u.vtp", outputindex++), FT_VTK);
         this->Mesh->FlipAll();

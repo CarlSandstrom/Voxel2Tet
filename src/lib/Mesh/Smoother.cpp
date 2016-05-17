@@ -8,6 +8,7 @@ void SpringSmooth(std::vector<VertexType*> Vertices, std::vector<std::array<bool
     int MAX_ITER_COUNT=10000;
     double NEWTON_TOL=1e-10;
 
+    // Create vectors for current and previous positions
     std::vector<std::array<double, 3>> CurrentPositions;
     std::vector<std::array<double, 3>> PreviousPositions;
 
@@ -20,6 +21,17 @@ void SpringSmooth(std::vector<VertexType*> Vertices, std::vector<std::array<bool
         CurrentPositions.push_back(cp);
         PreviousPositions.push_back(pp);
     }
+
+    // Create vector-vector for accessing neightbours
+    std::vector <std::vector <int>> ConnectionVertexIndex;
+    for (std::vector<VertexType*> n: Connections) {
+        ConnectionVertexIndex.push_back({});
+        for (VertexType *v: n) {
+            int VertexIndex = std::distance(Vertices.begin(), std::find(Vertices.begin(), Vertices.end(), v));
+            ConnectionVertexIndex.at(ConnectionVertexIndex.size()-1).push_back(VertexIndex);
+        }
+    }
+
 
     int itercount = 0;
     double deltamax = 1e8;
@@ -36,18 +48,22 @@ void SpringSmooth(std::vector<VertexType*> Vertices, std::vector<std::array<bool
 
         deltamax=0.0;
         int deltamaxnode = -1;
+        unsigned int i;
 
-        for (unsigned int i=0; i<Vertices.size(); i++) {
+#pragma omp parallel default(shared), private(i)
+        {
+#pragma omp for
+        for (i=0; i<Vertices.size(); i++) {
             std::array<double, 3> NewCoords = {0,0,0};
 
             std::vector<VertexType*> MyConnections = Connections.at(i);
             for (unsigned int k=0; k<MyConnections.size(); k++) {
                 // We need the index of MyConnection such that we can use CurrentPosition (as CurrentPosition contains the updated coordinates)
 
-                int VertexIndex = std::distance(Vertices.begin(), std::find(Vertices.begin(), Vertices.end(), MyConnections.at(k)));
+                //int VertexIndex = std::distance(Vertices.begin(), std::find(Vertices.begin(), Vertices.end(), MyConnections.at(k)));
 
                 for (int m=0; m<3; m++) {
-                    NewCoords.at(m) = NewCoords.at(m) + CurrentPositions.at(VertexIndex)[m] / double(MyConnections.size());
+                    NewCoords.at(m) = NewCoords.at(m) + CurrentPositions.at(ConnectionVertexIndex.at(i).at(k))[m] / double(MyConnections.size());
                 }
             }
 
@@ -79,17 +95,9 @@ void SpringSmooth(std::vector<VertexType*> Vertices, std::vector<std::array<bool
                     fval=F-d*exp(d*d/K);
                     SolveIterations++;
                 }
-                /*
-                double change=1e8;
-                while ((change>1e-8) & (SolveIterations<100)) {
-                    double NewDelta = F*1.0/exp(pow(d , 2) / (K));
-                    change = fabs(NewDelta-d);
-                    d = d + 1 * (NewDelta-d);
-                    SolveIterations++;
-                 }*/
 
                 if (SolveIterations == 100) {
-                    STATUS("WARNING: Fix point iterations did not converge\n", 0);
+                    STATUS("WARNING: Newton iterations did not converge\n", 0);
                     d=0.0;
                 }
 
@@ -106,6 +114,7 @@ void SpringSmooth(std::vector<VertexType*> Vertices, std::vector<std::array<bool
             double df = sqrt( pow(CurrentPositions.at(i)[0]-PreviousPositions.at(i)[0],2) +
                     pow(CurrentPositions.at(i)[1]-PreviousPositions.at(i)[1],2) +
                     pow(CurrentPositions.at(i)[2]-PreviousPositions.at(i)[2],2) );
+
             if (df>deltamax) {
                 deltamaxnode = i;
                 deltamax=df;
@@ -119,6 +128,7 @@ void SpringSmooth(std::vector<VertexType*> Vertices, std::vector<std::array<bool
             }
 
 
+        }
         }
 
         STATUS("Iteration %i end with deltamax=%f at node %i\n", itercount, deltamax, deltamaxnode);
