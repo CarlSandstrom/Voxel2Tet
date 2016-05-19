@@ -9,7 +9,7 @@
 namespace voxel2tet
 {
 
-void SpringSmooth(std::vector<VertexType*> Vertices, std::vector<bool> FixedDirections,
+void SpringSmooth(std::vector<VertexType*> Vertices, std::vector<bool> Fixed,
                   std::vector<std::vector<VertexType*>> Connections, double K, MeshData *Mesh=NULL);
 
 

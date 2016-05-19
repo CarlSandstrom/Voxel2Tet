@@ -4,7 +4,7 @@
 namespace voxel2tet
 {
 
-void SpringSmooth(std::vector<VertexType*> Vertices, std::vector<bool> FixedDirections, std::vector<std::vector<VertexType*>> Connections, double K, voxel2tet::MeshData *Mesh)
+void SpringSmooth(std::vector<VertexType*> Vertices, std::vector<bool> Fixed, std::vector<std::vector<VertexType*>> Connections, double K, voxel2tet::MeshData *Mesh)
 {
     int MAX_ITER_COUNT=10000;
     double NEWTON_TOL=1e-10;
@@ -70,7 +70,7 @@ void SpringSmooth(std::vector<VertexType*> Vertices, std::vector<bool> FixedDire
 
             //#pragma omp for schedule(static, 100)
             for (size_t i=0; i<Vertices.size(); i++) {
-                if (!FixedDirections[i]) {
+                if (!Fixed[i]) {
                     std::array<double, 3> NewCoords = {0,0,0};
 
                     std::vector<VertexType*> MyConnections = Connections.at(i);
@@ -197,10 +197,7 @@ void SpringSmooth(std::vector<VertexType*> Vertices, std::vector<bool> FixedDire
     // Update vertices
     for (unsigned int i=0; i<Vertices.size(); i++) {
         for (int j=0; j<3; j++) {
-
-            //if (!FixedDirections.at(i)[j]) {
-                Vertices.at(i)->set_c(CurrentPositions.at(i)[j], j); // TODO: Use array to improve performance
-            //}
+            Vertices.at(i)->set_c(CurrentPositions.at(i)[j], j); // TODO: Use array to improve performance
         }
     }
 
