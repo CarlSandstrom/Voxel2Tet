@@ -36,34 +36,28 @@ void Surface::Smooth(MeshData *Mesh)
 
     double K = this->Opt->GiveDoubleValue("spring_const");
 
+    std::vector<VertexType *> SmoothVertices;
     std::vector<std::vector<VertexType *>> Connections;
     std::vector<std::array<bool,3>> FixedDirectionsList;
 
     // Create connections matrix
     for (unsigned int i=0; i<this->Vertices.size(); i++) {
-        // Find connected vertices
-        std::vector <VertexType*> NeighbouringVertices = this->Vertices.at(i)->FetchNeighbouringVertices();
-        std::sort (NeighbouringVertices.begin(), NeighbouringVertices.end());
-        std::vector <VertexType*> ConnectedVertices;
+        if (this->Vertices.at(i)->PhaseEdges.size()==0) {
+            std::vector <VertexType*> NeighbouringVertices = this->Vertices.at(i)->FetchNeighbouringVertices();
+            std::sort (NeighbouringVertices.begin(), NeighbouringVertices.end());
+            std::vector <VertexType*> ConnectedVertices;
 
-        // Create list of indices of connected vertices
-        std::set_intersection(NeighbouringVertices.begin(), NeighbouringVertices.end(),
-                              this->Vertices.begin(), this->Vertices.end(), back_inserter(ConnectedVertices));
+            // Create list of indices of connected vertices
+            std::set_intersection(NeighbouringVertices.begin(), NeighbouringVertices.end(),
+                                  this->Vertices.begin(), this->Vertices.end(), back_inserter(ConnectedVertices));
 
-        Connections.push_back(ConnectedVertices);
-
-        std::array<bool,3> FixedDirections;
-        if (std::find(this->FixedVertices.begin(), this->FixedVertices.end(), this->Vertices.at(i))==this->FixedVertices.end()  ) {
-            FixedDirections = {false, false, false};
-        } else {
-            FixedDirections = {true, true, true};
+            Connections.push_back(ConnectedVertices);
+            SmoothVertices.push_back(this->Vertices.at(i));
+            FixedDirectionsList.push_back(this->Vertices.at(i)->Fixed);
         }
-
-        FixedDirectionsList.push_back(FixedDirections);
-
     }
 
-    SpringSmooth(this->Vertices, FixedDirectionsList, Connections, K, Mesh);
+    SpringSmooth(SmoothVertices, FixedDirectionsList, Connections, K, Mesh);
 
 }
 

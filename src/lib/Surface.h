@@ -27,7 +27,6 @@ private:
      */
     Options *Opt;
 public:
-    std::vector <VertexType*> FixedVertices;
 
     /**
      * @brief Constructor for the Surface class

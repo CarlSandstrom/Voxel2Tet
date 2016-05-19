@@ -78,11 +78,9 @@ void SpringSmooth(std::vector<VertexType*> Vertices, std::vector<std::array<bool
                 for (unsigned int k=0; k<MyConnections.size(); k++) {
                     std::array<double, 3> ConnectionCoord = CurrentPositions.at(ConnectionVertexIndex.at(i).at(k));
 
-//                    for (int m=0; m<3; m++) {
-                        NewCoords.at(0) = NewCoords.at(0) + ConnectionCoord[0] / ConnectionsCount;
-                        NewCoords.at(1) = NewCoords.at(1) + ConnectionCoord[1] / ConnectionsCount;
-                        NewCoords.at(2) = NewCoords.at(2) + ConnectionCoord[2] / ConnectionsCount;
-//                    }
+                    for (int m=0; m<3; m++) {
+                        NewCoords.at(m) = NewCoords.at(m) + ConnectionCoord[m] / ConnectionsCount;
+                    }
                 }
 
                 // Pull back
@@ -120,7 +118,7 @@ void SpringSmooth(std::vector<VertexType*> Vertices, std::vector<std::array<bool
                 // Update current position with new delta
                 // TODO: Is this ok? Is it thread-safe?
                 for (int j=0; j<3; j++) {
-                    if (!FixedDirections.at(i)[j]) {
+                    if (!Vertices.at(i)->Fixed[j]) {
                         CurrentPositions.at(i)[j] = Vertices.at(i)->originalcoordinates[j] + unitdelta[j]*d;
                     }
                 }
@@ -137,7 +135,7 @@ void SpringSmooth(std::vector<VertexType*> Vertices, std::vector<std::array<bool
 
                 // Update previous positions
                 for (unsigned int j=0; j<3; j++) {
-                    if (!FixedDirections.at(i)[j]) {
+                    if (!Vertices.at(i)->Fixed[j]) {
                         PreviousPositions.at(i)[j]=CurrentPositions.at(i)[j];
                     }
                 }

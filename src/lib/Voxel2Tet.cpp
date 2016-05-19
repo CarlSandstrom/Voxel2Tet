@@ -309,7 +309,7 @@ void Voxel2Tet :: FindEdges()
         SurfaceEdgeVertices.erase( std::unique(SurfaceEdgeVertices.begin(), SurfaceEdgeVertices.end()), SurfaceEdgeVertices.end());
 
         for (auto v: SurfaceEdgeVertices) {
-            surface1->FixedVertices.push_back(v);
+            v->Fixed = {true, true, true};
         }
 
     }
@@ -589,9 +589,9 @@ void Voxel2Tet :: SmoothEdgesSimultaneously()
         std::array<bool,3> FixedDirections;
         for (int j=0; j<3; j++) {
             if ( (v->get_c(j) > (this->Imp->GiveBoundingBox().maxvalues[j]-eps)) | (v->get_c(j) < (this->Imp->GiveBoundingBox().minvalues[j]+eps))) {
-                FixedDirections[j]=true;
+                v->Fixed[j]=true;
             } else {
-                FixedDirections[j]=false;
+                v->Fixed[j]=false;
             }
         }
         FixedDirectionsList.push_back(FixedDirections);
@@ -763,13 +763,13 @@ void Voxel2Tet::Process()
         this->SmoothEdgesSimultaneously();
 #endif
 
-//        this->Mesh->ExportSurface(strfmt("/tmp/Voxeltest%u.vtp", outputindex++), FT_VTK);
+        this->Mesh->ExportSurface(strfmt("/tmp/Voxeltest%u.vtp", outputindex++), FT_VTK);
 
         this->SmoothSurfaces();
         clock_t t2 = clock();
         STATUS("Edges smoothing in %fs\n", float(t2-t1)/(double)CLOCKS_PER_SEC);
 
-        return;
+//        return;
 
         this->Mesh->ExportSurface(strfmt("/tmp/Voxeltest%u.vtp", outputindex++), FT_VTK);
         this->Mesh->FlipAll();
