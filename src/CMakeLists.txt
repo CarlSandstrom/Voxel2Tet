@@ -3,13 +3,14 @@ project (Voxel2Tet)
 
 set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -Wall -ffloat-store -std=c++11 -llapack -lblas -lm")
 
+option(OPENMP "Specifies if OpenMP support should be active" OFF)
+
 set(linkerlist Voxel2TetLib)
 
 # Look for required libraries
 
 #### hdf5 library
 
-#find_library(HDF5_CXX_LIB hdf5_cpp)
 find_package(HDF5)
 
 if (HDF5_FOUND)
@@ -78,10 +79,13 @@ MESSAGE( STATUS "Tetgen library found in ${TETGEN_LIB}")
 set(linkerlist ${linkerlist} ${TETGEN_LIB})
 
 #### OpenMP
-find_package(OpenMP)
-if (OPENMP_FOUND)
-    set (CMAKE_C_FLAGS "${CMAKE_C_FLAGS} ${OpenMP_C_FLAGS}")
-    set (CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} ${OpenMP_CXX_FLAGS}")
+if (OPENMP)
+    find_package(OpenMP)
+    if (OPENMP_FOUND)
+        set (CMAKE_C_FLAGS "${CMAKE_C_FLAGS} ${OpenMP_C_FLAGS}")
+        set (CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} ${OpenMP_CXX_FLAGS}")
+        add_definitions(-DOPENMP=ON)
+    endif()
 endif()
 
 #### Project files

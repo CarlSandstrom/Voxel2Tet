@@ -204,6 +204,8 @@ void PhaseEdge :: Smooth(MeshData *Mesh)
 {
     // TODO: This does not seem to be used, right?
 
+    throw(0);
+
     if (this->EdgeSegments.size()==1) return;
     double K = this->Opt->GiveDoubleValue("edge_spring_const");
 

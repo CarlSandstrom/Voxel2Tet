@@ -1,3 +1,4 @@
+#include <omp.h>
 #include"Smoother.h"
 
 namespace voxel2tet
@@ -32,10 +33,6 @@ void SpringSmooth(std::vector<VertexType*> Vertices, std::vector<std::array<bool
         }
     }
 
-
-    int itercount = 0;
-    double deltamax = 1e8;
-
 #if EXPORT_SMOOTHING_ANIMATION == 1
     std::ostringstream FileName;
     if (Mesh!=NULL) {
@@ -44,91 +41,122 @@ void SpringSmooth(std::vector<VertexType*> Vertices, std::vector<std::array<bool
     }
 #endif
 
-    while ((itercount < MAX_ITER_COUNT) & (deltamax>1e-4)){
+    int itercount = 0;
+    int threadcount = 1;
+    double deltamax = 1e8;
+    int deltamaxnode;
+
+#ifdef OPENMP
+    threadcount = omp_get_max_threads();
+#endif
+
+    while ((itercount < MAX_ITER_COUNT) & (deltamax>1e-4)) {
 
         deltamax=0.0;
-        int deltamaxnode = -1;
-        unsigned int i;
+        int deltamaxnodes[threadcount];
+        double deltamaxvalues[threadcount];
 
-#pragma omp parallel default(shared), private(i)
-        {
-#pragma omp for
-        for (i=0; i<Vertices.size(); i++) {
-            std::array<double, 3> NewCoords = {0,0,0};
-
-            std::vector<VertexType*> MyConnections = Connections.at(i);
-            for (unsigned int k=0; k<MyConnections.size(); k++) {
-                // We need the index of MyConnection such that we can use CurrentPosition (as CurrentPosition contains the updated coordinates)
-
-                //int VertexIndex = std::distance(Vertices.begin(), std::find(Vertices.begin(), Vertices.end(), MyConnections.at(k)));
-
-                for (int m=0; m<3; m++) {
-                    NewCoords.at(m) = NewCoords.at(m) + CurrentPositions.at(ConnectionVertexIndex.at(i).at(k))[m] / double(MyConnections.size());
-                }
-            }
-
-            for (int j=0; j<3; j++) {
-                if (!FixedDirections.at(i)[j]) {
-                    CurrentPositions.at(i)[j] = NewCoords[j];
-                }
-            }
-
-            // Pull back
-            double d;
-            std::array<double, 3> delta, unitdelta;
-            for (int j=0; j<3; j++) delta[j]=CurrentPositions.at(i)[j]-Vertices.at(i)->originalcoordinates[j];
-
-            double d0 = sqrt( pow(delta[0], 2) + pow(delta[1], 2) + pow(delta[2], 2) );
-            if ((d0>1e-8) & (K!=0.0)) {
-                for (int j=0; j<3; j++) unitdelta[j] = delta[j]/d0;
-
-                double F = d0*1.0;
-
-                int SolveIterations = 0;
-
-                d=0;
-                double fval=F-d*exp(d*d/K);
-
-                while (std::fabs(fval)>NEWTON_TOL) {
-                    double update = fval/(std::exp(d*d/K)*(1+2*d*d/K));
-                    d=d+update;
-                    fval=F-d*exp(d*d/K);
-                    SolveIterations++;
-                }
-
-                if (SolveIterations == 100) {
-                    STATUS("WARNING: Newton iterations did not converge\n", 0);
-                    d=0.0;
-                }
-
-            }
-
-            // Update current position with new delta
-            for (int j=0; j<3; j++) {
-                if (!FixedDirections.at(i)[j]) {
-                    CurrentPositions.at(i)[j] = Vertices.at(i)->originalcoordinates[j] + unitdelta[j]*d;
-                }
-            }
-
-            // Compute difference from previous step
-            double df = sqrt( pow(CurrentPositions.at(i)[0]-PreviousPositions.at(i)[0],2) +
-                    pow(CurrentPositions.at(i)[1]-PreviousPositions.at(i)[1],2) +
-                    pow(CurrentPositions.at(i)[2]-PreviousPositions.at(i)[2],2) );
-
-            if (df>deltamax) {
-                deltamaxnode = i;
-                deltamax=df;
-            }
-
-            // Update previous positions
-            for (unsigned int j=0; j<3; j++) {
-                if (!FixedDirections.at(i)[j]) {
-                    PreviousPositions.at(i)[j]=CurrentPositions.at(i)[j];
-                }
-            }
-
-
+        for (int i=0; i<threadcount; i++) {
+            deltamaxnodes[i]=0;
+            deltamaxvalues[i]=0.0;
         }
+
+//#pragma omp parallel default(shared)
+        {
+            int threadid=0;
+#ifdef OPENMP
+            threadid=omp_get_thread_num();
+#endif
+
+//#pragma omp for schedule(static, 100)
+            for (size_t i=0; i<Vertices.size(); i++) {
+                std::array<double, 3> NewCoords = {0,0,0};
+
+                std::vector<VertexType*> MyConnections = Connections.at(i);
+                double ConnectionsCount = double(MyConnections.size());
+
+                for (unsigned int k=0; k<MyConnections.size(); k++) {
+                    std::array<double, 3> ConnectionCoord = CurrentPositions.at(ConnectionVertexIndex.at(i).at(k));
+
+//                    for (int m=0; m<3; m++) {
+                        NewCoords.at(0) = NewCoords.at(0) + ConnectionCoord[0] / ConnectionsCount;
+                        NewCoords.at(1) = NewCoords.at(1) + ConnectionCoord[1] / ConnectionsCount;
+                        NewCoords.at(2) = NewCoords.at(2) + ConnectionCoord[2] / ConnectionsCount;
+//                    }
+                }
+
+                // Pull back
+                double d=0;
+                std::array<double, 3> delta, unitdelta;
+                for (int j=0; j<3; j++) delta[j]=NewCoords[j]-Vertices.at(i)->originalcoordinates[j];
+
+                LOG("delta = %f, %f, %f\n", delta[0], delta[1], delta[2]);
+
+                double d0 = sqrt( pow(delta[0], 2) + pow(delta[1], 2) + pow(delta[2], 2) );
+                if ((d0>1e-8) & (K!=0.0)) {
+                    for (int j=0; j<3; j++) unitdelta[j] = delta[j]/d0;
+
+                    double F = d0*1.0;
+
+                    int SolveIterations = 0;
+
+                    d=0;
+                    double fval=F-d*exp(d*d/K);
+
+                    while (std::fabs(fval)>NEWTON_TOL) {
+                        double update = fval/(std::exp(d*d/K)*(1+2*d*d/K));
+                        d=d+update;
+                        fval=F-d*exp(d*d/K);
+                        SolveIterations++;
+                    }
+
+                    if (SolveIterations == 100) {
+                        STATUS("WARNING: Newton iterations did not converge\n", 0);
+                        d=0.0;
+                    }
+
+                }
+
+                // Update current position with new delta
+                // TODO: Is this ok? Is it thread-safe?
+                for (int j=0; j<3; j++) {
+                    if (!FixedDirections.at(i)[j]) {
+                        CurrentPositions.at(i)[j] = Vertices.at(i)->originalcoordinates[j] + unitdelta[j]*d;
+                    }
+                }
+
+                // Compute difference from previous step
+                double df = sqrt( pow(CurrentPositions.at(i)[0]-PreviousPositions.at(i)[0],2) +
+                        pow(CurrentPositions.at(i)[1]-PreviousPositions.at(i)[1],2) +
+                        pow(CurrentPositions.at(i)[2]-PreviousPositions.at(i)[2],2) );
+
+                if (df>deltamaxvalues[threadid]) {
+                    deltamaxnodes[threadid] = i;
+                    deltamaxvalues[threadid] = df;
+                }
+
+                // Update previous positions
+                for (unsigned int j=0; j<3; j++) {
+                    if (!FixedDirections.at(i)[j]) {
+                        PreviousPositions.at(i)[j]=CurrentPositions.at(i)[j];
+                    }
+                }
+            }
+        } // End of OpenMP section
+
+        int i=0;
+        for (std::array<double, 3> c: CurrentPositions) {
+            LOG("%u: %f, %f, %f\n", i, c[0], c[1], c[2]);
+            i++;
+        }
+
+
+        deltamaxnode=0;
+        for (int i=0; i<threadcount; i++) {
+            if (deltamaxvalues[i]>deltamax) {
+                deltamax = deltamaxvalues[i];
+                deltamaxnode = deltamaxnodes[i];
+            }
         }
 
         STATUS("Iteration %i end with deltamax=%f at node %i\n", itercount, deltamax, deltamaxnode);

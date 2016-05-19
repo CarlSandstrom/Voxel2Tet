@@ -2,6 +2,7 @@
 #include <vector>
 #include <iterator>
 #include <time.h>
+#include <omp.h>
 
 #include "Voxel2Tet.h"
 #include "Importer.h"
@@ -15,6 +16,7 @@ namespace voxel2tet
 Voxel2Tet::Voxel2Tet(Options *Opt)
 {
     this->Opt = Opt;
+    LOG("Starting Voxel2Tet\n", 0);
 }
 
 Voxel2Tet::~Voxel2Tet()
@@ -732,12 +734,16 @@ void Voxel2Tet::Process()
 {
     STATUS ("Proccess content\n", 0);
 
+#ifdef OPENMP
+    STATUS ("\tUsing OpenMP and %u threads\n", omp_get_max_threads());
+#endif
+
     int outputindex = 0;
+    int i=0;
 
     this->FindSurfaces();
-
-    int i=0;
     this->UpdateSurfaces();
+
     for (Surface *s: this->Surfaces) {
         double Area = s->ComputeArea();
         STATUS("Area for surface %u: %f\n", i, Area);
@@ -750,17 +756,18 @@ void Voxel2Tet::Process()
 
         this->FindEdges();
 
+        clock_t t1 = clock();
 #if SMOOTH_EDGES_INDIVIDUALLY==1
         this->SmoothEdgesIndividually();
 #else
-        clock_t t1 = clock();
         this->SmoothEdgesSimultaneously();
 #endif
 
-        this->Mesh->ExportSurface(strfmt("/tmp/Voxeltest%u.vtp", outputindex++), FT_VTK);
+//        this->Mesh->ExportSurface(strfmt("/tmp/Voxeltest%u.vtp", outputindex++), FT_VTK);
+
         this->SmoothSurfaces();
         clock_t t2 = clock();
-        LOG("Edges smoothing in %fs\n", float(t2-t1)/CLOCKS_PER_SEC);
+        STATUS("Edges smoothing in %fs\n", float(t2-t1)/(double)CLOCKS_PER_SEC);
 
         return;
 
