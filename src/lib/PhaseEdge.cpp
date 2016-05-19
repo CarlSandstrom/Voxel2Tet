@@ -214,9 +214,10 @@ void PhaseEdge :: Smooth(MeshData *Mesh)
     std::vector<std::vector<VertexType *>> Connections;
     std::vector<std::array<bool,3>> FixedDirectionsList;
 
-    this->GiveTopologyLists(&Connections, &FixedDirectionsList);
 
-    SpringSmooth(FlatList, FixedDirectionsList, Connections, K, Mesh);
+    //this->GiveTopologyLists(&Connections, &FixedDirectionsList);
+
+    //SpringSmooth(FlatList, FixedDirectionsList, Connections, K, Mesh);
 
 }
 

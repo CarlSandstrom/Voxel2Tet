@@ -38,26 +38,31 @@ void Surface::Smooth(MeshData *Mesh)
 
     std::vector<VertexType *> SmoothVertices;
     std::vector<std::vector<VertexType *>> Connections;
-    std::vector<std::array<bool,3>> FixedDirectionsList;
+    std::vector<bool> FixedList;
 
     // Create connections matrix
     for (unsigned int i=0; i<this->Vertices.size(); i++) {
-        if (this->Vertices.at(i)->PhaseEdges.size()==0) {
-            std::vector <VertexType*> NeighbouringVertices = this->Vertices.at(i)->FetchNeighbouringVertices();
-            std::sort (NeighbouringVertices.begin(), NeighbouringVertices.end());
-            std::vector <VertexType*> ConnectedVertices;
+        std::vector <VertexType*> NeighbouringVertices = this->Vertices.at(i)->FetchNeighbouringVertices();
+        std::sort (NeighbouringVertices.begin(), NeighbouringVertices.end());
+        std::vector <VertexType*> ConnectedVertices;
 
-            // Create list of indices of connected vertices
-            std::set_intersection(NeighbouringVertices.begin(), NeighbouringVertices.end(),
-                                  this->Vertices.begin(), this->Vertices.end(), back_inserter(ConnectedVertices));
+        // Create list of indices of connected vertices
+        std::set_intersection(NeighbouringVertices.begin(), NeighbouringVertices.end(),
+                              this->Vertices.begin(), this->Vertices.end(), back_inserter(ConnectedVertices));
 
-            Connections.push_back(ConnectedVertices);
-            SmoothVertices.push_back(this->Vertices.at(i));
-            FixedDirectionsList.push_back(this->Vertices.at(i)->Fixed);
+        Connections.push_back(ConnectedVertices);
+        SmoothVertices.push_back(this->Vertices.at(i));
+
+        // Lock phase edges since they are already smoothed
+        if (this->Vertices.at(i)->IsPhaseEdgeVertex()) {
+            FixedList.push_back(true);
+        } else {
+            FixedList.push_back(false);
         }
+
     }
 
-    SpringSmooth(SmoothVertices, FixedDirectionsList, Connections, K, Mesh);
+    SpringSmooth(this->Vertices, FixedList, Connections, K, Mesh);
 
 }
 

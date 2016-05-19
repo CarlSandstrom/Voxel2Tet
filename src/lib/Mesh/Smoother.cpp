@@ -4,7 +4,7 @@
 namespace voxel2tet
 {
 
-void SpringSmooth(std::vector<VertexType*> Vertices, std::vector<std::array<bool,3>> FixedDirections, std::vector<std::vector<VertexType*>> Connections, double K, voxel2tet::MeshData *Mesh)
+void SpringSmooth(std::vector<VertexType*> Vertices, std::vector<bool> FixedDirections, std::vector<std::vector<VertexType*>> Connections, double K, voxel2tet::MeshData *Mesh)
 {
     int MAX_ITER_COUNT=10000;
     double NEWTON_TOL=1e-10;
@@ -61,82 +61,84 @@ void SpringSmooth(std::vector<VertexType*> Vertices, std::vector<std::array<bool
             deltamaxvalues[i]=0.0;
         }
 
-//#pragma omp parallel default(shared)
+        //#pragma omp parallel default(shared)
         {
             int threadid=0;
 #ifdef OPENMP
             threadid=omp_get_thread_num();
 #endif
 
-//#pragma omp for schedule(static, 100)
+            //#pragma omp for schedule(static, 100)
             for (size_t i=0; i<Vertices.size(); i++) {
-                std::array<double, 3> NewCoords = {0,0,0};
+                if (!FixedDirections[i]) {
+                    std::array<double, 3> NewCoords = {0,0,0};
 
-                std::vector<VertexType*> MyConnections = Connections.at(i);
-                double ConnectionsCount = double(MyConnections.size());
+                    std::vector<VertexType*> MyConnections = Connections.at(i);
+                    double ConnectionsCount = double(MyConnections.size());
 
-                for (unsigned int k=0; k<MyConnections.size(); k++) {
-                    std::array<double, 3> ConnectionCoord = CurrentPositions.at(ConnectionVertexIndex.at(i).at(k));
+                    for (unsigned int k=0; k<MyConnections.size(); k++) {
+                        std::array<double, 3> ConnectionCoord = CurrentPositions.at(ConnectionVertexIndex.at(i).at(k));
 
-                    for (int m=0; m<3; m++) {
-                        NewCoords.at(m) = NewCoords.at(m) + ConnectionCoord[m] / ConnectionsCount;
-                    }
-                }
-
-                // Pull back
-                double d=0;
-                std::array<double, 3> delta, unitdelta;
-                for (int j=0; j<3; j++) delta[j]=NewCoords[j]-Vertices.at(i)->originalcoordinates[j];
-
-                LOG("delta = %f, %f, %f\n", delta[0], delta[1], delta[2]);
-
-                double d0 = sqrt( pow(delta[0], 2) + pow(delta[1], 2) + pow(delta[2], 2) );
-                if ((d0>1e-8) & (K!=0.0)) {
-                    for (int j=0; j<3; j++) unitdelta[j] = delta[j]/d0;
-
-                    double F = d0*1.0;
-
-                    int SolveIterations = 0;
-
-                    d=0;
-                    double fval=F-d*exp(d*d/K);
-
-                    while (std::fabs(fval)>NEWTON_TOL) {
-                        double update = fval/(std::exp(d*d/K)*(1+2*d*d/K));
-                        d=d+update;
-                        fval=F-d*exp(d*d/K);
-                        SolveIterations++;
+                        for (int m=0; m<3; m++) {
+                            NewCoords.at(m) = NewCoords.at(m) + ConnectionCoord[m] / ConnectionsCount;
+                        }
                     }
 
-                    if (SolveIterations == 100) {
-                        STATUS("WARNING: Newton iterations did not converge\n", 0);
-                        d=0.0;
+                    // Pull back
+                    double d=0;
+                    std::array<double, 3> delta, unitdelta;
+                    for (int j=0; j<3; j++) delta[j]=NewCoords[j]-Vertices.at(i)->originalcoordinates[j];
+
+                    LOG("delta = %f, %f, %f\n", delta[0], delta[1], delta[2]);
+
+                    double d0 = sqrt( pow(delta[0], 2) + pow(delta[1], 2) + pow(delta[2], 2) );
+                    if ((d0>1e-8) & (K!=0.0)) {
+                        for (int j=0; j<3; j++) unitdelta[j] = delta[j]/d0;
+
+                        double F = d0*1.0;
+
+                        int SolveIterations = 0;
+
+                        d=0;
+                        double fval=F-d*exp(d*d/K);
+
+                        while (std::fabs(fval)>NEWTON_TOL) {
+                            double update = fval/(std::exp(d*d/K)*(1+2*d*d/K));
+                            d=d+update;
+                            fval=F-d*exp(d*d/K);
+                            SolveIterations++;
+                        }
+
+                        if (SolveIterations == 100) {
+                            STATUS("WARNING: Newton iterations did not converge\n", 0);
+                            d=0.0;
+                        }
+
                     }
 
-                }
-
-                // Update current position with new delta
-                // TODO: Is this ok? Is it thread-safe?
-                for (int j=0; j<3; j++) {
-                    if (!Vertices.at(i)->Fixed[j]) {
-                        CurrentPositions.at(i)[j] = Vertices.at(i)->originalcoordinates[j] + unitdelta[j]*d;
+                    // Update current position with new delta
+                    // TODO: Is this ok? Is it thread-safe?
+                    for (int j=0; j<3; j++) {
+                        if (!Vertices.at(i)->Fixed[j]) {
+                            CurrentPositions.at(i)[j] = Vertices.at(i)->originalcoordinates[j] + unitdelta[j]*d;
+                        }
                     }
-                }
 
-                // Compute difference from previous step
-                double df = sqrt( pow(CurrentPositions.at(i)[0]-PreviousPositions.at(i)[0],2) +
-                        pow(CurrentPositions.at(i)[1]-PreviousPositions.at(i)[1],2) +
-                        pow(CurrentPositions.at(i)[2]-PreviousPositions.at(i)[2],2) );
+                    // Compute difference from previous step
+                    double df = sqrt( pow(CurrentPositions.at(i)[0]-PreviousPositions.at(i)[0],2) +
+                            pow(CurrentPositions.at(i)[1]-PreviousPositions.at(i)[1],2) +
+                            pow(CurrentPositions.at(i)[2]-PreviousPositions.at(i)[2],2) );
 
-                if (df>deltamaxvalues[threadid]) {
-                    deltamaxnodes[threadid] = i;
-                    deltamaxvalues[threadid] = df;
-                }
+                    if (df>deltamaxvalues[threadid]) {
+                        deltamaxnodes[threadid] = i;
+                        deltamaxvalues[threadid] = df;
+                    }
 
-                // Update previous positions
-                for (unsigned int j=0; j<3; j++) {
-                    if (!Vertices.at(i)->Fixed[j]) {
-                        PreviousPositions.at(i)[j]=CurrentPositions.at(i)[j];
+                    // Update previous positions
+                    for (unsigned int j=0; j<3; j++) {
+                        if (!Vertices.at(i)->Fixed[j]) {
+                            PreviousPositions.at(i)[j]=CurrentPositions.at(i)[j];
+                        }
                     }
                 }
             }
@@ -196,9 +198,9 @@ void SpringSmooth(std::vector<VertexType*> Vertices, std::vector<std::array<bool
     for (unsigned int i=0; i<Vertices.size(); i++) {
         for (int j=0; j<3; j++) {
 
-            if (!FixedDirections.at(i)[j]) {
+            //if (!FixedDirections.at(i)[j]) {
                 Vertices.at(i)->set_c(CurrentPositions.at(i)[j], j); // TODO: Use array to improve performance
-            }
+            //}
         }
     }
 

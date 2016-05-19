@@ -577,7 +577,7 @@ void Voxel2Tet :: SmoothEdgesSimultaneously()
     // Build connectivity and FixedDirectionsLists
     std::vector<VertexType *> VertexList;
     std::vector<std::vector<VertexType *>> Connections;
-    std::vector<std::array<bool,3>> FixedDirectionsList;
+    std::vector<bool> FixedDirectionsList;
 
     for (unsigned int i=0; i<VertexConnections.size(); i++) {
         VertexType *v = VertexConnections.at(i)->v;
@@ -585,7 +585,7 @@ void Voxel2Tet :: SmoothEdgesSimultaneously()
         VertexList.push_back(v);
         Connections.push_back(VertexConnections.at(i)->Connections);
 
-        // Determine which directions are locked
+        // Determine which directions are locked TODO: This should be done elsewhere
         std::array<bool,3> FixedDirections;
         for (int j=0; j<3; j++) {
             if ( (v->get_c(j) > (this->Imp->GiveBoundingBox().maxvalues[j]-eps)) | (v->get_c(j) < (this->Imp->GiveBoundingBox().minvalues[j]+eps))) {
@@ -594,7 +594,7 @@ void Voxel2Tet :: SmoothEdgesSimultaneously()
                 v->Fixed[j]=false;
             }
         }
-        FixedDirectionsList.push_back(FixedDirections);
+        FixedDirectionsList.push_back(false);
 
     }
 
@@ -620,7 +620,7 @@ void Voxel2Tet :: SmoothAllAtOnce()
     double K = this->Opt->GiveDoubleValue("spring_const");
 
     std::vector<std::vector<VertexType *>> Connections;
-    std::vector<std::array<bool,3>> FixedDirectionsList;
+    std::vector<bool> FixedDirectionsList;
 
     // Create connections matrix
     for (unsigned int i=0; i<this->Mesh->Vertices.size(); i++) {
@@ -648,7 +648,7 @@ void Voxel2Tet :: SmoothAllAtOnce()
             }
         }
 
-        FixedDirectionsList.push_back(FixedDirections);
+        FixedDirectionsList.push_back(false);
 
     }
 
