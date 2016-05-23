@@ -41,8 +41,9 @@ void Surface::Smooth(MeshData *Mesh)
     std::vector<bool> FixedList;
 
     // Create connections matrix
-    for (unsigned int i=0; i<this->Vertices.size(); i++) {
-        std::vector <VertexType*> NeighbouringVertices = this->Vertices.at(i)->FetchNeighbouringVertices();
+    //for (unsigned int i=0; i<this->Vertices.size(); i++) {
+    for (VertexType *v: this->Vertices) {
+        std::vector <VertexType*> NeighbouringVertices = v->FetchNeighbouringVertices();
         std::sort (NeighbouringVertices.begin(), NeighbouringVertices.end());
         std::vector <VertexType*> ConnectedVertices;
 
@@ -51,10 +52,10 @@ void Surface::Smooth(MeshData *Mesh)
                               this->Vertices.begin(), this->Vertices.end(), back_inserter(ConnectedVertices));
 
         Connections.push_back(ConnectedVertices);
-        SmoothVertices.push_back(this->Vertices.at(i));
+        SmoothVertices.push_back(v);
 
         // Lock phase edges since they are already smoothed
-        if (this->Vertices.at(i)->IsPhaseEdgeVertex()) {
+        if (v->IsPhaseEdgeVertex()) {
             FixedList.push_back(true);
         } else {
             FixedList.push_back(false);
