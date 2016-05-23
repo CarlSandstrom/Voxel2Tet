@@ -64,7 +64,7 @@ void Voxel2Tet :: FinalizeLoad()
     if (!this->Opt->has_key("spring_const")) {
         double cellspace[3];
         this->Imp->GiveSpacing(cellspace);
-        spring_const = cellspace[0]*2;
+        spring_const = cellspace[0]/2;
         Opt->AddDefaultMap("spring_const", std::to_string(spring_const));
     } else {
         spring_const = Opt->GiveDoubleValue("spring_const");
@@ -123,6 +123,7 @@ void Voxel2Tet :: Tetrahedralize()
 {
     TetGenCaller Generator;
     Generator.Mesh = this->Mesh;
+    Generator.TestMesh();
     Generator.Execute();
 }
 

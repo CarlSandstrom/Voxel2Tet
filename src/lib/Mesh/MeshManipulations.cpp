@@ -529,7 +529,6 @@ FC_MESH MeshManipulations :: CollapseEdge(EdgeType *EdgeToCollapse, int RemoveVe
     // Remove edges
     for (EdgeType* e: EdgesToRemove) {
         this->RemoveEdge(e);
-        //ConnectedEdges.erase( std::remove(ConnectedEdges.begin(), ConnectedEdges.end(), e), ConnectedEdges.end());
     }
 
     // Add new triangles
@@ -721,9 +720,16 @@ bool MeshManipulations :: CoarsenMeshImproved()
     bool CoarseningOccurs=true;
     int iter=0;
 
+#if TEST_MESH_FOR_EACH_COARSENING_ITERATION
+    TetGenCaller Generator;
+    Generator.Mesh = this;
+#endif
+
 #if EXPORT_MESH_COARSENING
     dooutputlogmesh(*this, "/tmp/Coarsening_%u.vtp", 0);
 #endif
+
+    int MeshIndex=0;
 
     while (CoarseningOccurs ) {
 
@@ -737,13 +743,12 @@ bool MeshManipulations :: CoarsenMeshImproved()
         for (VertexType *v: IndepSet) {
             v->tag=1;
         }
-        //dooutputlogmesh(*this, "/tmp/Coarsening_%u.vtp", iter);
-        int EdgeIndex=0;
+
         unsigned int i=0;
 
         while (i<this->Edges.size()) {
 
-            STATUS("%c[2K\rCoarsening iteration %u, collapse edge %u", 27, iter, EdgeIndex);
+            STATUS("%c[2K\rCoarsening iteration %u, collapse edge %u (%u)", 27, iter, i, this->Edges.size());
             fflush(stdout);
 
             EdgeType *e = this->Edges.at(i);
@@ -760,6 +765,9 @@ bool MeshManipulations :: CoarsenMeshImproved()
                         if (this->CollapseEdge(e, vi) == FC_OK) {
                             CoarseningOccurs = true;
                             CoarseOk = true;
+#if TEST_MESH_FOR_EACH_COARSENING_ITERATION
+        Generator.TestMesh();
+#endif
                             break;
                         }
                     }
@@ -769,7 +777,10 @@ bool MeshManipulations :: CoarsenMeshImproved()
             i++;
         }
         iter++;
-        //dooutputlogmesh(*this, "/tmp/Coarsening_%u.vtp", iter);
+        MeshIndex++;
+#if EXPORT_MESH_COARSENING
+        dooutputlogmesh(*this, "/tmp/Coarsening_%u.vtp", 0);
+#endif
 
 #if SANITYCHECK == 1
             for (TriangleType *t1: this->Triangles) {

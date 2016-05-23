@@ -20,7 +20,7 @@ int main( int argc, char *argv[] )
     v2t.Process();
     clock_t tstopprocess = clock();
 
-    //v2t.Tetrahedralize();
+    v2t.Tetrahedralize();
     clock_t tstoptet = clock();
 
     double ProcessTime = double(tstopprocess-tstart) / CLOCKS_PER_SEC;

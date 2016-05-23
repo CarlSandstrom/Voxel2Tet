@@ -150,6 +150,8 @@ void TetGenCaller :: TestMesh()
 
     tetrahedralize("pd", &in, &out);
 
+    //printf("%u\n", out.mesh_dim);
+
 }
 
 }
