@@ -67,7 +67,7 @@ void Voxel2Tet :: FinalizeLoad()
         spring_const = cellspace[0]*2;
         Opt->AddDefaultMap("spring_const", std::to_string(spring_const));
     } else {
-         spring_const = Opt->GiveDoubleValue("spring_const");
+        spring_const = Opt->GiveDoubleValue("spring_const");
     }
 
     if (!this->Opt->has_key("edge_spring_const")) {
@@ -144,17 +144,16 @@ void Voxel2Tet::FindSurfaces()
 
     std::vector <double> signs = {1, -1};
 
-//#pragma omp parallel for
+    // Specifies directions in which we will look for different materials
+    std::vector <std::vector <double>> testdirections = {{1,0,0}, {0,1,0}, {0,0,1}};
+    // If we the adjacent material is of other type, we will create a square by varying the coordinates marked '1' in vdirections
+    std::vector <std::vector <double>> vdirections = {{0,1,1}, {1,0,1}, {1,1,0}};
+    // vindex is the indices of the coordinates
+    std::vector <std::vector <int>> vindex = {{1,2},{0,2},{0,1}};
+
     for (int i=0; i<dim[0]; i++) {
         for (int j=0; j<dim[1]; j++) {
             for (int k=0; k<dim[2]; k++) {
-
-                // Specifies directions in which we will look for different materials
-                std::vector <std::vector <double>> testdirections = {{1,0,0}, {0,1,0}, {0,0,1}};
-                // If we the adjacent material is of other type, we will create a square by varying the coordinates marked '1' in vdirections
-                std::vector <std::vector <double>> vdirections = {{0,1,1}, {1,0,1}, {1,1,0}};
-                // vindex is the indices of the coordinates
-                std::vector <std::vector <int>> vindex = {{1,2},{0,2},{0,1}};
 
                 // If we are on a boundary, we need to check what is outside of that boundary
                 if (i==0) {
@@ -227,17 +226,17 @@ void Voxel2Tet::FindSurfaces()
                                 newvertex[vindex.at(m).at(0)] = newvertex[vindex.at(m).at(0)] + s1*delta[vindex.at(m)[0]];
                                 newvertex[vindex.at(m).at(1)] = newvertex[vindex.at(m).at(1)] + s2*delta[vindex.at(m)[1]];
 
-//#pragma omp critical
+                                //#pragma omp critical
                                 {
-                                int id = Mesh->VertexOctreeRoot->AddVertex(newvertex[0], newvertex[1], newvertex[2]);
-                                LOG ("Corner (id=%u) at (%f, %f, %f)\n", id, newvertex[0], newvertex[1], newvertex[2]);
-                                VoxelIDs.push_back(id);
+                                    int id = Mesh->VertexOctreeRoot->AddVertex(newvertex[0], newvertex[1], newvertex[2]);
+                                    LOG ("Corner (id=%u) at (%f, %f, %f)\n", id, newvertex[0], newvertex[1], newvertex[2]);
+                                    VoxelIDs.push_back(id);
                                 }
                             }
                         }
-//#pragma omp critical
+                        //#pragma omp critical
                         {
-                        AddSurfaceSquare(VoxelIDs, {ThisPhase, NeighboringPhase}, NeighboringPhase);
+                            AddSurfaceSquare(VoxelIDs, {ThisPhase, NeighboringPhase}, NeighboringPhase);
                         }
 
                     }
@@ -666,8 +665,8 @@ PhaseEdge* Voxel2Tet :: AddPhaseEdge(std::vector<VertexType*> EdgeSegment, std::
     for (auto pe: this->PhaseEdges) {
         std::vector <int> PhaseDiff;
         std::set_difference(Phases.begin(), Phases.end(),
-                              pe->Phases.begin(), pe->Phases.end(),
-                              back_inserter(PhaseDiff));
+                            pe->Phases.begin(), pe->Phases.end(),
+                            back_inserter(PhaseDiff));
         if (PhaseDiff.size()==0) {
             ThisPhaseEdge = pe;
             break;
@@ -769,7 +768,7 @@ void Voxel2Tet::Process()
         clock_t t2 = clock();
         STATUS("Edges smoothing in %fs\n", float(t2-t1)/(double)CLOCKS_PER_SEC);
 
-//        return;
+        //        return;
 
         this->Mesh->ExportSurface(strfmt("/tmp/Voxeltest%u.vtp", outputindex++), FT_VTK);
         this->Mesh->FlipAll();
@@ -807,10 +806,10 @@ void Voxel2Tet::Process()
     dooutputlogmesh(*this->Mesh, (char*) "/tmp/finalcoarsening%u.vtp", 0);
 #endif
 
-//#if SANITYCHECK == 1
+    //#if SANITYCHECK == 1
     //this->Mesh->DoSanityCheck();
-//#endif
-/*
+    //#endif
+    /*
     for (unsigned int i=0; i<this->Mesh->Triangles.size(); i++) {
         TriangleType *t = this->Mesh->Triangles.at(i);
         double smallestangle = t->GiveSmallestAngle();

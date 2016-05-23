@@ -236,8 +236,6 @@ FC_MESH MeshManipulations :: FlipEdge(EdgeType *Edge)
     // Remove edge from vertices
     for (int i: {0, 1}) Edge->Vertices[i]->RemoveEdge(Edge);
 
-
-
     // Add new edge to vertices
     for (int i: {0, 1}) {
         Edge->Vertices[i] = NewEdge.Vertices[i];
@@ -359,7 +357,7 @@ FC_MESH MeshManipulations :: CollapseEdgeTest(std::vector<TriangleType *> *Trian
             double V2[3] = {NearTriVertices[2]->get_c(0),NearTriVertices[2]->get_c(1),NearTriVertices[2]->get_c(2)};
             for (TriangleType *newt: *NewTriangles) {
 
-                // Skip if triangles sharen one ore more vertices
+                // Skip if triangles shares one ore more vertices
                 int sharedvertices=0;
                 std::vector<VertexType *> SharedVerticesList;
                 for (VertexType *v1: t->Vertices) {
@@ -374,7 +372,8 @@ FC_MESH MeshManipulations :: CollapseEdgeTest(std::vector<TriangleType *> *Trian
 
                 if (sharedvertices==0) {
                     // I am a bit unsure if this is correct. Naturally two triangles with one shared vertex can intersect, but will we ever have that situation?
-                    // Anyway, best would be to check if edges not members of the other triangle penetrates the surface since there is a "bug" in the used algorithm that gives a "false" true if vertices are shared
+                    // Anyway, best would be to check if edges not members of the other triangle penetrates the surface since there is a "bug" in the used algorithm
+                    // that gives a "false" true if vertices are shared.
                     double U0[3] = {newt->Vertices[0]->get_c(0),newt->Vertices[0]->get_c(1),newt->Vertices[0]->get_c(2)};
                     double U1[3] = {newt->Vertices[1]->get_c(0),newt->Vertices[1]->get_c(1),newt->Vertices[1]->get_c(2)};
                     double U2[3] = {newt->Vertices[2]->get_c(0),newt->Vertices[2]->get_c(1),newt->Vertices[2]->get_c(2)};
