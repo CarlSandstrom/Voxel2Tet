@@ -144,16 +144,16 @@ void Voxel2Tet::FindSurfaces()
 
     std::vector <double> signs = {1, -1};
 
-    // Specifies directions in which we will look for different materials
-    std::vector <std::vector <double>> testdirections = {{1,0,0}, {0,1,0}, {0,0,1}};
-    // If we the adjacent material is of other type, we will create a square by varying the coordinates marked '1' in vdirections
-    std::vector <std::vector <double>> vdirections = {{0,1,1}, {1,0,1}, {1,1,0}};
-    // vindex is the indices of the coordinates
-    std::vector <std::vector <int>> vindex = {{1,2},{0,2},{0,1}};
 
     for (int i=0; i<dim[0]; i++) {
         for (int j=0; j<dim[1]; j++) {
             for (int k=0; k<dim[2]; k++) {
+                // Specifies directions in which we will look for different materials
+                std::vector <std::vector <double>> testdirections = {{1,0,0}, {0,1,0}, {0,0,1}};
+                // If we the adjacent material is of other type, we will create a square by varying the coordinates marked '1' in vdirections
+                std::vector <std::vector <double>> vdirections = {{0,1,1}, {1,0,1}, {1,1,0}};
+                // vindex is the indices of the coordinates
+                std::vector <std::vector <int>> vindex = {{1,2},{0,2},{0,1}};
 
                 // If we are on a boundary, we need to check what is outside of that boundary
                 if (i==0) {
@@ -226,18 +226,12 @@ void Voxel2Tet::FindSurfaces()
                                 newvertex[vindex.at(m).at(0)] = newvertex[vindex.at(m).at(0)] + s1*delta[vindex.at(m)[0]];
                                 newvertex[vindex.at(m).at(1)] = newvertex[vindex.at(m).at(1)] + s2*delta[vindex.at(m)[1]];
 
-                                //#pragma omp critical
-                                {
-                                    int id = Mesh->VertexOctreeRoot->AddVertex(newvertex[0], newvertex[1], newvertex[2]);
-                                    LOG ("Corner (id=%u) at (%f, %f, %f)\n", id, newvertex[0], newvertex[1], newvertex[2]);
-                                    VoxelIDs.push_back(id);
-                                }
+                                int id = Mesh->VertexOctreeRoot->AddVertex(newvertex[0], newvertex[1], newvertex[2]);
+                                LOG ("Corner (id=%u) at (%f, %f, %f)\n", id, newvertex[0], newvertex[1], newvertex[2]);
+                                VoxelIDs.push_back(id);
                             }
                         }
-                        //#pragma omp critical
-                        {
-                            AddSurfaceSquare(VoxelIDs, {ThisPhase, NeighboringPhase}, NeighboringPhase);
-                        }
+                        AddSurfaceSquare(VoxelIDs, {ThisPhase, NeighboringPhase}, NeighboringPhase);
 
                     }
 
