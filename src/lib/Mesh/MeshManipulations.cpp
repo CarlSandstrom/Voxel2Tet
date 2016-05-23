@@ -721,8 +721,6 @@ bool MeshManipulations :: CoarsenMeshImproved()
     bool CoarseningOccurs=true;
     int iter=0;
 
-    int failcount;
-
 #if EXPORT_MESH_COARSENING
     dooutputlogmesh(*this, "/tmp/Coarsening_%u.vtp", 0);
 #endif
@@ -730,57 +728,49 @@ bool MeshManipulations :: CoarsenMeshImproved()
     while (CoarseningOccurs ) {
 
         CoarseningOccurs = false;
-        std::vector<VertexType*> IndepSet = FindIndependentSet();
-        failcount=0;
-        unsigned int i=0;
 
-        //this->SortEdgesByLength();
-        this->SortEdgesByMinArea();
+        // Find independent sets. Vertices belonging to IndepSet cannot be collapsed (according to de Cougnt)
+        std::vector<VertexType*> IndepSet = FindIndependentSet();
+        for (VertexType *v: this->Vertices) {
+            v->tag=0;
+        }
+        for (VertexType *v: IndepSet) {
+            v->tag=1;
+        }
+        //dooutputlogmesh(*this, "/tmp/Coarsening_%u.vtp", iter);
+        int EdgeIndex=0;
+        unsigned int i=0;
 
         while (i<this->Edges.size()) {
 
-            STATUS("%c[2K\rCoarsening iteration %u, failcount %u", 27, iter, failcount);
+            STATUS("%c[2K\rCoarsening iteration %u, collapse edge %u", 27, iter, EdgeIndex);
             fflush(stdout);
 
             EdgeType *e = this->Edges.at(i);
             if (e->GiveLength()<1e10) { // TODO: Use argument here
-                bool BothInSet = (std::find(IndepSet.begin(), IndepSet.end(), e->Vertices[0]) == IndepSet.end()) && (std::find(IndepSet.begin(), IndepSet.end(), e->Vertices[1]) == IndepSet.end());
-                if (!BothInSet) {
-                    int D = 0;
-                    if (std::find(IndepSet.begin(), IndepSet.end(), e->Vertices[D]) != IndepSet.end()) {
-                        D = 1;
+
+                // Try to collapse vertices on current edge
+                std::array<VertexType *, 2> EdgeVertices = {e->Vertices[0], e->Vertices[1]};
+                int vi=0;
+                bool CoarseOk = false;
+                for (VertexType *v: EdgeVertices) {
+
+                    // If vertex v is not in the set of independent vertices, try to collapse
+                    if (std::find(IndepSet.begin(), IndepSet.end(), v) == IndepSet.end()) {
+                        if (this->CollapseEdge(e, vi) == FC_OK) {
+                            CoarseningOccurs = true;
+                            CoarseOk = true;
+                            break;
+                        }
                     }
-
-                    bool CoarseOk = (this->CollapseEdge(e, D) == FC_OK);
-
-                    if (!CoarseOk) {
-                        D = 1 ? 0 : 1;
-                        CoarseOk = (this->CollapseEdge(e, D) == FC_OK);
-                    }
-
-                    if (CoarseOk) {
-                        CoarseningOccurs = true;
-#if EXPORT_MESH_COARSENING
-                        dooutputlogmesh(*this, "/tmp/Coarsening_%u.vtp", iter+1);
-#endif
-
-#if SANITYCHECK == 1
-//                        this->DoSanityCheck();
-#endif
-
-#if TEST_MESH_FOR_EACH_COARSENING_ITERATION
-                        TetGenCaller Generator;
-                        Generator.Mesh = this;
-                        Generator.TestMesh();
-#endif
-                        iter++;
-                    } else {
-                        failcount++;
-                    }
+                    vi++;
                 }
             }
             i++;
         }
+        iter++;
+        //dooutputlogmesh(*this, "/tmp/Coarsening_%u.vtp", iter);
+
 #if SANITYCHECK == 1
             for (TriangleType *t1: this->Triangles) {
                 for (TriangleType *t2: this->Triangles) {

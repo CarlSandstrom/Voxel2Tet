@@ -105,6 +105,17 @@ vtkIntArray *VTKExporter :: SetupVertexIDs()
     return VertexIDs;
 }
 
+vtkIntArray *VTKExporter :: SetupVertexTags()
+{
+    vtkIntArray *VertexIDs = vtkIntArray::New();
+    VertexIDs->SetName("Tag");
+    for (unsigned int i=0; i<this->Vertices->size(); i++) {
+        VertexType *v=this->Vertices->at(i);
+        VertexIDs->InsertNextValue(v->tag);
+    }
+    return VertexIDs;
+}
+
 void VTKExporter :: WriteSurfaceData(std::string Filename)
 {
 
@@ -116,13 +127,23 @@ void VTKExporter :: WriteSurfaceData(std::string Filename)
     vtkSmartPointer<vtkPolyData> PolyData = vtkSmartPointer<vtkPolyData>::New();
     PolyData->SetPoints (Points);
 
+    // ID
     vtkSmartPointer<vtkIntArray> VertexID;
     VertexID.TakeReference(this->SetupVertexIDs());
 
     vtkPointData *pd;
-    pd = PolyData->GetPointData();//->SetScalars(VertexID);
+    pd = PolyData->GetPointData();
     pd->SetScalars(VertexID);
 
+    // tag
+    vtkSmartPointer<vtkIntArray> VertexTag;
+    VertexTag.TakeReference(this->SetupVertexTags());
+
+    vtkPointData *pdtag;
+    pdtag = PolyData->GetPointData();
+    pdtag->SetScalars(VertexTag);
+
+    // Triangles
     PolyData->SetPolys( TriangleArrays );
 
     vtkSmartPointer<vtkIntArray> InterfaceID;

@@ -762,15 +762,11 @@ void Voxel2Tet::Process()
         clock_t t2 = clock();
         STATUS("Edges smoothing in %fs\n", float(t2-t1)/(double)CLOCKS_PER_SEC);
 
-        //        return;
-
         this->Mesh->ExportSurface(strfmt("/tmp/Voxeltest%u.vtp", outputindex++), FT_VTK);
         this->Mesh->FlipAll();
 
-
         this->Mesh->ExportSurface(strfmt("/tmp/Voxeltest%u.vtp", outputindex++), FT_VTK);
         this->Mesh->CoarsenMeshImproved();
-
 
         this->Mesh->ExportSurface(strfmt("/tmp/Voxeltest%u.vtp", outputindex++), FT_VTK);
         this->Mesh->FlipAll();

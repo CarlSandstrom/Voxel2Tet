@@ -22,7 +22,13 @@ public:
     int tag;
     std::vector<PhaseEdge*> PhaseEdges;
     void AddPhaseEdge(PhaseEdge*);
+
+    /**
+     * @brief IsFixedVertex tells if the vertex is (always) fixed. A vertex that is the end of a phase edge is always fixed.
+     * @return If the vertex is fixed or not
+     */
     bool IsFixedVertex() {return PhaseEdges.size()>1;}
+
     std::array<bool, 3> Fixed;
     bool IsPhaseEdgeVertex() {return PhaseEdges.size()>0;}
 
