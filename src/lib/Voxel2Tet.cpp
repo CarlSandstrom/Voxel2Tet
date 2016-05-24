@@ -67,14 +67,14 @@ void Voxel2Tet :: FinalizeLoad()
     STATUS("Voxel dimensions are %f * %f * %f\n", cellspace[0],cellspace[1],cellspace[2]);
 
     if (!this->Opt->has_key("spring_const")) {
-        spring_const = cellspace[0]*2;
+        spring_const = cellspace[0]*2.5;
         Opt->AddDefaultMap("spring_const", std::to_string(spring_const));
     } else {
         spring_const = Opt->GiveDoubleValue("spring_const");
     }
 
     if (!this->Opt->has_key("edge_spring_const")) {
-        edge_spring_const = spring_const*1.0;
+        edge_spring_const = cellspace[0]*1.75;
         Opt->AddDefaultMap("edge_spring_const", std::to_string(edge_spring_const));
     } else {
         edge_spring_const = Opt->GiveDoubleValue("edge_spring_const");

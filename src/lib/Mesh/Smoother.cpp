@@ -41,7 +41,7 @@ arma::vec ComputeOutOfBalance(std::vector<std::array<double, 3> > ConnectionCoor
 arma::mat  ComputeNumericalTangent(std::vector<std::array<double, 3> > ConnectionCoords, arma::vec xc, arma::vec x0, double alpha, double c)
 {
 
-    double eps=1e-8;
+    double eps=1e-10;
     arma::mat Tangent=arma::zeros<arma::mat>(3,3);
 
     arma::vec Fval=ComputeOutOfBalance(ConnectionCoords, xc, x0, alpha, c);
@@ -56,6 +56,37 @@ arma::mat  ComputeNumericalTangent(std::vector<std::array<double, 3> > Connectio
 
     return Tangent;
 
+}
+
+arma::mat ComputeAnalyticalTangent(std::vector<std::array<double, 3> > ConnectionCoords, arma::vec xc, arma::vec x0, double alpha, double c)
+{
+    arma::mat Tangent=arma::zeros<arma::mat>(3,3);
+
+    arma::vec a0 = x0-xc;
+    double d0 = arma::norm(a0);
+    arma::vec n0;
+
+    // Non-linear part
+    // We run into numerical trouble if d0=0. However, in the case of d0=0, everyting nonlinear is zero...
+    arma::vec Dexp;
+    arma::mat Dn0;
+    if (d0 < 1e-8) {
+        n0 = {0.,0.,0.};
+        Dexp = {0.,0.,0.};
+        Dn0 = -arma::zeros<arma::mat>(3,3);
+
+    } else {
+        n0 = a0/d0;
+        Dexp = -std::exp(std::pow(d0/c, alpha))*alpha/c*pow(d0/c, alpha-1)*n0;
+        Dn0 = -arma::eye<arma::mat>(3,3)/d0 + a0*a0.t()/pow(d0,3);
+    }
+    Tangent = Tangent + n0*Dexp.t() + Dn0 * ( std::exp(std::pow(d0/c, alpha)) - 1);
+
+
+    // Linear part
+    Tangent = Tangent - arma::eye<arma::mat>(3,3)*ConnectionCoords.size();
+
+    return Tangent;
 }
 
 void SpringSmooth(std::vector<VertexType*> Vertices, std::vector<bool> Fixed, std::vector<std::vector<VertexType*>> Connections, double K, voxel2tet::MeshData *Mesh)
@@ -145,17 +176,17 @@ void SpringSmooth(std::vector<VertexType*> Vertices, std::vector<bool> Fixed, st
                     int iter = 0;
 
                     // Find equilibrium
-                    while ((err>1e-5) & (iter<1000)) {
-                        arma::mat T = ComputeNumericalTangent(ConnectionCoords, xc, x0, alpha, K);
+                    while ((err>1e-5) & (iter<100000)) {
+                        arma::mat T = ComputeAnalyticalTangent(ConnectionCoords, xc, x0, alpha, K);
                         arma::vec delta = -arma::solve(T, R);
-                        xc = xc + 0.1*delta;
+                        xc = xc + 1.*delta;
                         R = ComputeOutOfBalance(ConnectionCoords, xc, x0, alpha, K);
                         err = arma::norm(R);
                         iter ++;
                     }
 
                     // If too many iterations, throw an exception and investigate...
-                    if (iter>999) {
+                    if (iter>99999) {
                         throw(0);
                     }
 
