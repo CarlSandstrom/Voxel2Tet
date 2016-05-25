@@ -60,11 +60,15 @@ arma::mat  ComputeNumericalTangent(std::vector<std::array<double, 3> > Connectio
 
 arma::mat ComputeAnalyticalTangent(std::vector<std::array<double, 3> > ConnectionCoords, arma::vec xc, arma::vec x0, double alpha, double c)
 {
-    arma::mat Tangent=arma::zeros<arma::mat>(3,3);
+
+    arma::mat Tangent=arma::zeros<arma::mat>(3,ConnectionCoords.size()*3+3);
+    arma::mat TangentSelf=arma::zeros<arma::mat>(3,3);
 
     arma::vec a0 = x0-xc;
     double d0 = arma::norm(a0);
     arma::vec n0;
+
+    // delta x_i part
 
     // Non-linear part
     // We run into numerical trouble if d0=0. However, in the case of d0=0, everyting nonlinear is zero...
@@ -80,11 +84,21 @@ arma::mat ComputeAnalyticalTangent(std::vector<std::array<double, 3> > Connectio
         Dexp = -std::exp(std::pow(d0/c, alpha))*alpha/c*pow(d0/c, alpha-1)*n0;
         Dn0 = -arma::eye<arma::mat>(3,3)/d0 + a0*a0.t()/pow(d0,3);
     }
-    Tangent = Tangent + n0*Dexp.t() + Dn0 * ( std::exp(std::pow(d0/c, alpha)) - 1);
+    TangentSelf = n0*Dexp.t() + Dn0 * ( std::exp(std::pow(d0/c, alpha)) - 1);
 
 
     // Linear part
-    Tangent = Tangent - arma::eye<arma::mat>(3,3)*ConnectionCoords.size();
+    TangentSelf = TangentSelf - arma::eye<arma::mat>(3,3)*ConnectionCoords.size();
+
+    // Assemble self part to tangent
+    Tangent(arma::span(0,2),arma::span(0,2)) = TangentSelf;
+
+    // delta x_j part
+    for (unsigned int i=0; i<ConnectionCoords.size(); i++) {
+        for (int j=0; j<3; j++) {
+            Tangent(j, 3*(i+1)+j) = 1.0;
+        }
+    }
 
     return Tangent;
 }
@@ -98,15 +112,26 @@ void SpringSmooth(std::vector<VertexType*> Vertices, std::vector<bool> Fixed, st
     // Create vectors for current and previous positions
     std::vector<std::array<double, 3>> CurrentPositions;
     std::vector<std::array<double, 3>> PreviousPositions;
+    std::vector<std::array<int, 3>> dofids;
+
+    int ndof = 0;
 
     for (unsigned int i=0; i<Vertices.size(); i++) {
         std::array<double, 3> cp;
         std::array<double, 3> pp;
+        std::array<int, 3> dofid = {-1, -1, -1};
         for (int j=0; j<3; j++) {
             cp.at(j) = pp.at(j) = Vertices.at(i)->get_c(j);
+            if (!Fixed[i]) {
+                if (!Vertices.at(i)->Fixed[j]) {
+                    dofid[j]=ndof;
+                    ndof++;
+                }
+            }
         }
         CurrentPositions.push_back(cp);
         PreviousPositions.push_back(pp);
+        dofids.push_back(dofid);
     }
 
     // Create vector-vector for accessing neightbours
@@ -128,104 +153,89 @@ void SpringSmooth(std::vector<VertexType*> Vertices, std::vector<bool> Fixed, st
 #endif
 
     int itercount = 0;
-    int threadcount = 1;
-    double deltamax = 1e8;
+    double err = 1e8;
     int deltamaxnode;
 
-#ifdef OPENMP
-    threadcount = omp_get_max_threads();
-#endif
+    arma::sp_mat Kff(ndof, ndof);
+    arma::vec Rf = arma::ones<arma::vec>(ndof);
 
-    while ((itercount < MAX_ITER_COUNT) & (deltamax>1e-6)) {
+    while ((itercount < MAX_ITER_COUNT) & (err>1e-6)) {
 
-        deltamax=0.0;
-        int deltamaxnodes[threadcount];
-        double deltamaxvalues[threadcount];
+        err = 0.0;
+        Kff.zeros();
 
-        for (int i=0; i<threadcount; i++) {
-            deltamaxnodes[i]=0;
-            deltamaxvalues[i]=0.0;
-        }
+        for (size_t i=0; i<Vertices.size(); i++) {
+            if (!Fixed[i]) {
 
-        //#pragma omp parallel default(shared)
-        {
-            int threadid=0;
-#ifdef OPENMP
-            threadid=omp_get_thread_num();
-#endif
+                std::vector<std::array<double, 3>> ConnectionCoords;
+                std::vector<VertexType*> MyConnections = Connections.at(i);
 
-            //#pragma omp for schedule(static, 100)
-            for (size_t i=0; i<Vertices.size(); i++) {
-                if (!Fixed[i]) {
+                for (unsigned k=0; k<MyConnections.size(); k++) {
+                    ConnectionCoords.push_back({PreviousPositions.at(ConnectionVertexIndex.at(i).at(k))[0],
+                                                PreviousPositions.at(ConnectionVertexIndex.at(i).at(k))[1],
+                                                PreviousPositions.at(ConnectionVertexIndex.at(i).at(k))[2]});
+                }
 
-                    std::vector<std::array<double, 3>> ConnectionCoords;
-                    std::vector<VertexType*> MyConnections = Connections.at(i);
+                arma::vec xc = {PreviousPositions.at(i)[0], PreviousPositions.at(i)[1], PreviousPositions.at(i)[2]};
+                arma::vec x0 = {Vertices.at(i)->get_c(0), Vertices.at(i)->get_c(1), Vertices.at(i)->get_c(2)};
 
-                    for (unsigned k=0; k<MyConnections.size(); k++) {
-                        ConnectionCoords.push_back({PreviousPositions.at(ConnectionVertexIndex.at(i).at(k))[0],
-                                                    PreviousPositions.at(ConnectionVertexIndex.at(i).at(k))[1],
-                                                    PreviousPositions.at(ConnectionVertexIndex.at(i).at(k))[2]});
+                // Assemble out-of-balance vector
+                arma::vec R = ComputeOutOfBalance(ConnectionCoords, xc, x0, alpha, K);
+
+                for (int j=0; j<3; j++) {
+                    if (dofids[i][j]!=-1) { // Not stationary
+                        Rf[dofids[i][j]] = R[j];
                     }
+                }
 
-                    arma::vec xc = {PreviousPositions.at(i)[0], PreviousPositions.at(i)[1], PreviousPositions.at(i)[2]};
-                    arma::vec x0 = {Vertices.at(i)->get_c(0), Vertices.at(i)->get_c(1), Vertices.at(i)->get_c(2)};
+                // Assemble to tangent
+                std::vector <int> ConnectionIndices = ConnectionVertexIndex.at(i);
+                arma::mat T = ComputeAnalyticalTangent(ConnectionCoords, xc, x0, alpha, K);
 
-                    // Compute out-of-balance vector
-                    arma::vec R = ComputeOutOfBalance(ConnectionCoords, xc, x0, alpha, K);
-                    double err = arma::norm(R);
-                    int iter = 0;
+                std::vector <int> Rows = {dofids[i][0], dofids[i][1], dofids[i][2]};
+                std::vector <int> Cols = {dofids[i][0], dofids[i][1], dofids[i][2]};
 
-                    // Find equilibrium
-                    while ((err>1e-5) & (iter<100000)) {
-                        arma::mat T = ComputeAnalyticalTangent(ConnectionCoords, xc, x0, alpha, K);
-                        arma::vec delta = -arma::solve(T, R);
-                        xc = xc + 1.*delta;
-                        R = ComputeOutOfBalance(ConnectionCoords, xc, x0, alpha, K);
-                        err = arma::norm(R);
-                        iter ++;
-                    }
-
-                    // If too many iterations, throw an exception and investigate...
-                    if (iter>99999) {
-                        throw(0);
-                    }
-
-                    // Update current position
+                for (int index: ConnectionIndices) {
                     for (int j=0; j<3; j++) {
-                        if (!Vertices.at(i)->Fixed[j]) {
-                            CurrentPositions.at(i)[j] = xc[j];
+                        Cols.push_back(dofids[index][j]);
+                    }
+                }
+
+                for (int j=0; j<3; j++) {
+                    if (Rows[j]!=-1) {
+                        for (int k=0; k<Cols.size(); k++) {
+                            if (Cols[k]!=-1) {
+                                Kff(Rows[j], Cols[k]) = Kff(Rows[j], Cols[k]) + T(j, k);
+                            }
                         }
                     }
-
-                    // Update maximum delta
-                    arma::vec d={PreviousPositions.at(i)[0]-CurrentPositions.at(i)[0], PreviousPositions.at(i)[1]-CurrentPositions.at(i)[1], PreviousPositions.at(i)[2]-CurrentPositions.at(i)[2]};
-                    if (arma::norm(d)>deltamaxvalues[threadid]) {
-                        deltamaxvalues[threadid] = arma::norm(d);
-                        deltamaxnodes[threadid] = i;
-                    }
-
                 }
-            }
-            // Update previous positions
-            for (size_t i=0; i<Vertices.size(); i++) {
-                for (int j=0; j<3; j++) {
-                    if (!Vertices.at(i)->Fixed[j]) {
-                        PreviousPositions.at(i)[j] = CurrentPositions.at(i)[j];
-                    }
-                }
-            }
-
-        } // End of OpenMP section
-
-        deltamaxnode=0;
-        for (int i=0; i<threadcount; i++) {
-            if (deltamaxvalues[i]>deltamax) {
-                deltamax = deltamaxvalues[i];
-                deltamaxnode = deltamaxnodes[i];
             }
         }
 
-        STATUS("Iteration %i end with deltamax=%f at node %i\n", itercount, deltamax, deltamaxnode);
+        err = arma::norm(Rf);
+        arma::vec delta = arma::spsolve(Kff, -Rf);
+
+        // Update current positions
+        for (size_t i=0; i<Vertices.size(); i++) {
+            for (int j=0; j<3; j++) {
+                if (dofids[i][j]!=-1) {
+                    CurrentPositions.at(i)[j] = CurrentPositions.at(i)[j] + delta[dofids[i][j]];
+                }
+            }
+        }
+
+
+        // Update previous positions
+        for (size_t i=0; i<Vertices.size(); i++) {
+            for (int j=0; j<3; j++) {
+                if (!Vertices.at(i)->Fixed[j]) {
+                    PreviousPositions.at(i)[j] = CurrentPositions.at(i)[j];
+                }
+            }
+        }
+
+        STATUS("Iteration %i end with deltamax=%f at node %i\n", itercount, err, deltamaxnode);
 
         itercount ++;
 
