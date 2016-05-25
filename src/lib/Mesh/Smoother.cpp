@@ -4,9 +4,20 @@
 namespace voxel2tet
 {
 
-double Compute_c(double charlength, double alpha)
+double Compute_c(double l, double alpha)
 {
+    double c=l; // Initial guess
+    double R=exp(pow(l/c, alpha))-1-l;
+    double err = fabs(R);
 
+    while (err > 1e-8) {
+        double tangent = -exp(pow(l/c, alpha))*alpha*pow(l/c, alpha-1)*l*pow(c,-2);
+        double deltac = -1/tangent*R;
+        c=c+deltac;
+        R=exp(pow(l/c, alpha))-1-l;
+        err = fabs(R);
+    }
+    return c;
 }
 
 arma::vec ComputeOutOfBalance(std::vector<std::array<double, 3> > ConnectionCoords, arma::vec xc, arma::vec x0, double alpha, double c)

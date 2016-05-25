@@ -13,7 +13,7 @@
 namespace voxel2tet
 {
 
-double Compute_c(double charlength, double alpha);
+double Compute_c(double l, double alpha);
 
 arma::vec ComputeOutOfBalance(std::vector<std::array<double, 3> > ConnectionCoords, arma::vec xc, arma::vec x0, double alpha, double c);
 

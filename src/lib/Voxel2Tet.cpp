@@ -68,27 +68,25 @@ void Voxel2Tet :: FinalizeLoad()
     if (this->Opt->has_key("spring_alpha")) {
         spring_alpha = Opt->GiveDoubleValue("spring_alpha");
     } else {
-        spring_alpha = 4;
+        spring_alpha = 2;
     }
 
     if (this->Opt->has_key("spring_c")) {
         spring_c = Opt->GiveDoubleValue("spring_c");
     } else {
-        spring_c = Compute_c(cellspace[0], spring_alpha);
-        auto_c = true;
+        spring_c = Compute_c(cellspace[0]*3, spring_alpha);
     }
 
     if (this->Opt->has_key("edge_spring_alpha")) {
-        spring_alpha = Opt->GiveDoubleValue("edge_spring_alpha");
+        edgespring_alpha = Opt->GiveDoubleValue("edge_spring_alpha");
     } else {
-        spring_alpha = 4;
+        edgespring_alpha = 2;
     }
 
     if (this->Opt->has_key("edge_spring_c")) {
         edgespring_c = Opt->GiveDoubleValue("edge_spring_c");
     } else {
-        edgespring_c = Compute_c(cellspace[0], edgespring_alpha);
-        auto_c = true;
+        edgespring_c = Compute_c(cellspace[0]*3, edgespring_alpha);
     }
 
     STATUS("Using spring_alpha=%f, spring_c=%f\n", spring_alpha, spring_c);
