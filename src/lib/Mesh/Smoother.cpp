@@ -228,7 +228,6 @@ void SpringSmooth(std::vector<VertexType*> Vertices, std::vector<bool> Fixed, st
         }
 
         err = arma::norm(Rf);
-        //Kff.print("Kff = ");
 
         arma::vec delta = arma::spsolve(Kff, -Rf);
         if (err>1e-10) {
@@ -237,8 +236,6 @@ void SpringSmooth(std::vector<VertexType*> Vertices, std::vector<bool> Fixed, st
                 delta = delta * 0.01/maxdelta;
             }
         }
-
-        //delta.print("update = ");
 
         // Update current positions
         for (size_t i=0; i<Vertices.size(); i++) {

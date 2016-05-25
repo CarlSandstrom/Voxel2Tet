@@ -247,9 +247,7 @@ void Voxel2Tet::FindSurfaces()
                         AddSurfaceSquare(VoxelIDs, {ThisPhase, NeighboringPhase}, NeighboringPhase);
 
                     }
-
                 }
-
             }
         }
     }
@@ -754,41 +752,25 @@ void Voxel2Tet::Process()
 
     this->Mesh->ExportSurface(strfmt("/tmp/Voxeltest%u.vtp", outputindex++) , FT_VTK );
 
-    if (true) {  // Carl's suggestion
 
-        this->FindEdges();
+    this->FindEdges();
 
-        clock_t t1 = clock();
-#if SMOOTH_EDGES_INDIVIDUALLY==1
-        this->SmoothEdgesIndividually();
-#else
-        this->SmoothEdgesSimultaneously(edgespring_c, edgespring_alpha, 0, false);
-#endif
+    clock_t t1 = clock();
+    this->SmoothEdgesSimultaneously(edgespring_c, edgespring_alpha, 0, false);
+    this->Mesh->ExportSurface(strfmt("/tmp/Voxeltest%u.vtp", outputindex++), FT_VTK);
+    this->SmoothSurfaces(spring_c, spring_alpha, 0, false);
+    clock_t t2 = clock();
 
-        this->Mesh->ExportSurface(strfmt("/tmp/Voxeltest%u.vtp", outputindex++), FT_VTK);
+    STATUS("Edges smoothing in %fs\n", float(t2-t1)/(double)CLOCKS_PER_SEC);
 
-        this->SmoothSurfaces(spring_c, spring_alpha, 0, false);
-        clock_t t2 = clock();
-        STATUS("Edges smoothing in %fs\n", float(t2-t1)/(double)CLOCKS_PER_SEC);
+    this->Mesh->ExportSurface(strfmt("/tmp/Voxeltest%u.vtp", outputindex++), FT_VTK);
+    this->Mesh->FlipAll();
 
-        this->Mesh->ExportSurface(strfmt("/tmp/Voxeltest%u.vtp", outputindex++), FT_VTK);
-        this->Mesh->FlipAll();
+    this->Mesh->ExportSurface(strfmt("/tmp/Voxeltest%u.vtp", outputindex++), FT_VTK);
+    this->Mesh->CoarsenMeshImproved();
 
-        this->Mesh->ExportSurface(strfmt("/tmp/Voxeltest%u.vtp", outputindex++), FT_VTK);
-        this->Mesh->CoarsenMeshImproved();
-
-        this->Mesh->ExportSurface(strfmt("/tmp/Voxeltest%u.vtp", outputindex++), FT_VTK);
-        this->Mesh->FlipAll();
-
-    } else {  // Mikael's suggestions
-
-        this->FindEdges();
-
-        for (unsigned int i=0; i<this->Mesh->Vertices.size(); i++) {
-            this->Mesh->Vertices.at(i)->ID = i;
-        }
-        this->SmoothAllAtOnce(edgespring_c, edgespring_alpha, 0, false);
-    }
+    this->Mesh->ExportSurface(strfmt("/tmp/Voxeltest%u.vtp", outputindex++), FT_VTK);
+    this->Mesh->FlipAll();
 
     i=0;
     this->UpdateSurfaces();
@@ -798,59 +780,12 @@ void Voxel2Tet::Process()
         i++;
     }
 
-    //this->Mesh->ExportSurface(strfmt("/tmp/Voxeltest%u.vtp", outputindex++), FT_VTK);
+    this->Mesh->ExportSurface(strfmt("/tmp/Voxeltest%u.vtp", outputindex++), FT_VTK);
 
 #if EXPORT_MESH_COARSENING == 1
     dooutputlogmesh(*this->Mesh, (char*) "/tmp/finalcoarsening%u.vtp", 0);
 #endif
 
-    //#if SANITYCHECK == 1
-    //this->Mesh->DoSanityCheck();
-    //#endif
-    /*
-    for (unsigned int i=0; i<this->Mesh->Triangles.size(); i++) {
-        TriangleType *t = this->Mesh->Triangles.at(i);
-        double smallestangle = t->GiveSmallestAngle();
-        if (smallestangle*360/(2*3.141592)<1) {
-            STATUS ("iter %u: Very small angle (%f) on triangle #%u (ID %u)\n", iter, smallestangle, i, t->ID);
-            if (true) { //t->ID==4959) {
-                EdgeType *ShortestEdge = t->GiveEdge(0);
-
-                for (EdgeType *e: t->GiveEdges()) {
-                    if (e->GiveLength() < ShortestEdge->GiveLength()) {
-                        ShortestEdge = e;
-                    }
-                }
-
-                bool Success = Mesh->CollapseEdge(ShortestEdge, 0, false); // TODO: Which vertex to collapse? Maybe move one to the center and collapse the other one?
-                if (!Success) {
-                    Success = Mesh->CollapseEdge(ShortestEdge, 1, false);
-                }
-                if (Success) {
-                    STATUS("Edge collapsed ok\n", 0);
-#if SANITYCHECK == 1
-//                    Mesh->DoSanityCheck();
-#endif
-                }
-
-            }
-
-#if EXPORT_MESH_COARSENING == 1
-            dooutputlogmesh(*this->Mesh, (char*) "/tmp/finalcoarsening%u.vtp", iter);
-#endif
-            iter++;
-
-        }
-    }
-
-    for (unsigned int i=0; i<this->Mesh->Triangles.size(); i++) {
-        TriangleType *t = this->Mesh->Triangles.at(i);
-        double smallestangle = t->GiveSmallestAngle();
-        if (smallestangle*360/(2*3.141592)<1) {
-            STATUS ("Still very small angle (%f) on triangle #%u (ID %u)\n", iter, smallestangle, i, t->ID);
-        }
-    }
-*/
 }
 
 }

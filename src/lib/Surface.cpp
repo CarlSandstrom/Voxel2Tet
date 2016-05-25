@@ -28,7 +28,6 @@ void Surface::AddTriangle(TriangleType *Triangle)
         }
     }
     this->Triangles.push_back(Triangle);
-
 }
 
 void Surface::Smooth(MeshData *Mesh, double c, double alpha, double charlength, bool Automatic_c)
@@ -39,7 +38,6 @@ void Surface::Smooth(MeshData *Mesh, double c, double alpha, double charlength, 
     std::vector<bool> FixedList;
 
     // Create connections matrix
-    //for (unsigned int i=0; i<this->Vertices.size(); i++) {
     for (VertexType *v: this->Vertices) {
         std::vector <VertexType*> NeighbouringVertices = v->FetchNeighbouringVertices();
         std::sort (NeighbouringVertices.begin(), NeighbouringVertices.end());
