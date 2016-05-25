@@ -9,6 +9,7 @@
 #include "Dream3DDataReader.h"
 #include "CallbackImporter.h"
 #include "TetGenCaller.h"
+#include "Smoother.h"
 
 namespace voxel2tet
 {
@@ -58,30 +59,40 @@ void Voxel2Tet::LoadFile(std::string Filename)
 void Voxel2Tet :: FinalizeLoad()
 {
 
-    double spring_const;
-    double edge_spring_const;
-
     double cellspace[3];
     this->Imp->GiveSpacing(cellspace);
 
     STATUS("Voxel dimensions are %f * %f * %f\n", cellspace[0],cellspace[1],cellspace[2]);
+    auto_c = false;
 
-    if (!this->Opt->has_key("spring_const")) {
-        spring_const = cellspace[0]*2.5;
-        Opt->AddDefaultMap("spring_const", std::to_string(spring_const));
+    if (this->Opt->has_key("spring_alpha")) {
+        spring_alpha = Opt->GiveDoubleValue("spring_alpha");
     } else {
-        spring_const = Opt->GiveDoubleValue("spring_const");
+        spring_alpha = 4;
     }
 
-    if (!this->Opt->has_key("edge_spring_const")) {
-        edge_spring_const = cellspace[0]*1.75;
-        Opt->AddDefaultMap("edge_spring_const", std::to_string(edge_spring_const));
+    if (this->Opt->has_key("spring_c")) {
+        spring_c = Opt->GiveDoubleValue("spring_c");
     } else {
-        edge_spring_const = Opt->GiveDoubleValue("edge_spring_const");
+        spring_c = Compute_c(cellspace[0], spring_alpha);
+        auto_c = true;
     }
 
-    STATUS("Using spring_const=%f\n", spring_const);
-    STATUS("Using edge_spring_const=%f\n", edge_spring_const);
+    if (this->Opt->has_key("edge_spring_alpha")) {
+        spring_alpha = Opt->GiveDoubleValue("edge_spring_alpha");
+    } else {
+        spring_alpha = 4;
+    }
+
+    if (this->Opt->has_key("edge_spring_c")) {
+        edgespring_c = Opt->GiveDoubleValue("edge_spring_c");
+    } else {
+        edgespring_c = Compute_c(cellspace[0], edgespring_alpha);
+        auto_c = true;
+    }
+
+    STATUS("Using spring_alpha=%f, spring_c=%f\n", spring_alpha, spring_c);
+    STATUS("Using edgespring_alpha=%f, edgespring_c=%f\n", edgespring_alpha, edgespring_c);
 
     BoundingBoxType bb;
     double spacing[3];
@@ -502,11 +513,9 @@ void Voxel2Tet :: SmoothEdgesIndividually()
     }
 }
 
-void Voxel2Tet :: SmoothEdgesSimultaneously()
+void Voxel2Tet :: SmoothEdgesSimultaneously(double c, double alpha, double charlength, bool Automatic_c)
 {
     STATUS("Smooth edges (simultaneously)\n", 0);
-
-    double K = this->Opt->GiveDoubleValue("edge_spring_const");
 
     // We want to sort several lists according to one list. (http://stackoverflow.com/questions/1723066/c-stl-custom-sorting-one-vector-based-on-contents-of-another)
     struct VertexConnectivity {
@@ -583,7 +592,6 @@ void Voxel2Tet :: SmoothEdgesSimultaneously()
         Connections.push_back(VertexConnections.at(i)->Connections);
 
         // Determine which directions are locked TODO: This should be done elsewhere
-        std::array<bool,3> FixedDirections;
         for (int j=0; j<3; j++) {
             if ( (v->get_c(j) > (this->Imp->GiveBoundingBox().maxvalues[j]-eps)) | (v->get_c(j) < (this->Imp->GiveBoundingBox().minvalues[j]+eps))) {
                 v->Fixed[j]=true;
@@ -599,22 +607,21 @@ void Voxel2Tet :: SmoothEdgesSimultaneously()
         delete v;
     }
 
-    SpringSmooth(VertexList, FixedDirectionsList, Connections, K, this->Mesh);
+    SpringSmooth(VertexList, FixedDirectionsList, Connections, c, alpha, charlength, Automatic_c, this->Mesh);
 
 }
 
-void Voxel2Tet :: SmoothSurfaces()
+void Voxel2Tet :: SmoothSurfaces(double c, double alpha, double charlength, bool Automatic_c)
 {
     STATUS("Smooth surfaces\n", 0);
     for (auto s: this->Surfaces) {
-        s->Smooth(this->Mesh);
+        s->Smooth(this->Mesh, c, alpha, charlength, Automatic_c);
     }
 }
 
-void Voxel2Tet :: SmoothAllAtOnce()
+void Voxel2Tet :: SmoothAllAtOnce(double c, double alpha, double charlength, bool Automatic_c)
 {
     STATUS("Smooth complete structure\n", 0);
-    double K = this->Opt->GiveDoubleValue("spring_const");
 
     std::vector<std::vector<VertexType *>> Connections;
     std::vector<bool> FixedDirectionsList;
@@ -649,7 +656,7 @@ void Voxel2Tet :: SmoothAllAtOnce()
 
     }
 
-    SpringSmooth(this->Mesh->Vertices, FixedDirectionsList, Connections, K);
+    SpringSmooth(this->Mesh->Vertices, FixedDirectionsList, Connections, c, alpha, charlength, Automatic_c);
 }
 
 PhaseEdge* Voxel2Tet :: AddPhaseEdge(std::vector<VertexType*> EdgeSegment, std::vector<int> Phases)
@@ -757,12 +764,12 @@ void Voxel2Tet::Process()
 #if SMOOTH_EDGES_INDIVIDUALLY==1
         this->SmoothEdgesIndividually();
 #else
-        this->SmoothEdgesSimultaneously();
+        this->SmoothEdgesSimultaneously(edgespring_c, edgespring_alpha, 0, false);
 #endif
 
         this->Mesh->ExportSurface(strfmt("/tmp/Voxeltest%u.vtp", outputindex++), FT_VTK);
 
-        this->SmoothSurfaces();
+        this->SmoothSurfaces(spring_c, spring_alpha, 0, false);
         clock_t t2 = clock();
         STATUS("Edges smoothing in %fs\n", float(t2-t1)/(double)CLOCKS_PER_SEC);
 
@@ -782,7 +789,7 @@ void Voxel2Tet::Process()
         for (unsigned int i=0; i<this->Mesh->Vertices.size(); i++) {
             this->Mesh->Vertices.at(i)->ID = i;
         }
-        this->SmoothAllAtOnce();
+        this->SmoothAllAtOnce(edgespring_c, edgespring_alpha, 0, false);
     }
 
     i=0;
@@ -795,7 +802,6 @@ void Voxel2Tet::Process()
 
     //this->Mesh->ExportSurface(strfmt("/tmp/Voxeltest%u.vtp", outputindex++), FT_VTK);
 
-    int iter = 0;
 #if EXPORT_MESH_COARSENING == 1
     dooutputlogmesh(*this->Mesh, (char*) "/tmp/finalcoarsening%u.vtp", 0);
 #endif

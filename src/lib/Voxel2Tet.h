@@ -33,9 +33,9 @@ private:
     void FindEdges();
 
     void SmoothEdgesIndividually();
-    void SmoothEdgesSimultaneously();
-    void SmoothSurfaces();
-    void SmoothAllAtOnce();
+    void SmoothEdgesSimultaneously(double c, double alpha, double charlength, bool Automatic_c=false);
+    void SmoothSurfaces(double c, double alpha, double charlength, bool Automatic_c=false);
+    void SmoothAllAtOnce(double c, double alpha, double charlength, bool Automatic_c=false);
 
     void AddSurfaceSquare(std::vector<int> VoxelIDs, std::vector<int> phases, int normalphase);
     PhaseEdge* AddPhaseEdge(std::vector<VertexType*> EdgeSegment, std::vector<int> Phases);
@@ -48,6 +48,13 @@ private:
     void UpdateSurfaces();
 
     double eps=1e-6;
+
+    double spring_alpha;
+    double spring_c;
+    double edgespring_alpha;
+    double edgespring_c;
+
+    bool auto_c;
 
 public:
     Voxel2Tet(Options *Opt);

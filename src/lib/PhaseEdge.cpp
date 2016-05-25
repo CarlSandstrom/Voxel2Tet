@@ -207,7 +207,7 @@ void PhaseEdge :: Smooth(MeshData *Mesh)
     throw(0);
 
     if (this->EdgeSegments.size()==1) return;
-    double K = this->Opt->GiveDoubleValue("edge_spring_const");
+    //double K = this->Opt->GiveDoubleValue("edge_spring_const");
 
     std::vector<VertexType *> FlatList = this->GetFlatListOfVertices();
 

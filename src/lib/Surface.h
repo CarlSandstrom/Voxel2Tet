@@ -70,9 +70,10 @@ public:
 
     /**
      * @brief Perform smoothing on this Surface object
-     * @param Mesh
+     * @param Mesh Mesh to be smoothed
+     * @param c Non-linear spring constant
      */
-    void Smooth(MeshData *Mesh);
+    void Smooth(MeshData *Mesh, double c, double alpha, double charlength, bool Automatic_c=false);
 
     /**
      * @brief Compute area of surface

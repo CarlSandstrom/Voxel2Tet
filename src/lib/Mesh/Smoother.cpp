@@ -4,6 +4,11 @@
 namespace voxel2tet
 {
 
+double Compute_c(double charlength, double alpha)
+{
+
+}
+
 arma::vec ComputeOutOfBalance(std::vector<std::array<double, 3> > ConnectionCoords, arma::vec xc, arma::vec x0, double alpha, double c)
 {
 
@@ -103,11 +108,13 @@ arma::mat ComputeAnalyticalTangent(std::vector<std::array<double, 3> > Connectio
     return Tangent;
 }
 
-void SpringSmooth(std::vector<VertexType*> Vertices, std::vector<bool> Fixed, std::vector<std::vector<VertexType*>> Connections, double K, voxel2tet::MeshData *Mesh)
+void SpringSmooth(std::vector<VertexType*> Vertices, std::vector<bool> Fixed, std::vector<std::vector<VertexType*>> Connections, double c, double alpha, double charlength, bool Automatic_c, voxel2tet::MeshData *Mesh)
 {
-    int MAX_ITER_COUNT=10000;
-    double NEWTON_TOL=1e-10;
-    double alpha = 4;
+    int MAX_ITER_COUNT=1000;
+
+    if (Automatic_c) {
+        // c = Compute_c(charlength);
+    }
 
     // Create vectors for current and previous positions
     std::vector<std::array<double, 3>> CurrentPositions;
@@ -176,7 +183,7 @@ void SpringSmooth(std::vector<VertexType*> Vertices, std::vector<bool> Fixed, st
                 arma::vec x0 = {Vertices.at(i)->get_c(0), Vertices.at(i)->get_c(1), Vertices.at(i)->get_c(2)};
 
                 // Assemble out-of-balance vector
-                arma::vec R = ComputeOutOfBalance(ConnectionCoords, xc, x0, alpha, K);
+                arma::vec R = ComputeOutOfBalance(ConnectionCoords, xc, x0, alpha, c);
 
                 for (int j=0; j<3; j++) {
                     if (dofids[i][j]!=-1) { // Not stationary
@@ -186,7 +193,7 @@ void SpringSmooth(std::vector<VertexType*> Vertices, std::vector<bool> Fixed, st
 
                 // Assemble to tangent
                 std::vector <int> ConnectionIndices = ConnectionVertexIndex.at(i);
-                arma::mat T = ComputeAnalyticalTangent(ConnectionCoords, xc, x0, alpha, K);
+                arma::mat T = ComputeAnalyticalTangent(ConnectionCoords, xc, x0, alpha, c);
 
                 std::vector <int> Rows = {dofids[i][0], dofids[i][1], dofids[i][2]};
                 std::vector <int> Cols = {dofids[i][0], dofids[i][1], dofids[i][2]};
@@ -199,7 +206,7 @@ void SpringSmooth(std::vector<VertexType*> Vertices, std::vector<bool> Fixed, st
 
                 for (int j=0; j<3; j++) {
                     if (Rows[j]!=-1) {
-                        for (int k=0; k<Cols.size(); k++) {
+                        for (size_t k=0; k<Cols.size(); k++) {
                             if (Cols[k]!=-1) {
                                 Kff(Rows[j], Cols[k]) = Kff(Rows[j], Cols[k]) + T(j, k);
                             }
@@ -215,8 +222,8 @@ void SpringSmooth(std::vector<VertexType*> Vertices, std::vector<bool> Fixed, st
         arma::vec delta = arma::spsolve(Kff, -Rf);
         if (err>1e-10) {
             double maxdelta = arma::max(delta);
-            if (maxdelta > 0.066667) {
-                delta = delta * 0.066667/maxdelta;
+            if (maxdelta > 0.01) {
+                delta = delta * 0.01/maxdelta;
             }
         }
 

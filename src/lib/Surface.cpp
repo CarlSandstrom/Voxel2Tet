@@ -31,10 +31,8 @@ void Surface::AddTriangle(TriangleType *Triangle)
 
 }
 
-void Surface::Smooth(MeshData *Mesh)
+void Surface::Smooth(MeshData *Mesh, double c, double alpha, double charlength, bool Automatic_c)
 {
-
-    double K = this->Opt->GiveDoubleValue("spring_const");
 
     std::vector<VertexType *> SmoothVertices;
     std::vector<std::vector<VertexType *>> Connections;
@@ -63,7 +61,7 @@ void Surface::Smooth(MeshData *Mesh)
 
     }
 
-    SpringSmooth(this->Vertices, FixedList, Connections, K, Mesh);
+    SpringSmooth(this->Vertices, FixedList, Connections, c, alpha, charlength, Automatic_c, Mesh);
 
 }
 
