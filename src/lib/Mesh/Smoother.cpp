@@ -31,7 +31,7 @@ arma::vec ComputeOutOfBalance(std::vector<std::array<double, 3> > ConnectionCoor
         } else {
             nj = (xi-xc)/dj;
         }
-        F = F + dj*nj;
+        F = F + dj*nj/ConnectionCoords.size();
     }
 
     return F;
@@ -88,7 +88,7 @@ arma::mat ComputeAnalyticalTangent(std::vector<std::array<double, 3> > Connectio
 
 
     // Linear part
-    TangentSelf = TangentSelf - arma::eye<arma::mat>(3,3)*ConnectionCoords.size();
+    TangentSelf = TangentSelf - arma::eye<arma::mat>(3,3);
 
     // Assemble self part to tangent
     Tangent(arma::span(0,2),arma::span(0,2)) = TangentSelf;
@@ -96,7 +96,7 @@ arma::mat ComputeAnalyticalTangent(std::vector<std::array<double, 3> > Connectio
     // delta x_j part
     for (unsigned int i=0; i<ConnectionCoords.size(); i++) {
         for (int j=0; j<3; j++) {
-            Tangent(j, 3*(i+1)+j) = 1.0;
+            Tangent(j, 3*(i+1)+j) = 1.0/ConnectionCoords.size();
         }
     }
 
@@ -111,17 +111,15 @@ void SpringSmooth(std::vector<VertexType*> Vertices, std::vector<bool> Fixed, st
 
     // Create vectors for current and previous positions
     std::vector<std::array<double, 3>> CurrentPositions;
-    std::vector<std::array<double, 3>> PreviousPositions;
     std::vector<std::array<int, 3>> dofids;
 
     int ndof = 0;
 
     for (unsigned int i=0; i<Vertices.size(); i++) {
         std::array<double, 3> cp;
-        std::array<double, 3> pp;
         std::array<int, 3> dofid = {-1, -1, -1};
         for (int j=0; j<3; j++) {
-            cp.at(j) = pp.at(j) = Vertices.at(i)->get_c(j);
+            cp.at(j) = Vertices.at(i)->get_c(j);
             if (!Fixed[i]) {
                 if (!Vertices.at(i)->Fixed[j]) {
                     dofid[j]=ndof;
@@ -130,7 +128,6 @@ void SpringSmooth(std::vector<VertexType*> Vertices, std::vector<bool> Fixed, st
             }
         }
         CurrentPositions.push_back(cp);
-        PreviousPositions.push_back(pp);
         dofids.push_back(dofid);
     }
 
@@ -154,7 +151,6 @@ void SpringSmooth(std::vector<VertexType*> Vertices, std::vector<bool> Fixed, st
 
     int itercount = 0;
     double err = 1e8;
-    int deltamaxnode;
 
     arma::sp_mat Kff(ndof, ndof);
     arma::vec Rf = arma::ones<arma::vec>(ndof);
@@ -171,12 +167,12 @@ void SpringSmooth(std::vector<VertexType*> Vertices, std::vector<bool> Fixed, st
                 std::vector<VertexType*> MyConnections = Connections.at(i);
 
                 for (unsigned k=0; k<MyConnections.size(); k++) {
-                    ConnectionCoords.push_back({PreviousPositions.at(ConnectionVertexIndex.at(i).at(k))[0],
-                                                PreviousPositions.at(ConnectionVertexIndex.at(i).at(k))[1],
-                                                PreviousPositions.at(ConnectionVertexIndex.at(i).at(k))[2]});
+                    ConnectionCoords.push_back({CurrentPositions.at(ConnectionVertexIndex.at(i).at(k))[0],
+                                                CurrentPositions.at(ConnectionVertexIndex.at(i).at(k))[1],
+                                                CurrentPositions.at(ConnectionVertexIndex.at(i).at(k))[2]});
                 }
 
-                arma::vec xc = {PreviousPositions.at(i)[0], PreviousPositions.at(i)[1], PreviousPositions.at(i)[2]};
+                arma::vec xc = {CurrentPositions.at(i)[0], CurrentPositions.at(i)[1], CurrentPositions.at(i)[2]};
                 arma::vec x0 = {Vertices.at(i)->get_c(0), Vertices.at(i)->get_c(1), Vertices.at(i)->get_c(2)};
 
                 // Assemble out-of-balance vector
@@ -214,7 +210,17 @@ void SpringSmooth(std::vector<VertexType*> Vertices, std::vector<bool> Fixed, st
         }
 
         err = arma::norm(Rf);
+        //Kff.print("Kff = ");
+
         arma::vec delta = arma::spsolve(Kff, -Rf);
+        if (err>1e-10) {
+            double maxdelta = arma::max(delta);
+            if (maxdelta > 0.066667) {
+                delta = delta * 0.066667/maxdelta;
+            }
+        }
+
+        //delta.print("update = ");
 
         // Update current positions
         for (size_t i=0; i<Vertices.size(); i++) {
@@ -225,17 +231,7 @@ void SpringSmooth(std::vector<VertexType*> Vertices, std::vector<bool> Fixed, st
             }
         }
 
-
-        // Update previous positions
-        for (size_t i=0; i<Vertices.size(); i++) {
-            for (int j=0; j<3; j++) {
-                if (!Vertices.at(i)->Fixed[j]) {
-                    PreviousPositions.at(i)[j] = CurrentPositions.at(i)[j];
-                }
-            }
-        }
-
-        STATUS("Iteration %i end with deltamax=%f at node %i\n", itercount, err, deltamaxnode);
+        STATUS("Iteration %i end with err=%f\n", itercount, err);
 
         itercount ++;
 
