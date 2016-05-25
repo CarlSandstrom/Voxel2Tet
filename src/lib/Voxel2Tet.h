@@ -32,7 +32,7 @@ private:
     void FindSurfaces();
     void FindEdges();
 
-    void SmoothEdgesIndividually();
+    void SmoothEdgesIndividually(double c, double alpha, double charlength, bool Automatic_c=false);
     void SmoothEdgesSimultaneously(double c, double alpha, double charlength, bool Automatic_c=false);
     void SmoothSurfaces(double c, double alpha, double charlength, bool Automatic_c=false);
     void SmoothAllAtOnce(double c, double alpha, double charlength, bool Automatic_c=false);

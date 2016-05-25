@@ -80,7 +80,7 @@ public:
      * @brief Perform smoothing on this PhaseEdge.
      * @param Mesh
      */
-    void Smooth(MeshData *Mesh);
+    void Smooth(MeshData *Mesh, double c, double alpha, double charlength, bool Automatic_c=false);
 
     /**
      * @brief Add an edge segment to the PhaseEdge

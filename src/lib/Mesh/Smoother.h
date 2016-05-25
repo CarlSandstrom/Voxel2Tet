@@ -21,6 +21,13 @@ arma::mat ComputeNumericalTangent(std::vector<std::array<double, 3> > Connection
 
 arma::mat ComputeAnalyticalTangent(std::vector<std::array<double, 3> > ConnectionCoords, arma::vec xc, arma::vec x0, double alpha, double c);
 
+arma::mat ComputeAnalyticalTangentGlobal(std::vector<std::array<double, 3> > ConnectionCoords, arma::vec xc, arma::vec x0, double alpha, double c);
+
+void SpringSmoothGlobal(std::vector<VertexType*> Vertices, std::vector<bool> Fixed,
+                  std::vector<std::vector<VertexType*>> Connections,
+                  double c, double alpha, double charlength, bool Automatic_c=false,
+                  MeshData *Mesh=NULL);
+
 void SpringSmooth(std::vector<VertexType*> Vertices, std::vector<bool> Fixed,
                   std::vector<std::vector<VertexType*>> Connections,
                   double c, double alpha, double charlength, bool Automatic_c=false,

@@ -148,7 +148,7 @@ bool PhaseEdge :: IsClosed()
     return this->EdgeSegments.at(0).at(0) == this->EdgeSegments.at(this->EdgeSegments.size()-1).at(1);
 }
 
-void PhaseEdge :: GiveTopologyLists(std::vector<std::vector<VertexType *>> *Connections, std::vector<std::array<bool,3>> *FixedDirectionsList)
+void PhaseEdge :: GiveTopologyLists(std::vector<std::vector<VertexType *>> *Connections, std::vector<std::array<bool,3>> *FixedDirectionsList) // TODO: Should this really supply the FixedDirectionList? Is it used?
 {
     Connections->clear();
     FixedDirectionsList->clear();
@@ -200,24 +200,24 @@ void PhaseEdge :: GiveTopologyLists(std::vector<std::vector<VertexType *>> *Conn
 
 }
 
-void PhaseEdge :: Smooth(MeshData *Mesh)
+void PhaseEdge :: Smooth(MeshData *Mesh, double c, double alpha, double charlength, bool Automatic_c )
 {
-    // TODO: This does not seem to be used, right?
-
-    throw(0);
 
     if (this->EdgeSegments.size()==1) return;
-    //double K = this->Opt->GiveDoubleValue("edge_spring_const");
 
     std::vector<VertexType *> FlatList = this->GetFlatListOfVertices();
 
     std::vector<std::vector<VertexType *>> Connections;
     std::vector<std::array<bool,3>> FixedDirectionsList;
+    std::vector<bool> FixedList;
 
+    this->GiveTopologyLists(&Connections, &FixedDirectionsList);
 
-    //this->GiveTopologyLists(&Connections, &FixedDirectionsList);
+    for (VertexType *v: FlatList) {
+        FixedList.push_back(false);
+    }
 
-    //SpringSmooth(FlatList, FixedDirectionsList, Connections, K, Mesh);
+    SpringSmooth(FlatList, FixedList, Connections, c, alpha, charlength, Automatic_c, Mesh);
 
 }
 

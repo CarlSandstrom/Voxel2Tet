@@ -68,25 +68,25 @@ void Voxel2Tet :: FinalizeLoad()
     if (this->Opt->has_key("spring_alpha")) {
         spring_alpha = Opt->GiveDoubleValue("spring_alpha");
     } else {
-        spring_alpha = 2;
+        spring_alpha = 3;
     }
 
     if (this->Opt->has_key("spring_c")) {
         spring_c = Opt->GiveDoubleValue("spring_c");
     } else {
-        spring_c = Compute_c(cellspace[0]*3, spring_alpha);
+        spring_c = Compute_c(cellspace[0]*1., spring_alpha);
     }
 
     if (this->Opt->has_key("edge_spring_alpha")) {
         edgespring_alpha = Opt->GiveDoubleValue("edge_spring_alpha");
     } else {
-        edgespring_alpha = 2;
+        edgespring_alpha = 3;
     }
 
     if (this->Opt->has_key("edge_spring_c")) {
         edgespring_c = Opt->GiveDoubleValue("edge_spring_c");
     } else {
-        edgespring_c = Compute_c(cellspace[0]*3, edgespring_alpha);
+        edgespring_c = Compute_c(cellspace[0]*1., edgespring_alpha);
     }
 
     STATUS("Using spring_alpha=%f, spring_c=%f\n", spring_alpha, spring_c);
@@ -499,13 +499,13 @@ void Voxel2Tet :: FindEdges()
 
 }
 
-void Voxel2Tet :: SmoothEdgesIndividually()
+void Voxel2Tet :: SmoothEdgesIndividually(double c, double alpha, double charlength, bool Automatic_c)
 {
     STATUS("Smooth edges (individually)\n", 0);
     for (unsigned int i=0; i<this->PhaseEdges.size(); i++) {
         LOG ("Smooth edge %i\n", i);
         PhaseEdge *e = this->PhaseEdges.at(i);
-        e->Smooth(this->Mesh);
+        e->Smooth(this->Mesh, c, alpha, charlength, Automatic_c);
     }
 }
 
@@ -596,7 +596,6 @@ void Voxel2Tet :: SmoothEdgesSimultaneously(double c, double alpha, double charl
             }
         }
         FixedDirectionsList.push_back(false);
-
     }
 
     for (VertexConnectivity *v: VertexConnections) {
@@ -756,7 +755,12 @@ void Voxel2Tet::Process()
     this->FindEdges();
 
     clock_t t1 = clock();
+
     this->SmoothEdgesSimultaneously(edgespring_c, edgespring_alpha, 0, false);
+    this->Mesh->ExportSurface(strfmt("/tmp/Voxeltest%u.vtp", outputindex++), FT_VTK);
+
+    //this->SmoothEdgesIndividually(spring_c, spring_alpha, 0, false);
+
     this->Mesh->ExportSurface(strfmt("/tmp/Voxeltest%u.vtp", outputindex++), FT_VTK);
     this->SmoothSurfaces(spring_c, spring_alpha, 0, false);
     clock_t t2 = clock();
