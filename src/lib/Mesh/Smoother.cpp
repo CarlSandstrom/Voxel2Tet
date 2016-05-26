@@ -484,7 +484,8 @@ void SpringSmooth (std::vector<VertexType*> Vertices, std::vector<bool> Fixed, s
             }
         }
 
-        STATUS("Iteration %i end with deltamax=%f at node %i\n", itercount, deltamax, deltamaxnode);
+        STATUS("%c[2K\rIteration %u end with deltamax=%f at node %i\r", 27, itercount, deltamax, deltamaxnode);
+        fflush(stdout);
 
         itercount ++;
 
@@ -525,6 +526,7 @@ void SpringSmooth (std::vector<VertexType*> Vertices, std::vector<bool> Fixed, s
             Vertices.at(i)->set_c(CurrentPositions.at(i)[j], j); // TODO: Use array to improve performance
         }
     }
+    STATUS("\n", 0);
 
 }
 
