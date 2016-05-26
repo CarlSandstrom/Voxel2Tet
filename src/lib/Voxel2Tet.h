@@ -12,6 +12,7 @@
 #include "MeshComponents.h"
 #include "MeshManipulations.h"
 #include "Surface.h"
+#include "Volume.h"
 #include "MiscFunctions.h"
 #include "PhaseEdge.h"
 #include "MeshGenerator3D.h"
@@ -28,6 +29,7 @@ private:
     Options *Opt;
     Importer *Imp;
     std::vector <Surface*> Surfaces;
+    std::vector <Volume*> Volumes;
     std::vector <PhaseEdge*> PhaseEdges;
     void FindSurfaces();
     void FindEdges();

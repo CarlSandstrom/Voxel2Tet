@@ -2,6 +2,7 @@ set(Voxel2TetLibList
     Surface.cpp
     Voxel2Tet.cpp
     PhaseEdge.cpp
+    Volume.cpp
 )
 
 set(subdirs Export General Import Mesh)

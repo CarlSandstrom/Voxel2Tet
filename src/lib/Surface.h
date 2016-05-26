@@ -39,7 +39,7 @@ public:
     /**
      * @brief Holds phase indices for phases on either side of the surface
      */
-    int Phases[2];
+    std::array<int, 2> Phases;
 
     /**
      * @brief Vertices List of vertices on the surface
