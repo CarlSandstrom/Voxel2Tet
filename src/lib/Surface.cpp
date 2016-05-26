@@ -75,45 +75,20 @@ double Surface::ComputeArea()
 void Surface::ReorientTriangles()
 {
 
-    for (unsigned int i=0; i<this->Triangles.size(); i++) {
+    // Use first triangle in list as reference
+    int PosRef = this->Triangles.at(0)->PosNormalMatID;
 
-        // See if any other triangles has the same edge. If so, it is oriented in another way
-        TriangleType *t1 = this->Triangles[i];
-        std::array<std::array<VertexType *, 2>, 3> edges1 = {{{t1->Vertices[0], t1->Vertices[1]}, {t1->Vertices[1], t1->Vertices[2]}, {t1->Vertices[2], t1->Vertices[0]}}};
+    for (unsigned int i=1; i<this->Triangles.size(); i++) {
+        TriangleType *t=this->Triangles[i];
+        if (t->PosNormalMatID!=PosRef) {
+            std::array<double, 3> cm = t->GiveCenterOfMass();
+            VertexType *v = t->Vertices[0];
+            t->Vertices[0] = t->Vertices[1];
+            t->Vertices[1] = v;
 
-        t1->UpdateNormal();
-        std::array<double,3> n=t1->GiveNormal();
-        LOG("n[%u] = [%f, %f, %f]\n", t1->ID, n[0], n[1], n[2]);
-
-        for (unsigned int j=i; j<this->Triangles.size(); j++) {
-            bool EdgeFound = false;
-            if (i!=j) {
-                TriangleType *t2 = this->Triangles[j];
-                std::array<std::array<VertexType *, 2>, 3> edges2 = {{{t2->Vertices[0], t2->Vertices[1]}, {t2->Vertices[1], t2->Vertices[2]}, {t2->Vertices[2], t2->Vertices[0]}}};
-                for (int k=0; k<3; k++) {
-                    for (int l=0; l<3; l++) {
-                        if ( (edges1[k][0]==edges2[l][0]) & (edges1[k][1]==edges2[l][1])) {
-                            // Orientation is not consistent with other triangle defined earlier.
-
-                            // Reorient
-                            VertexType *v = t2->Vertices[1];
-                            t2->Vertices[1] = t2->Vertices[0];
-                            t2->Vertices[0] = v;
-
-                            // Update phases on either positive and negative side
-                            int temp = t2->PosNormalMatID;
-                            t2->PosNormalMatID = t2->NegNormalMatID;
-                            t2->NegNormalMatID = temp;
-                            EdgeFound = true;
-                            break;
-                        }
-                    }
-                    if (EdgeFound) break;
-                }
-            }
-            if (EdgeFound) break;
+            t->PosNormalMatID = t->NegNormalMatID;
+            t->NegNormalMatID = PosRef;
         }
-
     }
 }
 

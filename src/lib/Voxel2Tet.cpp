@@ -254,17 +254,17 @@ void Voxel2Tet::FindSurfaces()
 
     this->UpdateSurfaces();
 
-    int outputindex = 0;
-    this->Mesh->ExportSurface(strfmt("/tmp/Voxeltest%u.vtp", outputindex++) , FT_VTK );
+    int outputindex = 1;
+    //this->Mesh->ExportSurface(strfmt("/tmp/Voxeltest%u.vtp", outputindex++) , FT_VTK );
+
     // Reorient surfaces
-    for (int i=0; i<10; i++) {
-        for (Surface *s: this->Surfaces) {
-            STATUS("Reorient surface\n", 0);
-            s->ReorientTriangles();
-        }
+    for (Surface *s: this->Surfaces) {
+        STATUS("Reorient surface with phases %i, %i\n", s->Phases[0], s->Phases[1]);
+        s->ReorientTriangles();
         this->Mesh->ExportSurface(strfmt("/tmp/Voxeltest%u.vtp", outputindex++) , FT_VTK );
     }
 
+    throw(0);
     STATUS("Find volumes\n", 0);
     for (Surface *s: this->Surfaces) {
         for (int p: s->Phases) {
@@ -734,7 +734,7 @@ PhaseEdge* Voxel2Tet :: AddPhaseEdge(std::vector<VertexType*> EdgeSegment, std::
     
 }
 
-void Voxel2Tet :: AddSurfaceSquare(std::vector<int> VoxelIDs, std::vector<int> phases, int normalphase)
+void Voxel2Tet :: AddSurfaceSquare(std::vector<int> VertexIDs, std::vector<int> phases, int normalphase)
 {
     // Check is surface exists
     Surface *ThisSurface = NULL;
@@ -757,23 +757,45 @@ void Voxel2Tet :: AddSurfaceSquare(std::vector<int> VoxelIDs, std::vector<int> p
     
     // Create square (i.e. two triangles)
     TriangleType *triangle0, *triangle1;
-    triangle0 = Mesh->AddTriangle({VoxelIDs.at(0), VoxelIDs.at(1), VoxelIDs.at(2)});
-    triangle1 = Mesh->AddTriangle({VoxelIDs.at(2), VoxelIDs.at(1), VoxelIDs.at(3)});
+    triangle0 = Mesh->AddTriangle({VertexIDs.at(0), VertexIDs.at(1), VertexIDs.at(2)});
+    triangle1 = Mesh->AddTriangle({VertexIDs.at(2), VertexIDs.at(1), VertexIDs.at(3)});
 
     triangle0->InterfaceID = triangle1->InterfaceID = SurfaceID;
-    triangle0->PosNormalMatID = triangle1->PosNormalMatID = normalphase;
+/*    triangle0->PosNormalMatID = triangle1->PosNormalMatID = normalphase;
 
     if (phases[0] == normalphase) {
         triangle0->NegNormalMatID = triangle1->NegNormalMatID = phases[1];
     } else {
         triangle0->NegNormalMatID = triangle1->NegNormalMatID = phases[0];
+    }*/
+
+    // Check phases - debug code
+    std::array<double, 3> cm = triangle1->GiveCenterOfMass();
+    std::array<double, 3> normal = triangle0->GiveNormal();
+    double spacing[3];
+    this->Imp->GiveSpacing(spacing);
+    //std::array<double, 3> normal2 = triangle1->GiveNormal();
+    for (int i=0; i<3; i++) {
+        normal[i]=normal[i]*spacing[i]*.5;
     }
-    
+    int pPhase;
+    pPhase = this->Imp->GiveMaterialIDByCoordinate(cm[0]+normal[0], cm[1]+normal[1], cm[2]+normal[2]);
+    //nPhase = this->Imp->GiveMaterialIDByCoordinate(cm[0]-normal[0], cm[1]-normal[1], cm[2]-normal[2]);
+    triangle0->PosNormalMatID = triangle1->PosNormalMatID = pPhase;
+
+    if (phases[0] == pPhase) {
+        triangle0->NegNormalMatID = triangle1->NegNormalMatID = phases[1];
+    } else {
+        triangle0->NegNormalMatID = triangle1->NegNormalMatID = phases[0];
+    }
+
+    // End of debug code
+
     // Update surface
     ThisSurface->AddTriangle(triangle0);
     ThisSurface->AddTriangle(triangle1);
     for (int i=0; i<4; i++) {
-        ThisSurface->AddVertex(this->Mesh->Vertices.at(VoxelIDs.at(i)));
+        ThisSurface->AddVertex(this->Mesh->Vertices.at(VertexIDs.at(i)));
     }
     
 }

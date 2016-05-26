@@ -83,6 +83,8 @@ public:
 
     /**
      * @brief Reorient triangles such that the normal is consistent on the whole surface.
+     * This is done by comparing the phases on the negative and positive normal sides on
+     * the triangle rather than comparing the order of the nodes.
      */
     void ReorientTriangles();
 

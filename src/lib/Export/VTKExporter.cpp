@@ -69,6 +69,7 @@ vtkIntArray *VTKExporter :: SetupInterfaceIDs()
     return InterfaceIDs;
 }
 
+
 vtkIntArray *VTKExporter :: SetupTriangleIDs()
 {
     vtkIntArray *TriangleIDs = vtkIntArray::New();
@@ -79,6 +80,18 @@ vtkIntArray *VTKExporter :: SetupTriangleIDs()
         TriangleIDs->InsertNextTuple1(t->ID);
     }
     return TriangleIDs;
+}
+
+vtkIntArray *VTKExporter :: SetupTrianglePosNormal()
+{
+    vtkIntArray *TrianglePosNormal = vtkIntArray::New();
+    TrianglePosNormal->SetNumberOfComponents(1);
+    TrianglePosNormal->SetName("PosNormalPhaseID");
+    for (unsigned int i=0; i<this->Triangles->size(); i++) {
+        TriangleType *t=this->Triangles->at(i);
+        TrianglePosNormal->InsertNextTuple1(t->PosNormalMatID);
+    }
+    return TrianglePosNormal;
 }
 
 vtkIntArray *VTKExporter :: SetupTetIDs()
@@ -146,15 +159,27 @@ void VTKExporter :: WriteSurfaceData(std::string Filename)
     // Triangles
     PolyData->SetPolys( TriangleArrays );
 
+    // Interface ID
     vtkSmartPointer<vtkIntArray> InterfaceID;
     InterfaceID.TakeReference(this->SetupInterfaceIDs());
     PolyData->GetCellData()->AddArray(InterfaceID);
 
+    PolyData->Modified();
+
+    // Triangle ID
     vtkSmartPointer<vtkIntArray> TriangleID;
     TriangleID.TakeReference(this->SetupTriangleIDs());
     PolyData->GetCellData()->AddArray(TriangleID);
 
     PolyData->Modified();
+
+    // Positive normal phase
+    vtkSmartPointer<vtkIntArray> TrianglePosNormalPhase;
+    TrianglePosNormalPhase.TakeReference(this->SetupTrianglePosNormal());
+    PolyData->GetCellData()->AddArray(TrianglePosNormalPhase);
+
+    PolyData->Modified();
+
 
     vtkSmartPointer<vtkXMLPolyDataWriter> XMLWriter = vtkSmartPointer<vtkXMLPolyDataWriter>::New();
     XMLWriter->SetFileName(Filename.c_str());

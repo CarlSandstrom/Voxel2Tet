@@ -32,6 +32,7 @@ private:
     vtkCellArray *SetupTetrahedrons();
     vtkIntArray *SetupInterfaceIDs();
     vtkIntArray *SetupTriangleIDs();
+    vtkIntArray *SetupTrianglePosNormal();
     vtkIntArray *SetupTetIDs();
     vtkIntArray *SetupVertexIDs();
     vtkIntArray *SetupVertexTags();
