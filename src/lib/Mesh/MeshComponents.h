@@ -93,6 +93,8 @@ public:
     // Compute area of triangle
     double GiveArea();
 
+    std::array<double, 3> GiveCenterOfMass();
+
     double GiveLargestAngle(int *index=NULL);
     double GiveSmallestAngle(int *index=NULL);
 

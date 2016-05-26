@@ -252,6 +252,19 @@ void Voxel2Tet::FindSurfaces()
         }
     }
 
+    this->UpdateSurfaces();
+
+    int outputindex = 0;
+    this->Mesh->ExportSurface(strfmt("/tmp/Voxeltest%u.vtp", outputindex++) , FT_VTK );
+    // Reorient surfaces
+    for (int i=0; i<10; i++) {
+        for (Surface *s: this->Surfaces) {
+            STATUS("Reorient surface\n", 0);
+            s->ReorientTriangles();
+        }
+        this->Mesh->ExportSurface(strfmt("/tmp/Voxeltest%u.vtp", outputindex++) , FT_VTK );
+    }
+
     STATUS("Find volumes\n", 0);
     for (Surface *s: this->Surfaces) {
         for (int p: s->Phases) {
@@ -273,6 +286,11 @@ void Voxel2Tet::FindSurfaces()
             }
         }
     }
+
+    for (Volume *v: this->Volumes) {
+        v->ComputeVolume();
+    }
+
 }
 
 
@@ -740,15 +758,20 @@ void Voxel2Tet :: AddSurfaceSquare(std::vector<int> VoxelIDs, std::vector<int> p
     // Create square (i.e. two triangles)
     TriangleType *triangle0, *triangle1;
     triangle0 = Mesh->AddTriangle({VoxelIDs.at(0), VoxelIDs.at(1), VoxelIDs.at(2)});
-    triangle1 = Mesh->AddTriangle({VoxelIDs.at(1), VoxelIDs.at(2), VoxelIDs.at(3)});
-    triangle0->InterfaceID = SurfaceID;
-    triangle1->InterfaceID = SurfaceID;
-    triangle0->PosNormalMatID = normalphase;
-    triangle1->PosNormalMatID = normalphase;
+    triangle1 = Mesh->AddTriangle({VoxelIDs.at(2), VoxelIDs.at(1), VoxelIDs.at(3)});
+
+    triangle0->InterfaceID = triangle1->InterfaceID = SurfaceID;
+    triangle0->PosNormalMatID = triangle1->PosNormalMatID = normalphase;
+
+    if (phases[0] == normalphase) {
+        triangle0->NegNormalMatID = triangle1->NegNormalMatID = phases[1];
+    } else {
+        triangle0->NegNormalMatID = triangle1->NegNormalMatID = phases[0];
+    }
     
     // Update surface
     ThisSurface->AddTriangle(triangle0);
-    ThisSurface->AddTriangle(triangle0);
+    ThisSurface->AddTriangle(triangle1);
     for (int i=0; i<4; i++) {
         ThisSurface->AddVertex(this->Mesh->Vertices.at(VoxelIDs.at(i)));
     }
@@ -767,7 +790,6 @@ void Voxel2Tet::Process()
     int i=0;
     
     this->FindSurfaces();
-    this->UpdateSurfaces();
     
     for (Surface *s: this->Surfaces) {
         double Area = s->ComputeArea();

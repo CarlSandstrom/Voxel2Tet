@@ -80,6 +80,18 @@ public:
      * @return Area of Surface object
      */
     double ComputeArea();
+
+    /**
+     * @brief Reorient triangles such that the normal is consistent on the whole surface.
+     */
+    void ReorientTriangles();
+
+    /**
+     * @brief Computes the surface integral of x.n to be used when computing the volume
+     * @return Integral of x.n
+     */
+    double ComputeIntegral_nx();
+
 };
 
 }

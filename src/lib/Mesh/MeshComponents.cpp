@@ -168,6 +168,17 @@ double TriangleType :: GiveArea()
     return Area;
 }
 
+std::array<double, 3> TriangleType::GiveCenterOfMass()
+{
+    std::array<double, 3> cm = {0,0,0};
+    for (int i=0; i<3; i++) {
+        for (int j=0; j<3; j++) {
+            cm[i]=cm[i]+this->Vertices[j]->get_c(i)/3;
+        }
+    }
+    return cm;
+}
+
 double TriangleType :: GiveLargestAngle(int *index)
 {
     std::array<std::array<double, 3>, 3> e;

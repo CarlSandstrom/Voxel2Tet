@@ -72,4 +72,62 @@ double Surface::ComputeArea()
     return Area;
 }
 
+void Surface::ReorientTriangles()
+{
+
+    for (unsigned int i=0; i<this->Triangles.size(); i++) {
+
+        // See if any other triangles has the same edge. If so, it is oriented in another way
+        TriangleType *t1 = this->Triangles[i];
+        std::array<std::array<VertexType *, 2>, 3> edges1 = {{{t1->Vertices[0], t1->Vertices[1]}, {t1->Vertices[1], t1->Vertices[2]}, {t1->Vertices[2], t1->Vertices[0]}}};
+
+        t1->UpdateNormal();
+        std::array<double,3> n=t1->GiveNormal();
+        LOG("n[%u] = [%f, %f, %f]\n", t1->ID, n[0], n[1], n[2]);
+
+        for (unsigned int j=i; j<this->Triangles.size(); j++) {
+            bool EdgeFound = false;
+            if (i!=j) {
+                TriangleType *t2 = this->Triangles[j];
+                std::array<std::array<VertexType *, 2>, 3> edges2 = {{{t2->Vertices[0], t2->Vertices[1]}, {t2->Vertices[1], t2->Vertices[2]}, {t2->Vertices[2], t2->Vertices[0]}}};
+                for (int k=0; k<3; k++) {
+                    for (int l=0; l<3; l++) {
+                        if ( (edges1[k][0]==edges2[l][0]) & (edges1[k][1]==edges2[l][1])) {
+                            // Orientation is not consistent with other triangle defined earlier.
+
+                            // Reorient
+                            VertexType *v = t2->Vertices[1];
+                            t2->Vertices[1] = t2->Vertices[0];
+                            t2->Vertices[0] = v;
+
+                            // Update phases on either positive and negative side
+                            int temp = t2->PosNormalMatID;
+                            t2->PosNormalMatID = t2->NegNormalMatID;
+                            t2->NegNormalMatID = temp;
+                            EdgeFound = true;
+                            break;
+                        }
+                    }
+                    if (EdgeFound) break;
+                }
+            }
+            if (EdgeFound) break;
+        }
+
+    }
+}
+
+double Surface::ComputeIntegral_nx()
+{
+    double result = 0;
+    for (TriangleType *t: this->Triangles) {
+        double da = t->GiveArea();
+        std::array<double, 3> cm = t->GiveCenterOfMass();
+        std::array<double, 3> n = t->GiveNormal();
+        result = result + da*(cm[0]*n[0] + cm[1]*n[1] + cm[2]*n[2]);
+    }
+
+    return result;
+}
+
 }
