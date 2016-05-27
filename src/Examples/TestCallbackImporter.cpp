@@ -43,6 +43,18 @@ int GiveMaterialIDByCoordinateTwoSpheres(double x, double y, double z)
 
 }
 
+int GiveMaterialIDByCoordinateBox(double x, double y, double z)
+{
+
+    if ((x>0.0) & (x<1.0) & (y>0.0) & (y<1.0) & (z>0.0) & (z<1.0) ) {
+        return 1;
+    } else {
+        return 0;
+    }
+
+}
+
+
 int main( int argc, char *argv[] )
 {
 
@@ -51,11 +63,11 @@ int main( int argc, char *argv[] )
 
     voxel2tet::Voxel2Tet v2t(Options);
 
-    double spacing=0.05;
+    double spacing=1.0;
     double length=1.0;
     int dimensions= std::ceil(length/spacing);
 
-    v2t.LoadCallback(&GiveMaterialIDByCoordinateSphere, {0,0,0}, {spacing, spacing, spacing}, {dimensions, dimensions, dimensions});
+    v2t.LoadCallback(&GiveMaterialIDByCoordinateBox, {0,0,0}, {spacing, spacing, spacing}, {dimensions, dimensions, dimensions});
     v2t.Process();
     v2t.Tetrahedralize();
 

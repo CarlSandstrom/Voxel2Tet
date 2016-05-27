@@ -98,7 +98,7 @@ double Surface::ComputeIntegral_nx()
     for (TriangleType *t: this->Triangles) {
         double da = t->GiveArea();
         std::array<double, 3> cm = t->GiveCenterOfMass();
-        std::array<double, 3> n = t->GiveNormal();
+        std::array<double, 3> n = t->GiveUnitNormal();
         result = result + da*(cm[0]*n[0] + cm[1]*n[1] + cm[2]*n[2]);
     }
 
