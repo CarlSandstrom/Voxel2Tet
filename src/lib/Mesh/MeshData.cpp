@@ -300,5 +300,25 @@ void MeshData :: RemoveTetragedron(TetType *t)
 
 }
 
+bool MeshData::CheckSameOrientation(TriangleType *t1, TriangleType *t2)
+{
+    for (int i=0; i<3; i++) {
+        int ThisIndext1 = i;
+        int NextIndext1 = i==2 ? 0 : i+1;
+        int PrevIndext1 = i==0 ? 2 : i-1;
+        for (int j=0; j<3; j++) {
+            int ThisIndext2 = j;
+            int NextIndext2 = j==2 ? 0 : j+1;
+            int PrevIndext2 = j==0 ? 2 : j-1;
+            if (t1->Vertices[ThisIndext1]==t2->Vertices[ThisIndext2]) {
+                if ((t1->Vertices[NextIndext1]==t2->Vertices[PrevIndext2]) | (t1->Vertices[PrevIndext1]==t2->Vertices[NextIndext2])) {
+                    return true;
+                } else {
+                    return false;
+                }
+            }
+        }
+    }
+}
 
 }

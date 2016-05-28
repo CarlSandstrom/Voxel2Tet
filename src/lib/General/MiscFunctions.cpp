@@ -66,6 +66,10 @@ std::array<double,3> ComputeNormalizedVector(VertexType* v1, VertexType* v2)
     return Normal;
 }
 
+double ComputeAngleBetweenVectors(std::array<double, 3> v1, std::array<double, 3> v2)
+{
+    return std::acos( v1[0]*v2[0] + v1[1]*v2[1] + v1[2]*v2[2]);
+}
 
 
 template std::vector<int> FindSubsetIndices(std::vector<VertexType*>, std::vector<VertexType*>);

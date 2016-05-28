@@ -38,7 +38,6 @@ void dolog(const char *functionname, const char *fmt, ...);
 void dooutputstat(const char *fmt, ...);
 void dooutputlogmesh(MeshData &Mesh, char *filename, ...);
 
-//template<typename ... Args> std::string strfmt( const std::string& format, Args ... args );
 template<typename ... Args>
 std::string strfmt( const std::string& format, Args ... args )
 {
@@ -49,6 +48,8 @@ std::string strfmt( const std::string& format, Args ... args )
 }
 
 std::array<double,3> ComputeNormalizedVector(VertexType* v1, VertexType* v2);
+
+double ComputeAngleBetweenVectors(std::array<double, 3> v1, std::array<double, 3> v2);
 
 template <typename T> std::vector<int> FindSubsetIndices(std::vector<T> Container, std::vector<T> Subset);
 

@@ -19,7 +19,7 @@ namespace voxel2tet
 {
 
 enum FC_MESH {FC_OK, FC_FIXEDVERTEX, FC_NORMAL, FC_CHORD, FC_SMALLAREA, FC_AREACHANGETOOLARGE, FC_TOOMANYTRIANGLES,
-              FC_WORSEMINANGLE, FC_VERTICESONDIFFERENTSHAPES, FC_TRIANGLESINTERSECT, FC_DUPLICATETRIANGLE};
+              FC_WORSEMINANGLE, FC_VERTICESONDIFFERENTSHAPES, FC_TRIANGLESINTERSECT, FC_DUPLICATETRIANGLE, FC_INVALIDEDGE};
 
 class MeshManipulations: public MeshData
 {
@@ -66,6 +66,11 @@ public:
      * @brief TOL_FLIP_MAXNORMALCHANGE Maximum change in angle for formal in flipping (rad)
      */
     double TOL_FLIP_MAXNORMALCHANGE;
+
+    /**
+     * @brief TOL_FLIP_MAXNORMALDIFFERENCE Maximum difference in normal angle of original triangles for allowing flipping (rad)
+     */
+    double TOL_FLIP_MAXNORMALDIFFERENCE;
 
     MeshManipulations(BoundingBoxType BoundingBox);
 

@@ -827,8 +827,6 @@ void Voxel2Tet::Process()
         STATUS("Volume for phase %u:%f\n", v->Phase, v->ComputeVolume());
     }
 
-    //this->SmoothEdgesIndividually(spring_c, spring_alpha, 0, false);
-    
     this->Mesh->ExportSurface(strfmt("/tmp/Voxeltest%u.vtp", outputindex++), FT_VTK);
     this->SmoothSurfaces(spring_c, spring_alpha, 0, false);
     clock_t t2 = clock();
@@ -837,7 +835,7 @@ void Voxel2Tet::Process()
         STATUS("Volume for phase %u:%f\n", v->Phase, v->ComputeVolume());
     }
 
-    STATUS("Edges smoothing in %fs\n", float(t2-t1)/(double)CLOCKS_PER_SEC);
+    STATUS("Smoothing in %fs\n", float(t2-t1)/(double)CLOCKS_PER_SEC);
     
     this->Mesh->ExportSurface(strfmt("/tmp/Voxeltest%u.vtp", outputindex++), FT_VTK);
     this->Mesh->FlipAll();
@@ -850,7 +848,7 @@ void Voxel2Tet::Process()
     this->Mesh->CoarsenMeshImproved();
     
     this->Mesh->ExportSurface(strfmt("/tmp/Voxeltest%u.vtp", outputindex++), FT_VTK);
-    this->Mesh->FlipAll();
+    //this->Mesh->FlipAll();
     
     i=0;
     this->UpdateSurfaces();

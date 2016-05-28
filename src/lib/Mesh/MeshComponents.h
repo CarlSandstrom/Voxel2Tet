@@ -80,6 +80,8 @@ private:
     // Normal of element
     std::array<double, 3> Normal;
 public:
+    TriangleType () {}
+    TriangleType (std::array<VertexType *, 3> Vertices);
     int ID;
     int InterfaceID;
     int PosNormalMatID;
@@ -93,6 +95,9 @@ public:
     // Compute area of triangle
     double GiveArea();
 
+    // Compute signed area of triangle
+    double GiveSignedArea();
+
     std::array<double, 3> GiveCenterOfMass();
 
     double GiveLargestAngle(int *index=NULL);
@@ -100,7 +105,11 @@ public:
 
     std::array<double, 3> GiveNormal() {return Normal;}
     std::array<double, 3> GiveUnitNormal();
+
     void UpdateNormal();
+
+    // Reverse the order of the vertices to flip the normal
+    void FlipNormal();
 
 };
 

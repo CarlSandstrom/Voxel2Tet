@@ -126,6 +126,12 @@ std::array<double, 3> EdgeType :: GiveCenterPoint()
 
 // TriangleType
 
+TriangleType :: TriangleType (std::array<VertexType *, 3> Vertices)
+{
+    this->Vertices = Vertices;
+    this->UpdateNormal();
+}
+
 std::array<double, 3> TriangleType :: GiveEdgeVector(int node)
 {
     std::array<double, 3> edgevector;
@@ -148,7 +154,7 @@ std::array<double, 3> TriangleType :: GiveUnitNormal()
     return NormalizedNormal;
 }
 
-double TriangleType :: GiveArea()
+double TriangleType :: GiveArea() // TODO: Should call GiveSignedArea
 {
     double e1[3], e2[3], n[3];
 
@@ -165,6 +171,27 @@ double TriangleType :: GiveArea()
 
     // Compute area
     double Area = std::sqrt(n[0]*n[0]+n[1]*n[1]+n[2]*n[2]) / 2.0;
+    return Area;
+}
+
+double TriangleType :: GiveSignedArea()
+{
+    double e1[3], e2[3], n[3];
+
+    // Compute two vectors with origin in vertex 0 describing the triangle
+    for (int i=0; i<3; i++) {
+        e1[i]=this->Vertices[1]->get_c(i)-this->Vertices[0]->get_c(i);
+        e2[i]=this->Vertices[2]->get_c(i)-this->Vertices[0]->get_c(i);
+    }
+
+    // Compute cross product of the two vectors
+    n[0]=e1[1]*e2[2]-e1[2]*e2[1];
+    n[1]=-e1[0]*e2[2]+e2[0]*e1[2];
+    n[2]=e1[0]*e2[1]-e2[0]*e1[1];
+
+    // Compute area
+    double t = n[0]*n[0]+n[1]*n[1]+n[2]*n[2];
+    double Area = std::sqrt(t) / 2.0 * t/fabs(t);
     return Area;
 }
 
@@ -288,10 +315,20 @@ void TriangleType :: UpdateNormal()
     this->Normal[1] = -edge0[0]*edge1[2]+edge1[0]*edge0[2];
     this->Normal[2] = edge0[0]*edge1[1]-edge1[0]*edge0[1];
 
-    //double NormalLength = std::sqrt(this->Normal[0]*this->Normal[0] + this->Normal[1]*this->Normal[1] + this->Normal[2]*this->Normal[2]);
-
-    //for (int i=0; i<3; i++) this->Normal[i]=this->Normal[i]/NormalLength;
-
 }
+
+void TriangleType :: FlipNormal()
+{
+    VertexType *v = this->Vertices[0];
+    this->Vertices[0] = this->Vertices[1];
+    this->Vertices[1] = v;
+
+    int PosPhase = this->PosNormalMatID;
+    this->PosNormalMatID = this->NegNormalMatID;
+    this->NegNormalMatID = PosPhase;
+
+    this->UpdateNormal();
+}
+
 
 }

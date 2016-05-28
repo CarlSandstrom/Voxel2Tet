@@ -12,6 +12,9 @@
 namespace voxel2tet
 {
 
+/**
+ * @brief The MeshData class supplies information and methods for adding vertices and triangles.
+ */
 class MeshData
 {
 private:
@@ -64,6 +67,15 @@ public:
     TetType *AddTetrahedron(TetType *NewTet);
 
     void RemoveTetragedron(TetType *t);
+
+    /**
+     * @brief CheckSameOrientation tells if two neighbouring triangles are oriented in the same
+     * way by comparing the order of the vertices on the shared edge
+     * @param t1
+     * @param t2
+     * @return True if oriented in the same way, False otherwise
+     */
+    bool CheckSameOrientation(TriangleType *t1, TriangleType *t2);
 };
 
 }

@@ -74,25 +74,17 @@ double Surface::ComputeArea()
 
 void Surface::ReorientTriangles()
 {
-
-    // Use first triangle in list as reference
-    int PosRef = this->Triangles.at(0)->PosNormalMatID;
-
+    // Reorient all triangles using first triangle in list as reference
+    int PosRef = this->Triangles[0]->PosNormalMatID;
     for (unsigned int i=1; i<this->Triangles.size(); i++) {
         TriangleType *t=this->Triangles[i];
         if (t->PosNormalMatID!=PosRef) {
-            std::array<double, 3> cm = t->GiveCenterOfMass();
-            VertexType *v = t->Vertices[0];
-            t->Vertices[0] = t->Vertices[1];
-            t->Vertices[1] = v;
-
-            t->PosNormalMatID = t->NegNormalMatID;
-            t->NegNormalMatID = PosRef;
+            t->FlipNormal();
         }
     }
 }
 
-double Surface::ComputeIntegral_nx()
+double Surface::ComputeIntegral_nx() // I think this does not currently work.
 {
     double result = 0;
     for (TriangleType *t: this->Triangles) {

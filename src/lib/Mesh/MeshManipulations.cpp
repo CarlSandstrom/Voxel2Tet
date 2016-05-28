@@ -15,6 +15,7 @@ MeshManipulations::MeshManipulations(BoundingBoxType BoundingBox) : MeshData(Bou
 
     TOL_FLIP_SMALLESTAREA = 1e-8;
     TOL_FLIP_MAXNORMALCHANGE = 10*2*3.141593/360;
+    TOL_FLIP_MAXNORMALDIFFERENCE = 15*2*3.1415/360;
 }
 
 void MeshManipulations :: SortEdgesByLength()
@@ -111,9 +112,72 @@ FC_MESH MeshManipulations :: GetFlippedEdgeData(EdgeType *EdgeToFlip, EdgeType *
         return FC_TOOMANYTRIANGLES;
     }
 
-    for (int i=0; i<2; i++) std::sort(EdgeTriangles.at(i)->Vertices.begin(), EdgeTriangles.at(i)->Vertices.end());
+    // Ensure that both triangles are oriented in the same way
+    if (!this->CheckSameOrientation(EdgeTriangles[0], EdgeTriangles[1])) {
+        EdgeTriangles[0]->FlipNormal();
+    }
 
-    std::vector<VertexType *> NewEdgeVertices;
+    // Find shared edge and not shared verticec
+    std::array<VertexType *, 2> NewEdgeVertices;
+
+
+    printf("Flip\n");
+    for (int i=0; i<2; i++) {
+        std::array<double, 3> Normal = EdgeTriangles[i]->GiveNormal();
+        printf("t%u.normal=[%f, %f, %f]\n", i, Normal[0], Normal[1], Normal[2]);
+    }
+
+    bool finished = false;
+
+    for (int i=0; i<3; i++) {
+
+        for (int j=0; j<3; j++) {
+
+            if (EdgeTriangles[0]->Vertices[i] == EdgeTriangles[1]->Vertices[j]) {
+
+                bool t0forward = EdgeTriangles[0]->Vertices[(i+1)%3] == EdgeTriangles[1]->Vertices[(j+2)%3];
+
+                int increment = (t0forward) ? 1 : 2;
+                std::array<VertexType *, 2> t0edge = {EdgeTriangles[0]->Vertices[i], EdgeTriangles[0]->Vertices[(i+increment)%3]};
+
+                // Produce new edge
+                if (t0forward) {
+                    NewEdgeVertices[0] = EdgeTriangles[0]->Vertices[(i+2) % 3];
+                    NewEdgeVertices[1] = EdgeTriangles[1]->Vertices[(j+1) % 3];
+                } else {
+                    NewEdgeVertices[0] = EdgeTriangles[0]->Vertices[(i+1) % 3];
+                    NewEdgeVertices[1] = EdgeTriangles[1]->Vertices[(j+2) % 3];
+                }
+
+                /*finished = true;
+                break;*/
+
+                // Produce new triangles
+                TriangleType *new_t0, *new_t1;
+                new_t0 = new TriangleType({NewEdgeVertices[1], NewEdgeVertices[0], t0edge[0]});
+                new_t1 = new TriangleType({NewEdgeVertices[0], NewEdgeVertices[1], t0edge[1]});
+
+                new_t0->PosNormalMatID = new_t1->PosNormalMatID = EdgeTriangles[0]->PosNormalMatID;
+                new_t0->NegNormalMatID = new_t1->NegNormalMatID = EdgeTriangles[0]->NegNormalMatID;
+                new_t0->InterfaceID = new_t1->InterfaceID = EdgeTriangles[0]->InterfaceID;
+
+                NewTriangles->at(0) = new_t0;
+                NewTriangles->at(1) = new_t1;
+                for (int k=0; k<2; k++) {
+                    std::array<double, 3> Normal = NewTriangles->at(k)->GiveNormal();
+                    printf("t%u.normal=[%f, %f, %f]\n", k, Normal[0], Normal[1], Normal[2]);
+                }
+                NewEdge->Vertices[0] = NewEdgeVertices[0];
+                NewEdge->Vertices[1] = NewEdgeVertices[1];
+                return FC_OK;
+
+            }
+        }
+        if (finished) break;
+    }
+    return FC_INVALIDEDGE;
+    /*
+    for (int i=0; i<2; i++) std::sort(EdgeTriangles.at(i)->Vertices.begin(), EdgeTriangles.at(i)->Vertices.end());
 
     std::set_symmetric_difference(EdgeTriangles.at(0)->Vertices.begin(), EdgeTriangles.at(0)->Vertices.end(),
                                   EdgeTriangles.at(1)->Vertices.begin(), EdgeTriangles.at(1)->Vertices.end(), std::back_inserter(NewEdgeVertices));
@@ -121,23 +185,26 @@ FC_MESH MeshManipulations :: GetFlippedEdgeData(EdgeType *EdgeToFlip, EdgeType *
     if (NewEdgeVertices.size()==0) {
         STATUS("Edge triangles are same!\n", 0);
         throw 0;
-    }
+    }*/
 
     // Create triangles
     for (int i=0; i<2; i++) {
         TriangleType* t=new TriangleType;
         if (i==0) {
-            t->Vertices[0] = NewEdgeVertices[1];
-            t->Vertices[1] = NewEdgeVertices[0];
+            t->Vertices[0] = NewEdgeVertices[0];
+            t->Vertices[1] = NewEdgeVertices[1];
             t->Vertices[2] = EdgeToFlip->Vertices[i];
         } else {
             t->Vertices[0] = NewEdgeVertices[0];
             t->Vertices[1] = NewEdgeVertices[1];
             t->Vertices[2] = EdgeToFlip->Vertices[i];
         }
+        double a=t->GiveSignedArea();
         t->InterfaceID = EdgeTriangles.at(0)->InterfaceID;
-        t->NegNormalMatID = -1; // TODO: Keep track of materials
-        t->PosNormalMatID = -1;
+
+        t->NegNormalMatID = EdgeTriangles.at(0)->PosNormalMatID; // TODO: This is not neccessarily correct but is fixed by reorientation later.
+        t->PosNormalMatID = EdgeTriangles.at(0)->NegNormalMatID;
+
         t->UpdateNormal();
         NewTriangles->at(i) = t;
     }
@@ -159,6 +226,11 @@ FC_MESH MeshManipulations :: FlipEdge(EdgeType *Edge)
     if (EdgeTriangles.size()!=2) {
         LOG("Unable to flip edge. To many or only one triangle connected\n", 0);
         return FC_TOOMANYTRIANGLES;
+    }
+
+    double Angle = ComputeAngleBetweenVectors(EdgeTriangles[0]->GiveNormal(), EdgeTriangles[1]->GiveNormal());
+    if ( fabs(Angle) > TOL_FLIP_MAXNORMALDIFFERENCE) {
+        return FC_NORMAL;
     }
 
     std::array<TriangleType*, 2> NewTriangles;
@@ -276,8 +348,8 @@ FC_MESH MeshManipulations :: CheckFlipNormal(std::vector<TriangleType*> *OldTria
 
             // Compute angle between new and old normal
             double angle1 = std::acos( OldNormal[0]*NewNormal[0] + OldNormal[1]*NewNormal[1] + OldNormal[2]*NewNormal[2]);
-//            double angle2 = std::acos( -(OldNormal[0]*NewNormal[0] + OldNormal[1]*NewNormal[1] + OldNormal[2]*NewNormal[2]) );
-/*            if (std::min(angle1, angle2)>MaxAngle) {
+            //            double angle2 = std::acos( -(OldNormal[0]*NewNormal[0] + OldNormal[1]*NewNormal[1] + OldNormal[2]*NewNormal[2]) );
+            /*            if (std::min(angle1, angle2)>MaxAngle) {
                 MaxAngle = std::min(angle1, angle2);
             }*/
             MaxAngle = std::max(MaxAngle, angle1);
@@ -700,13 +772,13 @@ std::vector<VertexType *> MeshManipulations :: FindIndependentSet()
 
 int MeshManipulations::FlipAll()
 {
-    int i=0;
     int flipcount = 0;
+    int i = 0;
+    int outputindex = 0;
     for (EdgeType *e: this->Edges) {
         LOG ("Flip edge iteration %u: edge @%p (%u, %u)\n", i, e, e->Vertices[0]->ID, e->Vertices[1]->ID);
         if (this->FlipEdge(e)) flipcount++;
-        std::ostringstream FileName;
-        FileName << "/tmp/TestFlip_" << i << ".vtp";
+        this->ExportSurface(strfmt("/tmp/Flip%u.vtp", outputindex++), FT_VTK);
         i++;
     }
     return flipcount;
@@ -766,7 +838,7 @@ bool MeshManipulations :: CoarsenMeshImproved()
                             CoarseningOccurs = true;
                             CoarseOk = true;
 #if TEST_MESH_FOR_EACH_COARSENING_ITERATION
-        Generator.TestMesh();
+                            Generator.TestMesh();
 #endif
                             break;
                         }
@@ -783,17 +855,17 @@ bool MeshManipulations :: CoarsenMeshImproved()
 #endif
 
 #if SANITYCHECK == 1
-            for (TriangleType *t1: this->Triangles) {
-                for (TriangleType *t2: this->Triangles) {
-                    if (t1!=t2) {
-                        bool ispermutation = std::is_permutation(t1->Vertices.begin(), t1->Vertices.end(), t2->Vertices.begin());
-                        if (ispermutation) {
-                            STATUS ("\nDuplicate triangles at iteration %u, failcount %u\n", iter, failcount);
-                            throw 0;
-                        }
+        for (TriangleType *t1: this->Triangles) {
+            for (TriangleType *t2: this->Triangles) {
+                if (t1!=t2) {
+                    bool ispermutation = std::is_permutation(t1->Vertices.begin(), t1->Vertices.end(), t2->Vertices.begin());
+                    if (ispermutation) {
+                        STATUS ("\nDuplicate triangles at iteration %u, failcount %u\n", iter, failcount);
+                        throw 0;
                     }
                 }
             }
+        }
 #endif
     }
     STATUS("\n",0);
@@ -813,14 +885,14 @@ bool MeshManipulations :: CoarsenMesh()
 
         LOG ("Start iteration %u ===================== \n", iter);
 
-//        int i=0;
-//        for (EdgeType* e: this->Edges) {
-//            if ( (e->Vertices.at(0)->ID==8) & (e->Vertices.at(1)->ID==1)) {
-//                LOG("Edge found at index %u! ***********\n ", i);
-//                break;
-//            }
-//            i++;
-//        }
+        //        int i=0;
+        //        for (EdgeType* e: this->Edges) {
+        //            if ( (e->Vertices.at(0)->ID==8) & (e->Vertices.at(1)->ID==1)) {
+        //                LOG("Edge found at index %u! ***********\n ", i);
+        //                break;
+        //            }
+        //            i++;
+        //        }
 
         for (EdgeType* e: this->Edges) {
 
