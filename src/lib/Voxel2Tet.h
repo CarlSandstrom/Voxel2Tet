@@ -63,6 +63,15 @@ public:
     ~Voxel2Tet();
 
     MeshManipulations *Mesh;
+
+    /**
+     * @brief GetListOfVolumes return a std::vector of volumes for each phase and a vector for the phase
+     * @param VolumeList [Out] List of volumes
+     * @param PhaseList [Out] List of phases
+     * @return Total volume
+     */
+    double GetListOfVolumes(std::vector<double> &VolumeList, std::vector<int> &PhaseList);
+
     void ExportSurface(std::string FileName, Exporter_FileTypes FileType);
 
     void Tetrahedralize();

@@ -27,9 +27,6 @@ std::vector<TriangleType*> Volume::GiveTriangles()
 
 double Volume::ComputeVolume()
 {
-    // Reorient triangles such that the normal is consisten over the surface
-    std::vector<TriangleType*> VolTriangles = this->GiveTriangles();
-
     double V = 0.0;
 
     // Use method described in http://n-e-r-v-o-u-s.com/blog/?p=4415

@@ -120,13 +120,6 @@ FC_MESH MeshManipulations :: GetFlippedEdgeData(EdgeType *EdgeToFlip, EdgeType *
     // Find shared edge and not shared verticec
     std::array<VertexType *, 2> NewEdgeVertices;
 
-
-    printf("Flip\n");
-    for (int i=0; i<2; i++) {
-        std::array<double, 3> Normal = EdgeTriangles[i]->GiveNormal();
-        printf("t%u.normal=[%f, %f, %f]\n", i, Normal[0], Normal[1], Normal[2]);
-    }
-
     bool finished = false;
 
     for (int i=0; i<3; i++) {
@@ -149,8 +142,8 @@ FC_MESH MeshManipulations :: GetFlippedEdgeData(EdgeType *EdgeToFlip, EdgeType *
                     NewEdgeVertices[1] = EdgeTriangles[1]->Vertices[(j+2) % 3];
                 }
 
-                /*finished = true;
-                break;*/
+//                finished = true;
+//                break;
 
                 // Produce new triangles
                 TriangleType *new_t0, *new_t1;
@@ -163,10 +156,7 @@ FC_MESH MeshManipulations :: GetFlippedEdgeData(EdgeType *EdgeToFlip, EdgeType *
 
                 NewTriangles->at(0) = new_t0;
                 NewTriangles->at(1) = new_t1;
-                for (int k=0; k<2; k++) {
-                    std::array<double, 3> Normal = NewTriangles->at(k)->GiveNormal();
-                    printf("t%u.normal=[%f, %f, %f]\n", k, Normal[0], Normal[1], Normal[2]);
-                }
+
                 NewEdge->Vertices[0] = NewEdgeVertices[0];
                 NewEdge->Vertices[1] = NewEdgeVertices[1];
                 return FC_OK;
@@ -175,47 +165,8 @@ FC_MESH MeshManipulations :: GetFlippedEdgeData(EdgeType *EdgeToFlip, EdgeType *
         }
         if (finished) break;
     }
+
     return FC_INVALIDEDGE;
-    /*
-    for (int i=0; i<2; i++) std::sort(EdgeTriangles.at(i)->Vertices.begin(), EdgeTriangles.at(i)->Vertices.end());
-
-    std::set_symmetric_difference(EdgeTriangles.at(0)->Vertices.begin(), EdgeTriangles.at(0)->Vertices.end(),
-                                  EdgeTriangles.at(1)->Vertices.begin(), EdgeTriangles.at(1)->Vertices.end(), std::back_inserter(NewEdgeVertices));
-
-    if (NewEdgeVertices.size()==0) {
-        STATUS("Edge triangles are same!\n", 0);
-        throw 0;
-    }*/
-
-    // Create triangles
-    for (int i=0; i<2; i++) {
-        TriangleType* t=new TriangleType;
-        if (i==0) {
-            t->Vertices[0] = NewEdgeVertices[0];
-            t->Vertices[1] = NewEdgeVertices[1];
-            t->Vertices[2] = EdgeToFlip->Vertices[i];
-        } else {
-            t->Vertices[0] = NewEdgeVertices[0];
-            t->Vertices[1] = NewEdgeVertices[1];
-            t->Vertices[2] = EdgeToFlip->Vertices[i];
-        }
-        double a=t->GiveSignedArea();
-        t->InterfaceID = EdgeTriangles.at(0)->InterfaceID;
-
-        t->NegNormalMatID = EdgeTriangles.at(0)->PosNormalMatID; // TODO: This is not neccessarily correct but is fixed by reorientation later.
-        t->PosNormalMatID = EdgeTriangles.at(0)->NegNormalMatID;
-
-        t->UpdateNormal();
-        NewTriangles->at(i) = t;
-    }
-
-
-    // Create edge
-    NewEdge->Vertices[0] = NewEdgeVertices[0];
-    NewEdge->Vertices[1] = NewEdgeVertices[1];
-
-    return FC_OK;
-
 }
 
 FC_MESH MeshManipulations :: FlipEdge(EdgeType *Edge)
@@ -521,13 +472,13 @@ FC_MESH MeshManipulations :: CollapseEdge(EdgeType *EdgeToCollapse, int RemoveVe
         t->UpdateNormal();
         TriangleType* NewTriangle = new TriangleType;
 
-        // TODO: Keep track of materials
+        // Copy data
         NewTriangle->InterfaceID = t->InterfaceID;
         NewTriangle->ID = -t->ID; // Minus to distinguish from existing triangles
+        NewTriangle->Vertices = t->Vertices;
+        NewTriangle->PosNormalMatID = t->PosNormalMatID;
+        NewTriangle->NegNormalMatID = t->NegNormalMatID;
 
-        for (int i=0; i<3; i++) {
-            NewTriangle->Vertices[i] = t->Vertices[i];
-        }
         NewTriangle->UpdateNormal();
 
         for (int i=0; i<3; i++) {
@@ -778,7 +729,7 @@ int MeshManipulations::FlipAll()
     for (EdgeType *e: this->Edges) {
         LOG ("Flip edge iteration %u: edge @%p (%u, %u)\n", i, e, e->Vertices[0]->ID, e->Vertices[1]->ID);
         if (this->FlipEdge(e)) flipcount++;
-        this->ExportSurface(strfmt("/tmp/Flip%u.vtp", outputindex++), FT_VTK);
+        //this->ExportSurface(strfmt("/tmp/Flip%u.vtp", outputindex++), FT_VTK);
         i++;
     }
     return flipcount;

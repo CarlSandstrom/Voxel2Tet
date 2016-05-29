@@ -74,7 +74,7 @@ void Voxel2Tet :: FinalizeLoad()
     if (this->Opt->has_key("spring_c")) {
         spring_c = Opt->GiveDoubleValue("spring_c");
     } else {
-        spring_c = Compute_c(cellspace[0]*1., spring_alpha);
+        spring_c = Compute_c(cellspace[0]*.9, spring_alpha);
     }
     
     if (this->Opt->has_key("edge_spring_alpha")) {
@@ -86,7 +86,7 @@ void Voxel2Tet :: FinalizeLoad()
     if (this->Opt->has_key("edge_spring_c")) {
         edgespring_c = Opt->GiveDoubleValue("edge_spring_c");
     } else {
-        edgespring_c = Compute_c(cellspace[0]*1., edgespring_alpha);
+        edgespring_c = Compute_c(cellspace[0]*.9, edgespring_alpha);
     }
     
     STATUS("Using spring_alpha=%f, spring_c=%f\n", spring_alpha, spring_c);
@@ -256,15 +256,6 @@ void Voxel2Tet::FindSurfaces()
 
     this->UpdateSurfaces();
 
-    int outputindex = 1;
-    this->Mesh->ExportSurface(strfmt("/tmp/Surfaces%u.vtp", outputindex++) , FT_VTK );
-
-    // Reorient surfaces
-    for (Surface *s: this->Surfaces) {
-        STATUS("Reorient surface with phases %i, %i\n", s->Phases[0], s->Phases[1]);
-        s->ReorientTriangles();
-        this->Mesh->ExportSurface(strfmt("/tmp/Surfaces%u.vtp", outputindex++) , FT_VTK );
-    }
 
     STATUS("Find volumes\n", 0);
     for (Surface *s: this->Surfaces) {
@@ -757,7 +748,7 @@ void Voxel2Tet :: AddSurfaceSquare(std::vector<int> VertexIDs, std::vector<int> 
     triangle1 = Mesh->AddTriangle({VertexIDs.at(2), VertexIDs.at(1), VertexIDs.at(3)});
 
     triangle0->InterfaceID = triangle1->InterfaceID = SurfaceID;
-/*    triangle0->PosNormalMatID = triangle1->PosNormalMatID = normalphase;
+    /*    triangle0->PosNormalMatID = triangle1->PosNormalMatID = normalphase;
 
     if (phases[0] == normalphase) {
         triangle0->NegNormalMatID = triangle1->NegNormalMatID = phases[1];
@@ -796,6 +787,23 @@ void Voxel2Tet :: AddSurfaceSquare(std::vector<int> VertexIDs, std::vector<int> 
     
 }
 
+double Voxel2Tet::GetListOfVolumes(std::vector<double> &VolumeList, std::vector<int> &PhaseList)
+{
+
+    VolumeList.clear();
+    PhaseList.clear();
+
+    double TotalVolume = 0.0;
+    for (size_t i=0; i<Volumes.size(); i++) {
+        double v = this->Volumes.at(i)->ComputeVolume();
+        VolumeList.push_back(v);
+        PhaseList.push_back(this->Volumes.at(i)->Phase);
+        TotalVolume =+ v;
+    }
+    return TotalVolume;
+
+}
+
 void Voxel2Tet::Process()
 {
     STATUS ("Proccess content\n", 0);
@@ -803,63 +811,79 @@ void Voxel2Tet::Process()
 #ifdef OPENMP
     STATUS ("\tUsing OpenMP and %u threads\n", omp_get_max_threads());
 #endif
-    
+    TetGenCaller Generator;
+    Generator.Mesh = this->Mesh;
+
     int outputindex = 0;
     int i=0;
     
     this->FindSurfaces();
     
-    for (Volume *v: this->Volumes) {
-        STATUS("Volume for phase %u:%f\n", v->Phase, v->ComputeVolume());
-    }
+    std::vector<std::vector<double>> PhaseVolumes;
+    std::vector<double> CurrentVolumes;
+    std::vector<int> PhaseList;
+
+    double TotalVolume = GetListOfVolumes(CurrentVolumes, PhaseList);
+    LOG("Total volume: %f\n", TotalVolume);
+    PhaseVolumes.push_back(CurrentVolumes);
     
     this->Mesh->ExportSurface(strfmt("/tmp/Voxeltest%u.vtp", outputindex++) , FT_VTK );
-    
-    
+        
     this->FindEdges();
     
     clock_t t1 = clock();
     
     this->SmoothEdgesSimultaneously(edgespring_c, edgespring_alpha, 0, false);
-    this->Mesh->ExportSurface(strfmt("/tmp/Voxeltest%u.vtp", outputindex++), FT_VTK);
+    Generator.TestMesh();
 
-    for (Volume *v: this->Volumes) {
-        STATUS("Volume for phase %u:%f\n", v->Phase, v->ComputeVolume());
-    }
+    GetListOfVolumes(CurrentVolumes, PhaseList);
+    PhaseVolumes.push_back(CurrentVolumes);
 
     this->Mesh->ExportSurface(strfmt("/tmp/Voxeltest%u.vtp", outputindex++), FT_VTK);
     this->SmoothSurfaces(spring_c, spring_alpha, 0, false);
     clock_t t2 = clock();
-    
-    for (Volume *v: this->Volumes) {
-        STATUS("Volume for phase %u:%f\n", v->Phase, v->ComputeVolume());
-    }
+    Generator.TestMesh();
 
-    STATUS("Smoothing in %fs\n", float(t2-t1)/(double)CLOCKS_PER_SEC);
+    GetListOfVolumes(CurrentVolumes, PhaseList);
+    PhaseVolumes.push_back(CurrentVolumes);
+
+    STATUS("Smoothing completed in %fs\n", float(t2-t1)/(double)CLOCKS_PER_SEC);
     
     this->Mesh->ExportSurface(strfmt("/tmp/Voxeltest%u.vtp", outputindex++), FT_VTK);
     this->Mesh->FlipAll();
-    
-    for (Volume *v: this->Volumes) {
-        STATUS("Volume for phase %u:%f\n", v->Phase, v->ComputeVolume());
-    }
+
+    GetListOfVolumes(CurrentVolumes, PhaseList);
+    PhaseVolumes.push_back(CurrentVolumes);
 
     this->Mesh->ExportSurface(strfmt("/tmp/Voxeltest%u.vtp", outputindex++), FT_VTK);
     this->Mesh->CoarsenMeshImproved();
-    
-    this->Mesh->ExportSurface(strfmt("/tmp/Voxeltest%u.vtp", outputindex++), FT_VTK);
-    //this->Mesh->FlipAll();
-    
-    i=0;
+
     this->UpdateSurfaces();
-    for (Surface *s: this->Surfaces) {
-        double Area = s->ComputeArea();
-        STATUS("Area for surface %u: %f\n", i, Area);
-        i++;
+
+    GetListOfVolumes(CurrentVolumes, PhaseList);
+    PhaseVolumes.push_back(CurrentVolumes);
+
+    this->Mesh->ExportSurface(strfmt("/tmp/Voxeltest%u.vtp", outputindex++), FT_VTK);
+    this->Mesh->FlipAll();
+    this->UpdateSurfaces();
+
+    GetListOfVolumes(CurrentVolumes, PhaseList);
+    PhaseVolumes.push_back(CurrentVolumes);
+
+    this->Mesh->ExportSurface(strfmt("/tmp/Voxeltest%u.vtp", outputindex++), FT_VTK);
+
+    for (int p: PhaseList) {
+        printf("%u\t\t", p);
     }
     
-    this->Mesh->ExportSurface(strfmt("/tmp/Voxeltest%u.vtp", outputindex++), FT_VTK);
-    
+    printf("\n");
+
+    for (size_t i=0; i<PhaseVolumes.size(); i++) {
+        for (size_t j=0; j<PhaseVolumes.at(i).size(); j++) {
+            printf("%f\t", PhaseVolumes.at(i).at(j));
+        }
+        printf("\n");
+    }
 #if EXPORT_MESH_COARSENING == 1
     dooutputlogmesh(*this->Mesh, (char*) "/tmp/finalcoarsening%u.vtp", 0);
 #endif
