@@ -3,6 +3,7 @@
 #include "MiscFunctions.h"
 #include "TetGenExporter.h"
 #include "OFFExporter.h"
+#include "OOFEMExporter.h"
 
 namespace voxel2tet
 {
@@ -157,6 +158,10 @@ void MeshData :: ExportVolume(std::string FileName, Exporter_FileTypes FileType)
     }
     case FT_VTK: {
         exporter = new VTKExporter(&this->Triangles, &this->Vertices, &this->Edges, &this->Tets);
+        break;
+    }
+    case FT_OOFEM: {
+        exporter = new OOFEMExporter(&this->Triangles, &this->Vertices, &this->Edges, &this->Tets);
         break;
     }
     }

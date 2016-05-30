@@ -75,7 +75,7 @@ public:
     void ExportSurface(std::string FileName, Exporter_FileTypes FileType);
 
     void Tetrahedralize();
-    void ExportVolume(std::string FileName);
+    void ExportVolume(std::string FileName, Exporter_FileTypes FileType);
 
     void LoadFile(std::string FileName);
     void LoadCallback(cbMaterialIDByCoordinate MaterialIDByCoordinate, std::array<double, 3> origin, std::array<double, 3> spacing, std::array<int, 3> dimensions);

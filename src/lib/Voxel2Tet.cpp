@@ -68,7 +68,7 @@ void Voxel2Tet :: FinalizeLoad()
     if (this->Opt->has_key("spring_alpha")) {
         spring_alpha = Opt->GiveDoubleValue("spring_alpha");
     } else {
-        spring_alpha = 4;
+        spring_alpha = 3;
     }
     
     if (this->Opt->has_key("spring_c")) {
@@ -80,7 +80,7 @@ void Voxel2Tet :: FinalizeLoad()
     if (this->Opt->has_key("edge_spring_alpha")) {
         edgespring_alpha = Opt->GiveDoubleValue("edge_spring_alpha");
     } else {
-        edgespring_alpha = 4;
+        edgespring_alpha = 3;
     }
     
     if (this->Opt->has_key("edge_spring_c")) {
@@ -165,14 +165,13 @@ void Voxel2Tet :: Tetrahedralize()
 
     NewMesh->ExportVolume("/tmp/TetVolume0.vtu", FT_VTK);
     NewMesh->ExportVolume("/tmp/TetVolume1.vtu", FT_VTK);
-
-
+    NewMesh->ExportVolume("/tmp/TetVolume.in", FT_OOFEM);
 
 }
 
-void Voxel2Tet :: ExportVolume(std::string FileName)
+void Voxel2Tet :: ExportVolume(std::string FileName, Exporter_FileTypes FileType)
 {
-    
+    this->Mesh->ExportVolume(FileName, FileType);
 }
 
 void Voxel2Tet::FindSurfaces()

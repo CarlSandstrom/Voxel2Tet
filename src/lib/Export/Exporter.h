@@ -10,7 +10,7 @@
 namespace voxel2tet
 {
 
-enum Exporter_FileTypes {FT_VTK, FT_Poly, FT_OFF};
+enum Exporter_FileTypes {FT_VTK, FT_Poly, FT_OFF, FT_OOFEM};
 
 class Exporter
 {
