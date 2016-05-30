@@ -101,9 +101,21 @@ vtkIntArray *VTKExporter :: SetupTetIDs()
     TetIDs->SetName("ID");
     for (unsigned int i=0; i<this->Tets->size(); i++) {
         TetType *t=this->Tets->at(i);
-        TetIDs->InsertNextTuple1(t->MaterialID);
+        TetIDs->InsertNextTuple1(t->ID);
     }
     return TetIDs;
+}
+
+vtkIntArray *VTKExporter :: SetupTetPhaseID()
+{
+    vtkIntArray *TetPhaseIDs = vtkIntArray::New();
+    TetPhaseIDs->SetNumberOfComponents(1);
+    TetPhaseIDs->SetName("PhaseID");
+    for (unsigned int i=0; i<this->Tets->size(); i++) {
+        TetType *t=this->Tets->at(i);
+        TetPhaseIDs->InsertNextTuple1(t->MaterialID);
+    }
+    return TetPhaseIDs;
 }
 
 vtkIntArray *VTKExporter :: SetupVertexIDs()
@@ -208,9 +220,9 @@ void VTKExporter :: WriteVolumeData(std::string Filename)
     RegionID.TakeReference(this->SetupTetIDs());
     UnstructuredGrid->GetCellData()->AddArray(RegionID);
 
-/*    vtkSmartPointer<vtkIntArray> TriangleID;
-    TriangleID.TakeReference(this->SetupTriangleIDs());
-    PolyData->GetCellData()->AddArray(TriangleID);*/
+    vtkSmartPointer<vtkIntArray> PhaseID;
+    PhaseID.TakeReference(this->SetupTetPhaseID());
+    UnstructuredGrid->GetCellData()->AddArray(PhaseID);
 
     UnstructuredGrid->Modified();
 

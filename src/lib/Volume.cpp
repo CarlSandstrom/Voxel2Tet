@@ -48,11 +48,9 @@ bool Volume::IsPointInside(std::array<double, 3> P)
             double V1[3] = {t->Vertices[1]->get_c(0), t->Vertices[1]->get_c(1), t->Vertices[1]->get_c(2)};
             double V2[3] = {t->Vertices[2]->get_c(0), t->Vertices[2]->get_c(1), t->Vertices[2]->get_c(2)};
 
-
-
             float param;
             if (triangle_ray_intersection(V0, V1, V2, O, D, &param)) {
-                printf ("Intersects with triangle. t=%f\n", param );
+                //printf ("Intersects with triangle. t=%f\n", param );
                 if ( (param > 0.0) & (param <= 1.0)) {
                     ti++;
                 }

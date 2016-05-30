@@ -14,7 +14,7 @@ public:
     MeshGenerator3D();
     MeshData *Mesh;
 
-    virtual void Execute()=0;
+    virtual MeshData *Execute()=0;
 };
 
 }

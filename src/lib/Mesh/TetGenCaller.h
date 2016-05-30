@@ -20,12 +20,12 @@ private:
     std::map<int, VertexType *> VertexMapFromTetgen;
     void UpdateVertexMapping();
 
-    void CopyMeshFromSelf(tetgenio *io);
-    void CopyMeshToSelf(tetgenio *io);
+    void CopyMeshFromSelf (tetgenio *io);
+    MeshData *CopyTetMesh (tetgenio *io);
 
 public:
     TetGenCaller();
-    virtual void Execute();
+    virtual MeshData *Execute();
     virtual void TestMesh();
 };
 

@@ -330,5 +330,16 @@ void TriangleType :: FlipNormal()
     this->UpdateNormal();
 }
 
+// TetType
 
+std::array<double, 3> TetType :: GiveCenterOfMass()
+{
+    std::array<double, 3> cm = {0,0,0};
+    for (VertexType *v: this->Vertices) {
+        for (int i=0; i<3; i++) {
+            cm[i] = cm[i] + v->get_c(i)/4;
+        }
+    }
+    return cm;
+}
 }

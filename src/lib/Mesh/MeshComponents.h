@@ -120,6 +120,7 @@ public:
     int ID;
     int MaterialID;
     std::array<VertexType *, 4> Vertices;
+    std::array<double, 3> GiveCenterOfMass();
 };
 
 }

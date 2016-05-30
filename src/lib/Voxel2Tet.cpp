@@ -68,7 +68,7 @@ void Voxel2Tet :: FinalizeLoad()
     if (this->Opt->has_key("spring_alpha")) {
         spring_alpha = Opt->GiveDoubleValue("spring_alpha");
     } else {
-        spring_alpha = 3;
+        spring_alpha = 4;
     }
     
     if (this->Opt->has_key("spring_c")) {
@@ -80,7 +80,7 @@ void Voxel2Tet :: FinalizeLoad()
     if (this->Opt->has_key("edge_spring_alpha")) {
         edgespring_alpha = Opt->GiveDoubleValue("edge_spring_alpha");
     } else {
-        edgespring_alpha = 3;
+        edgespring_alpha = 4;
     }
     
     if (this->Opt->has_key("edge_spring_c")) {
@@ -136,7 +136,38 @@ void Voxel2Tet :: Tetrahedralize()
     TetGenCaller Generator;
     Generator.Mesh = this->Mesh;
     Generator.TestMesh();
-    Generator.Execute();
+
+    MeshData *Mesh = Generator.Execute();
+
+    MeshManipulations *NewMesh;
+    NewMesh = static_cast <MeshManipulations*> (Mesh);
+
+    // Update tetrahedrons with material information
+
+    // Create mapping
+    std::map<int, int> Tetgen2Self; // first: Tetgen material ID, second: Phase
+    std::map<int, int>::iterator MapIter;
+
+    for (TetType *t: NewMesh->Tets) {
+
+        // Check if tetgen ID is already handled
+        MapIter = Tetgen2Self.find(t->MaterialID);
+
+        if (MapIter == Tetgen2Self.end()) { // Material not yet mapped
+            std::array<double, 3> cm = t->GiveCenterOfMass();
+            Volume *v = this->FindVolumeContainingPoint(cm);
+            Tetgen2Self[t->MaterialID] = v->Phase;
+        }
+
+        t->MaterialID = Tetgen2Self[t->MaterialID];
+
+    }
+
+    NewMesh->ExportVolume("/tmp/TetVolume0.vtu", FT_VTK);
+    NewMesh->ExportVolume("/tmp/TetVolume1.vtu", FT_VTK);
+
+
+
 }
 
 void Voxel2Tet :: ExportVolume(std::string FileName)
@@ -832,7 +863,7 @@ void Voxel2Tet::Process()
     this->Mesh->ExportSurface(strfmt("/tmp/Voxeltest%u.vtp", outputindex++) , FT_VTK );
         
     this->FindEdges();
-    
+
     clock_t t1 = clock();
 
     this->SmoothEdgesSimultaneously(edgespring_c, edgespring_alpha, 0, false);

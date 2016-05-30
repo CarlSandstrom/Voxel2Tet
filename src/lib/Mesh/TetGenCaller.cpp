@@ -89,16 +89,16 @@ void TetGenCaller :: CopyMeshFromSelf(tetgenio *in)
 
 }
 
-void TetGenCaller :: CopyMeshToSelf(tetgenio *io)
+MeshData *TetGenCaller :: CopyTetMesh(tetgenio *io)
 {
 
-    MeshData NewMesh(this->Mesh->BoundingBox);
+    MeshData *NewMesh = new MeshData(this->Mesh->BoundingBox);
 
     // Add vertices
     for (int i=0; i<io->numberofpoints; i++) {
         double *c;
         c = &io->pointlist[3*i];
-        NewMesh.VertexOctreeRoot->AddVertex(c[0], c[1], c[2]);
+        NewMesh->VertexOctreeRoot->AddVertex(c[0], c[1], c[2]);
     }
 
     // Add triangles
@@ -106,14 +106,14 @@ void TetGenCaller :: CopyMeshToSelf(tetgenio *io)
         int *triface;
         int marker = io->trifacemarkerlist[i];
         triface = &io->trifacelist[3*i];
-        TriangleType *t = NewMesh.AddTriangle({triface[0], triface[1], triface[2]});
+        TriangleType *t = NewMesh->AddTriangle({triface[0], triface[1], triface[2]});
         t->InterfaceID = marker;
     }
 
     // Add tetrahedrons
     for (int i=0; i<io->numberoftetrahedra; i++) {
         int *tet = &io->tetrahedronlist[4*i];
-        TetType *t = NewMesh.AddTetrahedron({tet[0], tet[1], tet[2], tet[3]});
+        TetType *t = NewMesh->AddTetrahedron({tet[0], tet[1], tet[2], tet[3]});
 
         if (io->numberoftetrahedronattributes==1) {
             int tetattr = io->tetrahedronattributelist[i];
@@ -123,12 +123,11 @@ void TetGenCaller :: CopyMeshToSelf(tetgenio *io)
         }
     }
 
-    NewMesh.ExportVolume("/tmp/TetVolume0.vtu", FT_VTK);
-    NewMesh.ExportVolume("/tmp/TetVolume1.vtu", FT_VTK);
+    return NewMesh;
 
 }
 
-void TetGenCaller :: Execute()
+MeshData *TetGenCaller::Execute()
 {
 
     tetgenio in, out;
@@ -137,7 +136,7 @@ void TetGenCaller :: Execute()
 
     tetrahedralize("pqA", &in, &out, NULL); //pq1.414a0.1
 
-    CopyMeshToSelf(&out);
+    return CopyTetMesh(&out);
 
 }
 

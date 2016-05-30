@@ -34,6 +34,7 @@ private:
     vtkIntArray *SetupTriangleIDs();
     vtkIntArray *SetupTrianglePosNormal();
     vtkIntArray *SetupTetIDs();
+    vtkIntArray *SetupTetPhaseID();
     vtkIntArray *SetupVertexIDs();
     vtkIntArray *SetupVertexTags();
 public:
