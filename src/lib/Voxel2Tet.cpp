@@ -748,26 +748,21 @@ void Voxel2Tet :: AddSurfaceSquare(std::vector<int> VertexIDs, std::vector<int> 
     triangle1 = Mesh->AddTriangle({VertexIDs.at(2), VertexIDs.at(1), VertexIDs.at(3)});
 
     triangle0->InterfaceID = triangle1->InterfaceID = SurfaceID;
-    /*    triangle0->PosNormalMatID = triangle1->PosNormalMatID = normalphase;
 
-    if (phases[0] == normalphase) {
-        triangle0->NegNormalMatID = triangle1->NegNormalMatID = phases[1];
-    } else {
-        triangle0->NegNormalMatID = triangle1->NegNormalMatID = phases[0];
-    }*/
+    // Check phases - This is kind of a dirty hack. Should not be neccessary to check the phase on the positive side once again.
 
-    // Check phases - debug code
     std::array<double, 3> cm = triangle1->GiveCenterOfMass();
     std::array<double, 3> normal = triangle0->GiveNormal();
     double spacing[3];
     this->Imp->GiveSpacing(spacing);
-    //std::array<double, 3> normal2 = triangle1->GiveNormal();
+
     for (int i=0; i<3; i++) {
         normal[i]=normal[i]*spacing[i]*.5;
     }
+
     int pPhase;
     pPhase = this->Imp->GiveMaterialIDByCoordinate(cm[0]+normal[0], cm[1]+normal[1], cm[2]+normal[2]);
-    //nPhase = this->Imp->GiveMaterialIDByCoordinate(cm[0]-normal[0], cm[1]-normal[1], cm[2]-normal[2]);
+
     triangle0->PosNormalMatID = triangle1->PosNormalMatID = pPhase;
 
     if (phases[0] == pPhase) {
@@ -775,8 +770,6 @@ void Voxel2Tet :: AddSurfaceSquare(std::vector<int> VertexIDs, std::vector<int> 
     } else {
         triangle0->NegNormalMatID = triangle1->NegNormalMatID = phases[0];
     }
-
-    // End of debug code
 
     // Update surface
     ThisSurface->AddTriangle(triangle0);
@@ -804,6 +797,16 @@ double Voxel2Tet::GetListOfVolumes(std::vector<double> &VolumeList, std::vector<
 
 }
 
+Volume * Voxel2Tet::FindVolumeContainingPoint (std::array<double, 3> P)
+{
+    for (Volume *v: this->Volumes) {
+        if (v->IsPointInside(P)) {
+            return v;
+        }
+    }
+    return NULL;
+}
+
 void Voxel2Tet::Process()
 {
     STATUS ("Proccess content\n", 0);
@@ -815,7 +818,6 @@ void Voxel2Tet::Process()
     Generator.Mesh = this->Mesh;
 
     int outputindex = 0;
-    int i=0;
     
     this->FindSurfaces();
     
@@ -832,7 +834,7 @@ void Voxel2Tet::Process()
     this->FindEdges();
     
     clock_t t1 = clock();
-    
+
     this->SmoothEdgesSimultaneously(edgespring_c, edgespring_alpha, 0, false);
     Generator.TestMesh();
 
@@ -851,6 +853,8 @@ void Voxel2Tet::Process()
     
     this->Mesh->ExportSurface(strfmt("/tmp/Voxeltest%u.vtp", outputindex++), FT_VTK);
     this->Mesh->FlipAll();
+
+    this->UpdateSurfaces();
 
     GetListOfVolumes(CurrentVolumes, PhaseList);
     PhaseVolumes.push_back(CurrentVolumes);

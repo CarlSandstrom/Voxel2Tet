@@ -80,6 +80,13 @@ public:
     void LoadFile(std::string FileName);
     void LoadCallback(cbMaterialIDByCoordinate MaterialIDByCoordinate, std::array<double, 3> origin, std::array<double, 3> spacing, std::array<int, 3> dimensions);
 
+    /**
+     * @brief FindVolumeContainingPoint finds the volume that contains the point P
+     * @param P [in] Point
+     * @return Pointer to volume object that contains P or NULL if none found.
+     */
+    Volume *FindVolumeContainingPoint (std::array<double, 3> P);
+
     void LoadData();
     void Process();
 };

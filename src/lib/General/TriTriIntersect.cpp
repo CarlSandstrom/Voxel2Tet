@@ -21,7 +21,7 @@
    else no check is done (which is less robust)
 */
 #define USE_EPSILON_TEST TRUE
-#define EPSILON 0.000000001
+#define EPSILON 0.0000000001
 
 
 /* some macros */
@@ -387,4 +387,54 @@ bool tri_tri_intersect_shared_edge(double s0[3], double s1[3], double u0[3], dou
 
     return false;
 
+}
+
+int triangle_ray_intersection( double V1[3],  // Triangle vertices
+                           double V2[3],
+                           double V3[3],
+                           double O[3],  //Ray origin
+                           double D[3],  //Ray direction
+                                 float* out )
+{
+  double e1[3], e2[3];  //Edge1, Edge2
+  double P[3], Q[3], T[3];
+  float det, inv_det, u, v;
+  float t;
+
+  //Find vectors for two edges sharing V1
+  SUB(e1, V2, V1);
+  SUB(e2, V3, V1);
+  //Begin calculating determinant - also used to calculate u parameter
+  CROSS(P, D, e2);
+  //if determinant is near zero, ray lies in plane of triangle
+  det = DOT(e1, P);
+  //NOT CULLING
+  if(det > -EPSILON && det < EPSILON) return 0;
+  inv_det = 1.f / det;
+
+  //calculate distance from V1 to ray origin
+  SUB(T, O, V1);
+
+  //Calculate u parameter and test bound
+  u = DOT(T, P) * inv_det;
+  //The intersection lies outside of the triangle
+  if(u < 0.f || u > 1.f) return 0;
+
+  //Prepare to test v parameter
+  CROSS(Q, T, e1);
+
+  //Calculate V parameter and test bound
+  v = DOT(D, Q) * inv_det;
+  //The intersection lies outside of the triangle
+  if(v < 0.f || u + v  > 1.f) return 0;
+
+  t = DOT(e2, Q) * inv_det;
+
+  if(t > EPSILON) { //ray intersection
+    *out = t;
+    return 1;
+  }
+
+  // No hit, no win
+  return 0;
 }
