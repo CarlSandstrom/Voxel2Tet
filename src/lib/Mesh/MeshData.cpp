@@ -311,7 +311,7 @@ TetType *MeshData :: AddTetrahedron(TetType *NewTet)
 
 void MeshData :: RemoveTetragedron(TetType *t)
 {
-
+    throw(0); // To be done...
 }
 
 bool MeshData::CheckSameOrientation(TriangleType *t1, TriangleType *t2)
@@ -340,6 +340,12 @@ FC_MESH MeshData::CheckTrianglePenetration(TriangleType *t1, TriangleType *t2)
 {
     int sharedvertices;
     FC_MESH Result = CheckTrianglePenetration(t1->Vertices, t2->Vertices, sharedvertices);
+    if (Result==FC_DUPLICATETRIANGLE) {
+        // It is naturally ok is a newly created, not yet used, triangle (negative ID) shared vertices with an existing triangle
+        if (t1->ID == -t2->ID) {
+            Result = FC_OK;
+        }
+    }
     return Result;
 }
 
@@ -348,15 +354,6 @@ FC_MESH MeshData :: CheckTrianglePenetration(std::array<VertexType *, 3> t1, std
 
     LOG("Check for penetration of triangles [%u, %u, %u] and [%u, %u, %u]\n", t1[0]->ID, t1[1]->ID, t1[2]->ID, t2[0]->ID, t2[1]->ID, t2[2]->ID);
 
-    double V0[3] = {t1[0]->get_c(0),t1[0]->get_c(1),t1[0]->get_c(2)};
-    double V1[3] = {t1[1]->get_c(0),t1[1]->get_c(1),t1[1]->get_c(2)};
-    double V2[3] = {t1[2]->get_c(0),t1[2]->get_c(1),t1[2]->get_c(2)};
-
-    double U0[3] = {t2[0]->get_c(0),t2[0]->get_c(1),t2[0]->get_c(2)};
-    double U1[3] = {t2[1]->get_c(0),t2[1]->get_c(1),t2[1]->get_c(2)};
-    double U2[3] = {t2[2]->get_c(0),t2[2]->get_c(1),t2[2]->get_c(2)};
-    // t -> t1
-    // newt -> t2
     sharedvertices=0;
     std::vector<VertexType *> SharedVerticesList;
     for (VertexType *v1: t1) {
@@ -373,12 +370,20 @@ FC_MESH MeshData :: CheckTrianglePenetration(std::array<VertexType *, 3> t1, std
         // Anyway, best would be to check if edges not members of the other triangle penetrates the surface since there is a "bug" in the used algorithm
         // that gives a "false" true if vertices are shared.
 
+        double V0[3] = {t1[0]->get_c(0),t1[0]->get_c(1),t1[0]->get_c(2)};
+        double V1[3] = {t1[1]->get_c(0),t1[1]->get_c(1),t1[1]->get_c(2)};
+        double V2[3] = {t1[2]->get_c(0),t1[2]->get_c(1),t1[2]->get_c(2)};
+
+        double U0[3] = {t2[0]->get_c(0),t2[0]->get_c(1),t2[0]->get_c(2)};
+        double U1[3] = {t2[1]->get_c(0),t2[1]->get_c(1),t2[1]->get_c(2)};
+        double U2[3] = {t2[2]->get_c(0),t2[2]->get_c(1),t2[2]->get_c(2)};
+
         int intersects = tri_tri_intersect(V0, V1, V2, U0, U1, U2);
+
         if (intersects==1) {
             return FC_TRIANGLESINTERSECT;
-        } else {
-            //LOG("Triangles does not intersect\n", 0);
         }
+
     } else if (sharedvertices==2) {
 
         // If two triangles share an edge, check if each remaining (not shared) vertex is located within the other triangle
@@ -390,6 +395,7 @@ FC_MESH MeshData :: CheckTrianglePenetration(std::array<VertexType *, 3> t1, std
                 }
             }
         }
+
         double s0[3] = {SharedVerticesList[0]->get_c(0), SharedVerticesList[0]->get_c(1), SharedVerticesList[0]->get_c(2)};
         double s1[3] = {SharedVerticesList[1]->get_c(0), SharedVerticesList[1]->get_c(1), SharedVerticesList[1]->get_c(2)};
 
@@ -401,11 +407,7 @@ FC_MESH MeshData :: CheckTrianglePenetration(std::array<VertexType *, 3> t1, std
         }
 
     } else if (sharedvertices==3) {
-
-//        LOG ("Duplicate triangle, t2.id=%i, t.id=%i\n", t2->ID, t->ID);
-//        if (t1->ID!=-t2->ID) {
         return FC_DUPLICATETRIANGLE;
-//        }
     }
     return FC_OK;
 }
