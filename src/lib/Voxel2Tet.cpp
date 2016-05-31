@@ -17,6 +17,11 @@ namespace voxel2tet
 Voxel2Tet::Voxel2Tet(Options *Opt)
 {
     this->Opt = Opt;
+
+    // Set defult options
+    this->Opt->AddDefaultMap("spring_c_factor", "0.9");
+    this->Opt->AddDefaultMap("edge_spring_c_factor", "0.9");
+
     LOG("Starting Voxel2Tet\n", 0);
 }
 
@@ -60,9 +65,13 @@ void Voxel2Tet :: FinalizeLoad()
 {
     
     double cellspace[3];
+    int dim[3];
     this->Imp->GiveSpacing(cellspace);
+    this->Imp->GiveDimensions(dim);
     
-    STATUS("Voxel dimensions are %f * %f * %f\n", cellspace[0],cellspace[1],cellspace[2]);
+    STATUS("\tVoxel dimensions are %f * %f * %f\n", cellspace[0],cellspace[1],cellspace[2]);
+    STATUS("\tNumber of voxels:%u\n", dim[0]*dim[1]*dim[2]);
+
     auto_c = false;
     
     if (this->Opt->has_key("spring_alpha")) {
@@ -74,7 +83,7 @@ void Voxel2Tet :: FinalizeLoad()
     if (this->Opt->has_key("spring_c")) {
         spring_c = Opt->GiveDoubleValue("spring_c");
     } else {
-        spring_c = Compute_c(cellspace[0]*.9, spring_alpha);
+        spring_c = Compute_c(cellspace[0]*Opt->GiveDoubleValue("spring_c_factor"), spring_alpha);
     }
     
     if (this->Opt->has_key("edge_spring_alpha")) {
@@ -86,7 +95,7 @@ void Voxel2Tet :: FinalizeLoad()
     if (this->Opt->has_key("edge_spring_c")) {
         edgespring_c = Opt->GiveDoubleValue("edge_spring_c");
     } else {
-        edgespring_c = Compute_c(cellspace[0]*.9, edgespring_alpha);
+        edgespring_c = Compute_c(cellspace[0]*Opt->GiveDoubleValue("edge_spring_c_factor"), edgespring_alpha);
     }
     
     STATUS("Using spring_alpha=%f, spring_c=%f\n", spring_alpha, spring_c);
