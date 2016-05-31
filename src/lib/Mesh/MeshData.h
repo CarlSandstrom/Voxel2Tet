@@ -8,9 +8,14 @@
 #include "MeshComponents.h"
 #include "VertexOctreeNode.h"
 #include "VTKExporter.h"
+#include "TriTriIntersect.h"
 
 namespace voxel2tet
 {
+
+enum FC_MESH {FC_OK, FC_FIXEDVERTEX, FC_NORMAL, FC_CHORD, FC_SMALLAREA, FC_AREACHANGETOOLARGE, FC_TOOMANYTRIANGLES,
+              FC_WORSEMINANGLE, FC_VERTICESONDIFFERENTSHAPES, FC_TRIANGLESINTERSECT, FC_DUPLICATETRIANGLE, FC_INVALIDEDGE};
+
 
 /**
  * @brief The MeshData class supplies information and methods for adding vertices and triangles.
@@ -76,6 +81,10 @@ public:
      * @return True if oriented in the same way, False otherwise
      */
     bool CheckSameOrientation(TriangleType *t1, TriangleType *t2);
+
+    FC_MESH CheckTrianglePenetration(TriangleType *t1, TriangleType *t2);
+
+    FC_MESH CheckTrianglePenetration(std::array<VertexType *, 3> t1, std::array<VertexType *, 3> t2, int &sharedvertices);
 };
 
 }
