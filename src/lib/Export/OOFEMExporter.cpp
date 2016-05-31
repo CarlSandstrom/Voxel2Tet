@@ -63,13 +63,6 @@ void OOFEMExporter::WriteVolumeData(std::string Filename)
         }
     }
 
-    std::vector<VertexType *> xmaxnodes;
-    std::vector<VertexType *> xminnodes;
-    std::vector<VertexType *> ymaxnodes;
-    std::vector<VertexType *> yminnodes;
-    std::vector<VertexType *> zmaxnodes;
-    std::vector<VertexType *> zminnodes;
-
     // Max and min nodes are arrays of lists of vertices where the index of the array tells in which direction the vertex is located
     std::array<std::vector<VertexType *>, 3> MaxNodes;
     std::array<std::vector<VertexType *>, 3> MinNodes;
@@ -84,6 +77,39 @@ void OOFEMExporter::WriteVolumeData(std::string Filename)
         }
     }
 
+    // Find element boundaries
+    std::array<std::vector<TetType *>, 3> MaxElements;
+    std::array<std::vector<int>, 3> MaxSide;
+    std::array<std::vector<TetType *>, 3> MinElements;
+    std::array<std::vector<int>, 3> MinSide;
+
+    for (TetType *t: *this->Tets) {
+        for (int k=0; k<2; k++) {   // Test max/min
+            std::array<std::vector<TetType *>, 3> *XElements = (k==0) ? &MaxElements : &MinElements;
+            std::array<std::vector<int>, 3> *XSide = (k==0) ? &MaxSide : &MinSide;
+            for (int i=0; i<3; i++) {   // Test direction
+
+                std::vector<int> TheNodes;
+
+                for (int j=0; j<4; j++) {   // Test node
+                    VertexType *v = t->Vertices[j];
+                    double cvalue = v->get_c(i);
+                    if (fabs(cvalue-MaxCoords[i]) < eps)  TheNodes.push_back(j+1); // +1 to match the numbering in the elemenent manual
+                }
+
+                if (TheNodes.size() == 3) {
+                    int Side = -1;
+                    if ((TheNodes[0]==1) & (TheNodes[1]==2) & (TheNodes[2]==3)) Side = 1;
+                    if ((TheNodes[0]==1) & (TheNodes[1]==2) & (TheNodes[2]==4)) Side = 2;
+                    if ((TheNodes[0]==2) & (TheNodes[1]==3) & (TheNodes[2]==4)) Side = 3;
+                    if ((TheNodes[0]==1) & (TheNodes[1]==3) & (TheNodes[2]==4)) Side = 4;
+                    XSide->at(i).push_back (Side);
+                    XElements->at(i).push_back (t);
+                }
+            }
+        }
+    }
+
     // Write header
 
     OOFEMFile << Filename << ".out\n";
@@ -93,7 +119,7 @@ void OOFEMExporter::WriteVolumeData(std::string Filename)
     OOFEMFile << "domain 3d\n";
     OOFEMFile << "OutputManager tstep_all dofman_all element_all\n";
     OOFEMFile << "ndofman " << UsedVertices.size() << " nelem " << this->Tets->size() << " ncrosssect 1 nmat " \
-              << Self2OofemMaterials.size() << " nbc 1 nic 1 nltf 1 nset 8 nxfemman 0\n";
+              << Self2OofemMaterials.size() << " nbc 1 nic 1 nltf 1 nset 15 nxfemman 0\n";
 
     // Write vertices
 
@@ -118,7 +144,8 @@ void OOFEMExporter::WriteVolumeData(std::string Filename)
     i=1;
     for (auto test: Self2OofemMaterials) {
         OOFEMFile << "# Material " << test.first << " in source file\n";
-        OOFEMFile << "hyperelmat " << i++ << " d 1 k " << 100 + i*10 << " g " << 100 + i*10 << "\n";
+        //OOFEMFile << "hyperelmat " << i++ << " d 1 k " << 100 + i*10 << " g " << 100 + i*10 << "\n";
+        OOFEMFile << "IsoLE " << i++ << " d 1.0 E " << 200 +i*10 << "e9 n 0.3 tAlpha 0.0\n";
         // OOFEMFile << "isole " << i++ << " d 1 E 1 n .5 tAlpha 0\n";
     }
 
@@ -144,7 +171,7 @@ void OOFEMExporter::WriteVolumeData(std::string Filename)
     OOFEMFile << "\n";
 
     // Boundary set
-    OOFEMFile << "# Complete boundary set\n";
+    OOFEMFile << "# Complete node boundary set\n";
     OOFEMFile << "set " << setid++ << " nodes " << (MaxNodes[0].size() + MaxNodes[1].size() + MaxNodes[2].size() + MinNodes[0].size() + MinNodes[1].size() + MinNodes[2].size());
     for (int i=0; i<3; i++) {
         // Write max nodes
@@ -159,11 +186,11 @@ void OOFEMExporter::WriteVolumeData(std::string Filename)
     OOFEMFile << "\n";
 
     // Individual max and min sets in all directions
-    std::array<std::string, 3> MaxComments = {"# Max x", "# Max y", "# Max Z"};
-    std::array<std::string, 3> MinComments = {"# Min x", "# Min y", "# Min Z"};
+    std::array<std::string, 3> MaxComments = {"# Max X", "# Max Y", "# Max Z"};
+    std::array<std::string, 3> MinComments = {"# Min X", "# Min Y", "# Min Z"};
     for (int i=0; i<3; i++) {
         // Write max nodes
-        OOFEMFile << MaxComments[i] << "\n";
+        OOFEMFile << MaxComments[i] << " nodes\n";
         OOFEMFile << "set " << setid++ << " nodes " << MaxNodes[i].size();
         for (size_t j=0; j<MaxNodes[i].size(); j++) {
             OOFEMFile << " " << MaxNodes[i].at(j)->tag+1;
@@ -171,13 +198,48 @@ void OOFEMExporter::WriteVolumeData(std::string Filename)
         OOFEMFile << "\n";
 
         // Write min nodes
-        OOFEMFile << MinComments[i] << "\n";
+        OOFEMFile << MinComments[i] << " nodes\n";
         OOFEMFile << "set " << setid++ << " nodes " << MinNodes[i].size();
         for (size_t j=0; j<MinNodes[i].size(); j++) {
             OOFEMFile << " " << MinNodes[i].at(j)->tag+1;
         }
         OOFEMFile << "\n";
+    }
 
+    // Element boundaries
+
+    // Complete boundary by element sides
+    int ecount = 0;
+    for (std::vector<int> s: MaxSide) { ecount=ecount+s.size(); }
+    for (std::vector<int> s: MinSide) { ecount=ecount+s.size(); }
+
+    OOFEMFile << "# Complete boundary by element sides\n";
+    OOFEMFile << "set "<< setid++ << " elementboundaries " << ecount*2;
+    for (int k=0; k<2; k++) {
+        std::array<std::vector<TetType *>, 3> *Elements = (k==0) ? &MaxElements : &MinElements;
+        std::array<std::vector<int>, 3> *Sides = (k==0) ? &MaxSide : &MinSide;
+        for (int i=0; i<3; i++) {
+            for (size_t j=0; j<Elements->at(i).size(); j++) {
+                OOFEMFile << " " << Elements->at(i).at(j)->ID+1 << " " << Sides->at(i).at(j);
+            }
+        }
+    }
+    OOFEMFile << "\n";
+
+    // Boundaries in all directions
+    for (int k=0; k<2; k++) {
+        std::array<std::string, 3> *Comments = (k==0) ? &MaxComments : &MinComments;
+        std::array<std::vector<TetType *>, 3> *Elements = (k==0) ? &MaxElements : &MinElements;
+        std::array<std::vector<int>, 3> *Sides = (k==0) ? &MaxSide : &MinSide;
+
+        for (int i=0; i<3; i++) {
+            OOFEMFile << Comments->at(i) << " element boundaries\n";
+            OOFEMFile << "set " << setid++ << " elementboundaries " << Elements->at(i).size()+Sides->at(i).size();
+            for (size_t j=0; j<Elements->at(i).size(); j++) {
+                OOFEMFile << " " << Elements->at(i).at(j)->ID+1 << " " << Sides->at(i).at(j);
+            }
+            OOFEMFile << "\n";
+        }
     }
 
 }
