@@ -349,8 +349,18 @@ void SpringSmoothGlobal(std::vector<VertexType*> Vertices, std::vector<bool> Fix
 
 }
 
-void SpringSmooth (std::vector<VertexType*> Vertices, std::vector<bool> Fixed, std::vector<std::vector<VertexType*>> Connections, double c, double alpha, double charlength, bool Automatic_c, voxel2tet::MeshData *Mesh)
-//(std::vector<VertexType*> Vertices, std::vector<bool> Fixed, std::vector<std::vector<VertexType*>> Connections, double K, voxel2tet::MeshData *Mesh)
+bool CheckPenetration(std::vector<VertexType *> *Vertices, MeshData *Mesh)
+{
+
+    for (VertexType *v: *Vertices) {
+        std::vector<TriangleType *> VertexTriangles = v->Triangles;
+        LOG("\n", 0);
+    }*
+
+}
+
+void SpringSmooth (std::vector<VertexType*> Vertices, std::vector<bool> Fixed, std::vector<std::vector<VertexType*>> Connections,
+                   double c, double alpha, double charlength, bool Automatic_c, voxel2tet::MeshData *Mesh)
 {
     int MAX_ITER_COUNT=100000;
 
@@ -465,6 +475,15 @@ void SpringSmooth (std::vector<VertexType*> Vertices, std::vector<bool> Fixed, s
 
                 }
             }
+/*
+            for (unsigned int i=0; i<Vertices.size(); i++) {
+                for (int j=0; j<3; j++) {
+                    Vertices.at(i)->set_c(CurrentPositions.at(i)[j], j); // TODO: Use array to improve performance
+                }
+            }
+
+            CheckPenetration(&Vertices, Mesh);
+*/
             // Update previous positions
             for (size_t i=0; i<Vertices.size(); i++) {
                 for (int j=0; j<3; j++) {
@@ -474,7 +493,7 @@ void SpringSmooth (std::vector<VertexType*> Vertices, std::vector<bool> Fixed, s
                 }
             }
 
-        } // End of OpenMP section
+        }
 
         deltamaxnode=0;
         for (int i=0; i<threadcount; i++) {
