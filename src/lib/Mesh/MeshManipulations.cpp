@@ -364,9 +364,12 @@ FC_MESH MeshManipulations :: CollapseEdgeTest(std::vector<TriangleType *> *Trian
 
     // Put all triangles in a vector and the check each combination
     std::vector<std::array<VertexType *, 3> > TriangleList;
-    std::vector<int> IDList;
-    for (TriangleType *t: TrianglesNear) {TriangleList.push_back(t->Vertices); IDList.push_back(t->ID);}
-    for (TriangleType *t: *NewTriangles) {TriangleList.push_back(t->Vertices); IDList.push_back(t->ID);}
+
+    std::vector<int> NearIDList;
+    std::vector<int> NewIDList;
+
+    for (TriangleType *t: TrianglesNear) {TriangleList.push_back(t->Vertices); NearIDList.push_back(t->ID);}
+    for (TriangleType *t: *NewTriangles) {NewIDList.push_back(t->ID);}
 
     // Ensure that the edge is collapsed in all triangles
     for (size_t i=0; i<TriangleList.size(); i++) {
@@ -380,11 +383,11 @@ FC_MESH MeshManipulations :: CollapseEdgeTest(std::vector<TriangleType *> *Trian
 
     // Check for intersections
     for (size_t i=0; i<TriangleList.size(); i++) {
-        for (size_t j=i+1; j<TriangleList.size(); j++) {
+        for (size_t j=0; j<NewTriangles->size(); j++) {
             int shared;
-            FC_MESH R = this->CheckTrianglePenetration(TriangleList.at(i), TriangleList.at(j), shared);
+            FC_MESH R = this->CheckTrianglePenetration(TriangleList.at(i), NewTriangles->at(j)->Vertices, shared);
             if (R!=FC_OK) {
-                if ( (R==FC_DUPLICATETRIANGLE) & (IDList.at(i)==-IDList.at(j))) {
+                if ( (R==FC_DUPLICATETRIANGLE) & (NearIDList.at(i)==-NewIDList.at(j))) {
                     R=FC_OK;
                 }
                 return R;

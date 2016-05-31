@@ -355,7 +355,7 @@ bool CheckPenetration(std::vector<VertexType *> *Vertices, MeshData *Mesh)
     for (VertexType *v: *Vertices) {
         std::vector<TriangleType *> VertexTriangles = v->Triangles;
         LOG("\n", 0);
-    }*
+    }
 
 }
 
