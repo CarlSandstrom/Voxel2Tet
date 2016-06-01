@@ -10,7 +10,7 @@ MeshManipulations::MeshManipulations(BoundingBoxType BoundingBox) : MeshData(Bou
     TOL_MAXAREACHANGE = 1e-5;
 
     TOL_COL_SMALLESTAREA = 1e-8;
-    TOL_COL_MAXNORMALCHANGE = 25*2*3.1415/360;
+    TOL_COL_MAXNORMALCHANGE = 15*2*3.1415/360;
     TOL_COL_CHORD_MAXNORMALCHANGE = 10*2*3.141593/360;
 
     TOL_FLIP_SMALLESTAREA = 1e-8;
@@ -130,6 +130,8 @@ FC_MESH MeshManipulations :: GetFlippedEdgeData(EdgeType *EdgeToFlip, EdgeType *
 
                 bool t0forward = EdgeTriangles[0]->Vertices[(i+1)%3] == EdgeTriangles[1]->Vertices[(j+2)%3];
 
+                LOG("t0forward: %d\n", t0forward);
+
                 int increment = (t0forward) ? 1 : 2;
                 std::array<VertexType *, 2> t0edge = {EdgeTriangles[0]->Vertices[i], EdgeTriangles[0]->Vertices[(i+increment)%3]};
 
@@ -138,8 +140,8 @@ FC_MESH MeshManipulations :: GetFlippedEdgeData(EdgeType *EdgeToFlip, EdgeType *
                     NewEdgeVertices[0] = EdgeTriangles[0]->Vertices[(i+2) % 3];
                     NewEdgeVertices[1] = EdgeTriangles[1]->Vertices[(j+1) % 3];
                 } else {
-                    NewEdgeVertices[0] = EdgeTriangles[0]->Vertices[(i+1) % 3];
-                    NewEdgeVertices[1] = EdgeTriangles[1]->Vertices[(j+2) % 3];
+                    NewEdgeVertices[1] = EdgeTriangles[0]->Vertices[(i+1) % 3];
+                    NewEdgeVertices[0] = EdgeTriangles[1]->Vertices[(j+2) % 3];
                 }
 
                 //                finished = true;
@@ -159,6 +161,17 @@ FC_MESH MeshManipulations :: GetFlippedEdgeData(EdgeType *EdgeToFlip, EdgeType *
 
                 NewEdge->Vertices[0] = NewEdgeVertices[0];
                 NewEdge->Vertices[1] = NewEdgeVertices[1];
+
+/*                std::array<double, 3> OldNormal0=EdgeTriangles[0]->GiveUnitNormal();
+                std::array<double, 3> OldNormal1=EdgeTriangles[1]->GiveUnitNormal();
+                LOG("Old normal 0: [%f, %f, %f]\n", OldNormal0[0], OldNormal0[1], OldNormal0[2]);
+                LOG("Old normal 1: [%f, %f, %f]\n", OldNormal1[0], OldNormal1[1], OldNormal1[2]);
+
+                std::array<double, 3> NewNormal0=new_t0->GiveUnitNormal();
+                std::array<double, 3> NewNormal1=new_t1->GiveUnitNormal();
+                LOG("New normal 0: [%f, %f, %f]\n", NewNormal0[0], NewNormal0[1], NewNormal0[2]);
+                LOG("New normal 1: [%f, %f, %f]\n", NewNormal1[0], NewNormal1[1], NewNormal1[2]);*/
+
                 return FC_OK;
 
             }
@@ -171,16 +184,25 @@ FC_MESH MeshManipulations :: GetFlippedEdgeData(EdgeType *EdgeToFlip, EdgeType *
 
 FC_MESH MeshManipulations :: FlipEdge(EdgeType *Edge)
 {
-    LOG ("\tFlip edge %p (%u, %u)\n", Edge, Edge->Vertices[0]->ID, Edge->Vertices[1]->ID);
+    LOG ("Flip edge %p (%u, %u)\n", Edge, Edge->Vertices[0]->ID, Edge->Vertices[1]->ID);
 
     std::vector<TriangleType *> EdgeTriangles = Edge->GiveTriangles();
+
+    // Check if edge belongs to too many triangles
     if (EdgeTriangles.size()!=2) {
-        LOG("Unable to flip edge. To many or only one triangle connected\n", 0);
+        LOG("\tUnable to flip edge. To many or only one triangle connected\n", 0);
         return FC_TOOMANYTRIANGLES;
     }
 
-    double Angle = ComputeAngleBetweenVectors(EdgeTriangles[0]->GiveNormal(), EdgeTriangles[1]->GiveNormal());
-    if ( fabs(Angle) > TOL_FLIP_MAXNORMALDIFFERENCE) {
+    // Check if triangels belongs to same surface
+    if (EdgeTriangles[0]->InterfaceID != EdgeTriangles[1]->InterfaceID) {
+        LOG("\tUnable to flip edge. Triangels belongs to different surfaces\n", 0);
+        return FC_DIFFERENTSURFACES;
+    }
+
+    // Check angle between elements
+    double Angle = ComputeAngleBetweenVectors(EdgeTriangles[0]->GiveUnitNormal(), EdgeTriangles[1]->GiveUnitNormal());
+    if ( std::min(fabs(Angle), fabs(Angle-3.141593))  > TOL_FLIP_MAXNORMALDIFFERENCE) {
         return FC_NORMAL;
     }
 
@@ -209,11 +231,20 @@ FC_MESH MeshManipulations :: FlipEdge(EdgeType *Edge)
     double minAngleNew = std::min(NewTriangles[0]->GiveSmallestAngle(), NewTriangles[1]->GiveSmallestAngle());
 
     if (minAngleNew<minAngleCurrent) {
-        LOG("New minimal angles worse than current (New: %f, Current: %f). Prevent flipping.\n", minAngleNew, minAngleCurrent);
+        LOG("\tUnable to flip edge. New minimal angles worse than current (New: %f, Current: %f).\n", minAngleNew, minAngleCurrent);
         for (TriangleType *t: NewTriangles) {
             delete t;
         }
         return FC_WORSEMINANGLE;
+    }
+
+    // If the minimal angle does not change, prevent flipping as this has no value
+    if (fabs(minAngleNew-minAngleCurrent) < 1e-8 ) {
+        LOG("\tUnable to flip edge. Flipping does not improve quality\n", minAngleNew, minAngleCurrent);
+        for (TriangleType *t: NewTriangles) {
+            delete t;
+        }
+        return FC_ANGLESNOTIMPROVED;
     }
 
     // Check change in area of region. Should be small
@@ -241,7 +272,7 @@ FC_MESH MeshManipulations :: FlipEdge(EdgeType *Edge)
     for (unsigned int i=0; i<ConnectedTriangles.size()-1; i++) {
         if (ConnectedTriangles.at(i) == ConnectedTriangles.at(i+1)) {
             LOG("Edge already exists!\n", 0);
-            throw 0;
+            //throw 0;
         }
     }
 
@@ -299,11 +330,9 @@ FC_MESH MeshManipulations :: CheckFlipNormal(std::vector<TriangleType*> *OldTria
 
             // Compute angle between new and old normal
             double angle1 = std::acos( OldNormal[0]*NewNormal[0] + OldNormal[1]*NewNormal[1] + OldNormal[2]*NewNormal[2]);
-            //            double angle2 = std::acos( -(OldNormal[0]*NewNormal[0] + OldNormal[1]*NewNormal[1] + OldNormal[2]*NewNormal[2]) );
-            /*            if (std::min(angle1, angle2)>MaxAngle) {
-                MaxAngle = std::min(angle1, angle2);
-            }*/
-            MaxAngle = std::max(MaxAngle, angle1);
+            double angle2 = std::acos( -(OldNormal[0]*NewNormal[0] + OldNormal[1]*NewNormal[1] + OldNormal[2]*NewNormal[2]) );
+            double MinAngle = std::min(angle1, angle2);
+            MaxAngle = std::max(MaxAngle, MinAngle);
         }
     }
 
@@ -321,6 +350,8 @@ FC_MESH MeshManipulations :: CollapseEdgeTest(std::vector<TriangleType *> *Trian
     // Check if NewTriangles are good replacements
     LOG("Check validity of new normals...\n", 0);
     FC_MESH FC;
+
+    //FC = this->CheckCoarsenNormalImproved(TrianglesToSave, TrianglesToRemove, NewTriangles);
 
     FC = this->CheckCoarsenNormal(TrianglesToSave, NewTriangles);
     if (FC != FC_OK) {
@@ -345,7 +376,7 @@ FC_MESH MeshManipulations :: CollapseEdgeTest(std::vector<TriangleType *> *Trian
 
     // Collect all point close to the centerpoint of the edge to collapse. The, form a list of all triangles connected to those points and perform check on all triangles in that list (except with triangles to remove).
     std::array<double, 3> cp = EdgeToCollapse->GiveCenterPoint();
-    std::vector<VertexType *> VerticesNear = this->VertexOctreeRoot->GiveVerticesWithinSphere(cp[0], cp[1], cp[2], EdgeToCollapse->GiveLength()*2);
+    std::vector<VertexType *> VerticesNear = this->VertexOctreeRoot->GiveVerticesWithinSphere(cp[0], cp[1], cp[2], EdgeToCollapse->GiveLength()*3);
     std::vector<TriangleType *> TrianglesNear;
 
     for (VertexType *v: VerticesNear) {
@@ -410,6 +441,11 @@ FC_MESH MeshManipulations :: CollapseEdge(EdgeType *EdgeToCollapse, int RemoveVe
     if (EdgeToCollapse->Vertices[RemoveVertexIndex]->IsFixedVertex()) return FC_FIXEDVERTEX;
 
     int SaveVertexIndex = (RemoveVertexIndex == 0) ? 1 : 0;
+
+    // If the vertex to remove belongs to a PhaseEdge, ensure that the other vertex belongs to the same PhaseEdge
+    if (EdgeToCollapse->Vertices[RemoveVertexIndex]->PhaseEdges.size()>0) {
+        if(EdgeToCollapse->Vertices[SaveVertexIndex]->PhaseEdges.size()==0) return FC_CHORD;
+    }
 
     VertexType *SaveVertex = EdgeToCollapse->Vertices[SaveVertexIndex];
 
@@ -520,8 +556,18 @@ FC_MESH MeshManipulations :: CollapseEdge(EdgeType *EdgeToCollapse, int RemoveVe
     }
 
     ConnectedEdges = SaveVertex->Edges;
-    for (EdgeType *e: ConnectedEdges) {
-        FlipEdge(e);
+    bool edgeflipped = true;
+    while (edgeflipped) {
+        edgeflipped = false;
+        for (EdgeType *e: ConnectedEdges) {
+            if (FlipEdge(e)!=FC_OK) {
+                //FlipEdge(e);
+                LOG("Failed to flip edge\n", 0);
+            } else {
+                LOG("Edge flipped!\n", 0);
+                edgeflipped = true;
+            }
+        }
     }
 
 #if SANITYCHECK == 1
@@ -564,13 +610,98 @@ FC_MESH MeshManipulations :: CheckCoarsenNormal(std::vector<TriangleType*> *OldT
             return FC_NORMAL;
         }
 
-
     }
 
-    if (MaxAngle > (15*2*3.1415/360))
+    if (MaxAngle > TOL_COL_MAXNORMALCHANGE)
         return FC_NORMAL;
     else
         return FC_OK;
+}
+
+FC_MESH MeshManipulations :: CheckCoarsenNormalImproved(std::vector<TriangleType*> *OldTriangles, std::vector<TriangleType*> *TrianglesToRemove, std::vector<TriangleType*> *NewTriangles)
+{
+
+    double MaxAngle = 0;
+
+    for (unsigned int i=0; i<OldTriangles->size(); i++) {
+
+        std::array<double, 3> OldNormal = OldTriangles->at(i)->GiveUnitNormal();
+        std::array<double, 3> NewNormal = NewTriangles->at(i)->GiveUnitNormal();
+
+        double angle1 = std::acos( OldNormal[0]*NewNormal[0] + OldNormal[1]*NewNormal[1] + OldNormal[2]*NewNormal[2]);
+        double angle2 = std::acos( -(OldNormal[0]*NewNormal[0] + OldNormal[1]*NewNormal[1] + OldNormal[2]*NewNormal[2]) );
+
+        double oldarea  = OldTriangles->at(i)->GiveArea();
+        double newarea  = NewTriangles->at(i)->GiveArea();
+
+        if (newarea < TOL_COL_SMALLESTAREA) {
+            return FC_SMALLAREA;
+        }
+
+        LOG("angle1=%f,\tangle2=%f\tOldArea=%f\tNewArea=%f\n", angle1, angle2, oldarea, newarea);
+
+        MaxAngle = std::max(MaxAngle, std::min(fabs(angle1), fabs(angle2)));
+
+        /*        if (angle1 > TOL_COL_MAXNORMALCHANGE) {
+            LOG("Should not be collapsed...\n", 0);
+            return FC_NORMAL;
+        }*/
+
+    }
+
+    if (MaxAngle > 95*2*3.141593/360)
+        return FC_NORMAL;
+
+    std::vector<TriangleType *> RemoveVolume=*OldTriangles;
+    for (TriangleType *t: *TrianglesToRemove) {RemoveVolume.push_back(t);}
+
+    double V = 0.0;
+    double ContributionSign=1.0;
+    int Phase = RemoveVolume[0]->PosNormalMatID;
+
+    for (TriangleType *t: RemoveVolume) {
+        double v1x=t->Vertices[0]->get_c(0);
+        double v1y=t->Vertices[0]->get_c(1);
+        double v1z=t->Vertices[0]->get_c(2);
+
+        double v2x=t->Vertices[1]->get_c(0);
+        double v2y=t->Vertices[1]->get_c(1);
+        double v2z=t->Vertices[1]->get_c(2);
+
+        double v3x=t->Vertices[2]->get_c(0);
+        double v3y=t->Vertices[2]->get_c(1);
+        double v3z=t->Vertices[2]->get_c(2);
+
+        ContributionSign = (t->PosNormalMatID == Phase) ? 1 : -1;
+
+        double Vc = 1./6.*(v3x*(v1y*v2z-v2y*v1z) + v3y*(v2x*v1z-v1x*v2z) + v3z*(v1x*v2y-v1y*v2x))*ContributionSign;
+        V = V + Vc;
+    }
+
+    for (TriangleType *t: *NewTriangles) {
+        double v1x=t->Vertices[0]->get_c(0);
+        double v1y=t->Vertices[0]->get_c(1);
+        double v1z=t->Vertices[0]->get_c(2);
+
+        double v2x=t->Vertices[1]->get_c(0);
+        double v2y=t->Vertices[1]->get_c(1);
+        double v2z=t->Vertices[1]->get_c(2);
+
+        double v3x=t->Vertices[2]->get_c(0);
+        double v3y=t->Vertices[2]->get_c(1);
+        double v3z=t->Vertices[2]->get_c(2);
+
+        ContributionSign = (t->PosNormalMatID == Phase) ? 1 : -1;
+
+        double Vc = 1./6.*(v3x*(v1y*v2z-v2y*v1z) + v3y*(v2x*v1z-v1x*v2z) + v3z*(v1x*v2y-v1y*v2x))*ContributionSign;
+        V = V - Vc;
+    }
+    if (fabs(V)>1e-5) {
+        return FC_AREACHANGETOOLARGE;
+    } else {
+        return FC_OK;
+    }
+
 }
 
 FC_MESH MeshManipulations :: CheckCoarsenChord(EdgeType *EdgeToCollapse, VertexType* RemoveVertex, VertexType* SaveVertex)
@@ -686,11 +817,18 @@ int MeshManipulations::FlipAll()
     int flipcount = 0;
     int i = 0;
     int outputindex = 0;
-    for (EdgeType *e: this->Edges) {
-        LOG ("Flip edge iteration %u: edge @%p (%u, %u)\n", i, e, e->Vertices[0]->ID, e->Vertices[1]->ID);
-        if (this->FlipEdge(e)) flipcount++;
-        //this->ExportSurface(strfmt("/tmp/Flip%u.vtp", outputindex++), FT_VTK);
-        i++;
+    bool edgeflipped = true;
+    while (edgeflipped) {
+        edgeflipped = false;
+        for (EdgeType *e: this->Edges) {
+            LOG ("Flip edge iteration %u: edge @%p (%u, %u)\n", i, e, e->Vertices[0]->ID, e->Vertices[1]->ID);
+            if (this->FlipEdge(e)==FC_OK) {
+                flipcount++;
+                edgeflipped = true;
+            }
+            //this->ExportSurface(strfmt("/tmp/Flip%u.vtp", outputindex++), FT_VTK);
+            i++;
+        }
     }
     return flipcount;
 }
@@ -748,6 +886,10 @@ bool MeshManipulations :: CoarsenMeshImproved()
                         if (this->CollapseEdge(e, vi) == FC_OK) {
                             CoarseningOccurs = true;
                             CoarseOk = true;
+#if EXPORT_MESH_COARSENING
+                            //dooutputlogmesh(*this, "/tmp/Coarsening_%u.vtp", MeshIndex++);
+#endif
+
 #if TEST_MESH_FOR_EACH_COARSENING_ITERATION
                             Generator.TestMesh();
 #endif
@@ -760,10 +902,7 @@ bool MeshManipulations :: CoarsenMeshImproved()
             i++;
         }
         iter++;
-        MeshIndex++;
-#if EXPORT_MESH_COARSENING
-        dooutputlogmesh(*this, "/tmp/Coarsening_%u.vtp", 0);
-#endif
+
 
 #if SANITYCHECK == 1
         for (TriangleType *t1: this->Triangles) {

@@ -121,7 +121,7 @@ vtkIntArray *VTKExporter :: SetupTetPhaseID()
 vtkIntArray *VTKExporter :: SetupVertexIDs()
 {
     vtkIntArray *VertexIDs = vtkIntArray::New();
-    //VertexIDs->SetNumberOfComponents(1);
+    VertexIDs->SetNumberOfComponents(1);
     VertexIDs->SetName("Vertex ID");
     for (unsigned int i=0; i<this->Vertices->size(); i++) {
         VertexType *v=this->Vertices->at(i);
@@ -159,14 +159,16 @@ void VTKExporter :: WriteSurfaceData(std::string Filename)
     vtkPointData *pd;
     pd = PolyData->GetPointData();
     pd->SetScalars(VertexID);
+    PolyData->Modified();
 
     // tag
-    vtkSmartPointer<vtkIntArray> VertexTag;
+/*    vtkSmartPointer<vtkIntArray> VertexTag;
     VertexTag.TakeReference(this->SetupVertexTags());
 
     vtkPointData *pdtag;
     pdtag = PolyData->GetPointData();
     pdtag->SetScalars(VertexTag);
+    PolyData->Modified();*/
 
     // Triangles
     PolyData->SetPolys( TriangleArrays );

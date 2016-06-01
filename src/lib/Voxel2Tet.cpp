@@ -19,8 +19,8 @@ Voxel2Tet::Voxel2Tet(Options *Opt)
     this->Opt = Opt;
 
     // Set defult options
-    this->Opt->AddDefaultMap("spring_c_factor", "0.9");
-    this->Opt->AddDefaultMap("edge_spring_c_factor", "0.9");
+    this->Opt->AddDefaultMap("spring_c_factor", "0.5");
+    this->Opt->AddDefaultMap("edge_spring_c_factor", "0.5");
 
     LOG("Starting Voxel2Tet\n", 0);
 }
@@ -77,7 +77,7 @@ void Voxel2Tet :: FinalizeLoad()
     if (this->Opt->has_key("spring_alpha")) {
         spring_alpha = Opt->GiveDoubleValue("spring_alpha");
     } else {
-        spring_alpha = 3;
+        spring_alpha = 4;
     }
     
     if (this->Opt->has_key("spring_c")) {
@@ -89,7 +89,7 @@ void Voxel2Tet :: FinalizeLoad()
     if (this->Opt->has_key("edge_spring_alpha")) {
         edgespring_alpha = Opt->GiveDoubleValue("edge_spring_alpha");
     } else {
-        edgespring_alpha = 3;
+        edgespring_alpha = 4;
     }
     
     if (this->Opt->has_key("edge_spring_c")) {
