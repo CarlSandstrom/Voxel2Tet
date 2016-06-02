@@ -875,7 +875,10 @@ void Voxel2Tet::Process()
 
     clock_t t1 = clock();
 
-    this->SmoothEdgesSimultaneously(edgespring_c, edgespring_alpha, 0, false);
+    double Spacing[3];
+    this->Imp->GiveSpacing(Spacing);
+
+    this->SmoothEdgesSimultaneously(edgespring_c, edgespring_alpha, Spacing[0], false);
     Generator.TestMesh();
 
     GetListOfVolumes(CurrentVolumes, PhaseList);

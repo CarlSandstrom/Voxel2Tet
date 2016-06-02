@@ -278,7 +278,7 @@ FC_MESH MeshManipulations :: FlipEdge(EdgeType *Edge)
     }
 
     // Check if any of the new triangles penetrates any of the old triangles nearby
-    dooutputlogmesh(*this, "/tmp/beforeflipping.vtp", FT_VTK);
+    //dooutputlogmesh(*this, "/tmp/beforeflipping.vtp", FT_VTK);
 
     // Add all triangles nearby to NearTriangles
     std::array<double, 3> cm = NewEdge.GiveCenterPoint();
@@ -297,6 +297,7 @@ FC_MESH MeshManipulations :: FlipEdge(EdgeType *Edge)
     // Remove EdgeTriangles from NearTriangles
     for (int i=0; i<2; i++) NearTriangles.erase(std::remove(NearTriangles.begin(), NearTriangles.end(), EdgeTriangles[i]), NearTriangles.end());
 
+    // Check if new triangles penetrates existing triangles (except those that will be deleted of course)
     for (TriangleType *t1: NewTriangles) {
         for (TriangleType *t2: NearTriangles) {
             FC_MESH R = this->CheckTrianglePenetration(t1, t2);

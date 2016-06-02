@@ -405,7 +405,7 @@ void SpringSmooth (std::vector<VertexType*> Vertices, std::vector<bool> Fixed, s
     threadcount = omp_get_max_threads();
 #endif
 
-    while ((itercount < MAX_ITER_COUNT) & (deltamax>1e-6)) {
+    while ((itercount < MAX_ITER_COUNT) & (deltamax>(charlength*1e-3))) {
 
         deltamax=0.0;
         int deltamaxnodes[threadcount];
