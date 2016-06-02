@@ -10,7 +10,7 @@ MeshManipulations::MeshManipulations(BoundingBoxType BoundingBox) : MeshData(Bou
     TOL_MAXAREACHANGE = 1e-5;
 
     TOL_COL_SMALLESTAREA = 1e-8;
-    TOL_COL_MAXNORMALCHANGE = 15*2*3.1415/360;
+    TOL_COL_MAXNORMALCHANGE = 10*2*3.1415/360;
     TOL_COL_CHORD_MAXNORMALCHANGE = 10*2*3.141593/360;
 
     TOL_FLIP_SMALLESTAREA = 1e-8;
@@ -351,8 +351,6 @@ FC_MESH MeshManipulations :: CollapseEdgeTest(std::vector<TriangleType *> *Trian
     LOG("Check validity of new normals...\n", 0);
     FC_MESH FC;
 
-    //FC = this->CheckCoarsenNormalImproved(TrianglesToSave, TrianglesToRemove, NewTriangles);
-
     FC = this->CheckCoarsenNormal(TrianglesToSave, NewTriangles);
     if (FC != FC_OK) {
         return FC;
@@ -366,7 +364,7 @@ FC_MESH MeshManipulations :: CollapseEdgeTest(std::vector<TriangleType *> *Trian
 
     LOG("Check area of new triangles...\n", 0);
     for (TriangleType *t: *NewTriangles) {
-        if (t->GiveArea() < TOL_COL_SMALLESTAREA ) {
+        if (t->GiveArea()<1e-7) { // TODO: Use variable
             LOG(" - Check failed\n", 0);
             return FC_SMALLAREA;
         }
@@ -376,7 +374,7 @@ FC_MESH MeshManipulations :: CollapseEdgeTest(std::vector<TriangleType *> *Trian
 
     // Collect all point close to the centerpoint of the edge to collapse. The, form a list of all triangles connected to those points and perform check on all triangles in that list (except with triangles to remove).
     std::array<double, 3> cp = EdgeToCollapse->GiveCenterPoint();
-    std::vector<VertexType *> VerticesNear = this->VertexOctreeRoot->GiveVerticesWithinSphere(cp[0], cp[1], cp[2], EdgeToCollapse->GiveLength()*3);
+    std::vector<VertexType *> VerticesNear = this->VertexOctreeRoot->GiveVerticesWithinSphere(cp[0], cp[1], cp[2], EdgeToCollapse->GiveLength()*2);
     std::vector<TriangleType *> TrianglesNear;
 
     for (VertexType *v: VerticesNear) {
@@ -388,46 +386,86 @@ FC_MESH MeshManipulations :: CollapseEdgeTest(std::vector<TriangleType *> *Trian
     std::sort(TrianglesNear.begin(), TrianglesNear.end());
     TrianglesNear.erase( std::unique(TrianglesNear.begin(), TrianglesNear.end()), TrianglesNear.end());
 
-    // Remove triangles that will be removed from TrianglesNear
-    for (TriangleType *rmt: *TrianglesToRemove) {
-        TrianglesNear.erase(std::remove(TrianglesNear.begin(), TrianglesNear.end(), rmt), TrianglesNear.end());
-    }
+    for (TriangleType *t: TrianglesNear) {
+        bool DoCheck = true;
 
-    // Put all triangles in a vector and the check each combination
-    std::vector<std::array<VertexType *, 3> > TriangleList;
-
-    std::vector<int> NearIDList;
-    std::vector<int> NewIDList;
-
-    for (TriangleType *t: TrianglesNear) {TriangleList.push_back(t->Vertices); NearIDList.push_back(t->ID);}
-    for (TriangleType *t: *NewTriangles) {NewIDList.push_back(t->ID);}
-
-    // Ensure that the edge is collapsed in all triangles
-    for (size_t i=0; i<TriangleList.size(); i++) {
-        std::array<VertexType *, 3> *t = &TriangleList.at(i);
-        for (int j=0; j<3; j++) {
-            if (t->at(j)==EdgeToCollapse->Vertices[RemoveVertexIndex]) {
-                t->at(j)=EdgeToCollapse->Vertices[SaveVertexIndex];
-            }
+        // Possible skip neighbors of new triangles
+        for (TriangleType *remt: *TrianglesToRemove) { // Skip triangles that will be removed
+            if (remt==t) DoCheck = false;
         }
-    }
 
-    // Check for intersections
-    for (size_t i=0; i<TriangleList.size(); i++) {
-        for (size_t j=0; j<NewTriangles->size(); j++) {
-            int shared;
-            FC_MESH R = this->CheckTrianglePenetration(TriangleList.at(i), NewTriangles->at(j)->Vertices, shared);
-            if (R!=FC_OK) {
-                if ( (R==FC_DUPLICATETRIANGLE) & (NearIDList.at(i)==-NewIDList.at(j))) {
-                    R=FC_OK;
+        if (DoCheck) {
+            // For this test we need to change RemoveVertex --> SaveVertex
+            std::array<VertexType *, 3> NearTriVertices = t->Vertices;
+            for (int i=0; i<3; i++) {
+                if (NearTriVertices[i] == EdgeToCollapse->Vertices[RemoveVertexIndex]) {
+                    NearTriVertices[i] = EdgeToCollapse->Vertices[SaveVertexIndex];
+                    break;
                 }
-                return R;
+            }
+
+            double V0[3] = {NearTriVertices[0]->get_c(0),NearTriVertices[0]->get_c(1),NearTriVertices[0]->get_c(2)};
+            double V1[3] = {NearTriVertices[1]->get_c(0),NearTriVertices[1]->get_c(1),NearTriVertices[1]->get_c(2)};
+            double V2[3] = {NearTriVertices[2]->get_c(0),NearTriVertices[2]->get_c(1),NearTriVertices[2]->get_c(2)};
+            for (TriangleType *newt: *NewTriangles) {
+
+                // Skip if triangles sharen one ore more vertices
+                int sharedvertices=0;
+                std::vector<VertexType *> SharedVerticesList;
+                for (VertexType *v1: t->Vertices) {
+                    if (v1 == EdgeToCollapse->Vertices[RemoveVertexIndex]) v1 = EdgeToCollapse->Vertices[SaveVertexIndex];
+                    for (VertexType *v2: newt->Vertices) {
+                        if (v1==v2) {
+                            SharedVerticesList.push_back(v1);
+                            sharedvertices ++;
+                        }
+                    }
+                }
+
+                if (sharedvertices==0) {
+                    // I am a bit unsure if this is correct. Naturally two triangles with one shared vertex can intersect, but will we ever have that situation?
+                    // Anyway, best would be to check if edges not members of the other triangle penetrates the surface since there is a "bug" in the used algorithm that gives a "false" true if vertices are shared
+                    double U0[3] = {newt->Vertices[0]->get_c(0),newt->Vertices[0]->get_c(1),newt->Vertices[0]->get_c(2)};
+                    double U1[3] = {newt->Vertices[1]->get_c(0),newt->Vertices[1]->get_c(1),newt->Vertices[1]->get_c(2)};
+                    double U2[3] = {newt->Vertices[2]->get_c(0),newt->Vertices[2]->get_c(1),newt->Vertices[2]->get_c(2)};
+                    int intersects = tri_tri_intersect(V0, V1, V2, U0, U1, U2);
+                    if (intersects==1) {
+                        return FC_TRIANGLESINTERSECT;
+                    } else {
+                        //LOG("Triangles does not intersect\n", 0);
+                    }
+                } else if (sharedvertices==2) {
+                    // If two triangles share an edge, check if each remaining (not shared) vertex is located within the other triangle
+                    std::vector<VertexType *> UniqueVertices;
+                    for (std::array<VertexType *, 3> list: {NearTriVertices, newt->Vertices}) {
+                        for (VertexType *v: list) {
+                            if ( (v!=SharedVerticesList[0]) & (v!=SharedVerticesList[1])) {
+                                UniqueVertices.push_back(v);
+                            }
+                        }
+                    }
+                    double s0[3] = {SharedVerticesList[0]->get_c(0), SharedVerticesList[0]->get_c(1), SharedVerticesList[0]->get_c(2)};
+                    double s1[3] = {SharedVerticesList[1]->get_c(0), SharedVerticesList[1]->get_c(1), SharedVerticesList[1]->get_c(2)};
+
+                    double u0[3] = {UniqueVertices[0]->get_c(0), UniqueVertices[0]->get_c(1), UniqueVertices[0]->get_c(2)};
+                    double u1[3] = {UniqueVertices[1]->get_c(0), UniqueVertices[1]->get_c(1), UniqueVertices[1]->get_c(2)};
+
+                    if (tri_tri_intersect_shared_edge(s0, s1, u0, u1)) {
+                        return FC_TRIANGLESINTERSECT;
+                    }
+
+                } else if (sharedvertices==3) {
+
+                    LOG ("Duplicate triangle, newt.id=%i, t.id=%i\n", newt->ID, t->ID);
+                    if (t->ID!=-newt->ID) {
+                        return FC_DUPLICATETRIANGLE;
+                    }
+                }
             }
         }
     }
 
     return FC_OK;
-
 }
 
 FC_MESH MeshManipulations :: CollapseEdge(EdgeType *EdgeToCollapse, int RemoveVertexIndex, bool PerformTesting)
@@ -887,12 +925,16 @@ bool MeshManipulations :: CoarsenMeshImproved()
                             CoarseningOccurs = true;
                             CoarseOk = true;
 #if EXPORT_MESH_COARSENING
-                            //dooutputlogmesh(*this, "/tmp/Coarsening_%u.vtp", MeshIndex++);
+                            std::ostringstream offname;
+                            offname << "/tmp/OffSurface_" << MeshIndex << ".off";
+                            this->ExportSurface(offname.str(), FT_OFF);
+                            dooutputlogmesh(*this, "/tmp/Coarsening_%u.vtp", MeshIndex++);
 #endif
 
 #if TEST_MESH_FOR_EACH_COARSENING_ITERATION
                             Generator.TestMesh();
 #endif
+                            if (i==1736) throw(0);
                             break;
                         }
                     }

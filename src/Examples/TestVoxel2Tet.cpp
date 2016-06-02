@@ -20,6 +20,8 @@ int main( int argc, char *argv[] )
     v2t.Process();
     clock_t tstopprocess = clock();
 
+    v2t.ExportSurface("/tmp/Voxeltest.off", voxel2tet::FT_OFF);
+
     v2t.Tetrahedralize();
     clock_t tstoptet = clock();
 
