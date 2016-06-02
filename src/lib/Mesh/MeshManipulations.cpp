@@ -211,15 +211,16 @@ FC_MESH MeshManipulations :: FlipEdge(EdgeType *Edge)
 
     FC_MESH FC;
 
-    // Check if flipping is an ok action
+    // Get new data for flip (i.e new triangles and new edge)
     FC = this->GetFlippedEdgeData(Edge, &NewEdge, &NewTriangles);
     if (FC != FC_OK) {
         return FC;
     }
 
+    // Check if normal changes too much
     FC = this->CheckFlipNormal(&EdgeTriangles, NewTriangles);
     if (FC != FC_OK) {
-        LOG("Changes in normal direction prevents flipping\n", 0);
+        LOG("\tUnable to flip edge. Changes in normal direction prevents flipping\n", 0);
         for (TriangleType *t: NewTriangles) {
             delete t;
         }
@@ -275,6 +276,37 @@ FC_MESH MeshManipulations :: FlipEdge(EdgeType *Edge)
             //throw 0;
         }
     }
+
+    // Check if any of the new triangles penetrates any of the old triangles nearby
+    dooutputlogmesh(*this, "/tmp/beforeflipping.vtp", FT_VTK);
+
+    // Add all triangles nearby to NearTriangles
+    std::array<double, 3> cm = NewEdge.GiveCenterPoint();
+    std::vector<VertexType *> NearVertices = this->VertexOctreeRoot->GiveVerticesWithinSphere(cm[0], cm[1], cm[2], NewEdge.GiveLength()*1);
+    std::sort(NearVertices.begin(), NearVertices.end());
+    NearVertices.erase( std::unique(NearVertices.begin(), NearVertices.end()), NearVertices.end());
+    std::vector<TriangleType *> NearTriangles;
+    for (VertexType *v: NearVertices) {
+        for (TriangleType *t: v->Triangles) {
+            NearTriangles.push_back(t);
+        }
+    }
+    std::sort(NearTriangles.begin(), NearTriangles.end());
+    NearTriangles.erase( std::unique(NearTriangles.begin(), NearTriangles.end()), NearTriangles.end());
+
+    // Remove EdgeTriangles from NearTriangles
+    for (int i=0; i<2; i++) NearTriangles.erase(std::remove(NearTriangles.begin(), NearTriangles.end(), EdgeTriangles[i]), NearTriangles.end());
+
+    for (TriangleType *t1: NewTriangles) {
+        for (TriangleType *t2: NearTriangles) {
+            FC_MESH R = this->CheckTrianglePenetration(t1, t2);
+            if (R!=FC_OK) {
+                LOG("Unable to flip edge. Will result in penetration\n", 0);
+                return R;
+            }
+        }
+    }
+
 
     LOG("Flip edge!\n", 0);
 
@@ -934,7 +966,7 @@ bool MeshManipulations :: CoarsenMeshImproved()
 #if TEST_MESH_FOR_EACH_COARSENING_ITERATION
                             Generator.TestMesh();
 #endif
-                            if (i==1736) throw(0);
+                            //if (i==1736) throw(0);
                             break;
                         }
                     }
