@@ -298,7 +298,7 @@ TriangleType *MeshData :: AddTriangle(TriangleType *NewTriangle)
 TetType *MeshData :: AddTetrahedron(std::vector<int> VertexIDs)
 {
     TetType *NewTet = new TetType;
-    NewTet->Vertices = {this->Vertices.at(VertexIDs[0]), this->Vertices.at(VertexIDs[1]), this->Vertices.at(VertexIDs[2]), this->Vertices.at(VertexIDs[3])};
+    NewTet->Vertices = {{this->Vertices.at(VertexIDs[0]), this->Vertices.at(VertexIDs[1]), this->Vertices.at(VertexIDs[2]), this->Vertices.at(VertexIDs[3])}};
     return this->AddTetrahedron(NewTet);
 }
 

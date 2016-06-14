@@ -2,7 +2,9 @@
 #include <vector>
 #include <iterator>
 #include <time.h>
+#ifdef OPENMP
 #include <omp.h>
+#endif
 
 #include "Voxel2Tet.h"
 #include "Importer.h"
@@ -374,7 +376,7 @@ void Voxel2Tet :: FindEdges()
         SurfaceEdgeVertices.erase( std::unique(SurfaceEdgeVertices.begin(), SurfaceEdgeVertices.end()), SurfaceEdgeVertices.end());
         
         for (auto v: SurfaceEdgeVertices) {
-            v->Fixed = {true, true, true};
+            v->Fixed = {{true, true, true}};
         }
         
     }
@@ -702,7 +704,7 @@ void Voxel2Tet :: SmoothAllAtOnce(double c, double alpha, double charlength, boo
         
         std::array<bool,3> FixedDirections;
         // Lock vertices on boundary surfaces such that they only move in the plane
-        FixedDirections = {false, false, false};
+        FixedDirections = {{false, false, false}};
         for (int j=0; j<3; j++) {
             if (ThisVertex->get_c(j)>=(this->Imp->GiveBoundingBox().maxvalues[j])-eps) {
                 FixedDirections[j] = true;
@@ -825,7 +827,7 @@ double Voxel2Tet::GetListOfVolumes(std::vector<double> &VolumeList, std::vector<
         double v = this->Volumes.at(i)->ComputeVolume();
         VolumeList.push_back(v);
         PhaseList.push_back(this->Volumes.at(i)->Phase);
-        TotalVolume =+ v;
+        TotalVolume = + v;
     }
     return TotalVolume;
 

@@ -133,7 +133,7 @@ FC_MESH MeshManipulations :: GetFlippedEdgeData(EdgeType *EdgeToFlip, EdgeType *
                 LOG("t0forward: %d\n", t0forward);
 
                 int increment = (t0forward) ? 1 : 2;
-                std::array<VertexType *, 2> t0edge = {EdgeTriangles[0]->Vertices[i], EdgeTriangles[0]->Vertices[(i+increment)%3]};
+                std::array<VertexType *, 2> t0edge = {{EdgeTriangles[0]->Vertices[i], EdgeTriangles[0]->Vertices[(i+increment)%3]}};
 
                 // Produce new edge
                 if (t0forward) {
@@ -808,13 +808,13 @@ FC_MESH MeshManipulations :: CheckCoarsenChord(EdgeType *EdgeToCollapse, VertexT
         return FC_CHORD;
     }
     VertexType *OtherVertex = (ConnectedVertices[0] == SaveVertex) ? ConnectedVertices[1] : ConnectedVertices[0];
-    NewEdge={SaveVertex, OtherVertex};
-    OtherEdge = {RemoveVertex, OtherVertex};
+    NewEdge={{SaveVertex, OtherVertex}};
+    OtherEdge = {{RemoveVertex, OtherVertex}};
 
     // Compute normalized vectors
     std::array<double, 3> NewNormal = ComputeNormalizedVector(NewEdge.at(0), NewEdge.at(1));
-    std::array<std::array<double, 3>, 2> Normals = {ComputeNormalizedVector(OtherEdge.at(0), OtherEdge.at(1)),
-                                                    ComputeNormalizedVector(EdgeToCollapse->Vertices.at(0), EdgeToCollapse->Vertices.at(1)) };
+    std::array<std::array<double, 3>, 2> Normals = {{ComputeNormalizedVector(OtherEdge.at(0), OtherEdge.at(1)),
+                                                    ComputeNormalizedVector(EdgeToCollapse->Vertices.at(0), EdgeToCollapse->Vertices.at(1)) }};
     double MaxAngle = 0.0;
 
     for (int i: {0, 1}) {
@@ -887,7 +887,6 @@ int MeshManipulations::FlipAll()
 {
     int flipcount = 0;
     int i = 0;
-    int outputindex = 0;
     bool edgeflipped = true;
     while (edgeflipped) {
         edgeflipped = false;
@@ -921,7 +920,9 @@ bool MeshManipulations :: CoarsenMeshImproved()
     dooutputlogmesh(*this, "/tmp/Coarsening_%u.vtp", 0);
 #endif
 
+#if EXPORT_MESH_COARSENING
     int MeshIndex=0;
+#endif
 
     while (CoarseningOccurs ) {
 
@@ -947,16 +948,14 @@ bool MeshManipulations :: CoarsenMeshImproved()
             if (e->GiveLength()<1e10) { // TODO: Use argument here
 
                 // Try to collapse vertices on current edge
-                std::array<VertexType *, 2> EdgeVertices = {e->Vertices[0], e->Vertices[1]};
+                std::array<VertexType *, 2> EdgeVertices = {{e->Vertices[0], e->Vertices[1]}};
                 int vi=0;
-                bool CoarseOk = false;
                 for (VertexType *v: EdgeVertices) {
 
                     // If vertex v is not in the set of independent vertices, try to collapse
                     if (std::find(IndepSet.begin(), IndepSet.end(), v) == IndepSet.end()) {
                         if (this->CollapseEdge(e, vi) == FC_OK) {
                             CoarseningOccurs = true;
-                            CoarseOk = true;
 #if EXPORT_MESH_COARSENING
                             std::ostringstream offname;
                             offname << "/tmp/OffSurface_" << MeshIndex << ".off";

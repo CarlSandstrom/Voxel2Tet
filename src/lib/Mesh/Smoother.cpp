@@ -1,4 +1,6 @@
+#ifdef OPENMP
 #include <omp.h>
+#endif
 #include"Smoother.h"
 
 namespace voxel2tet
@@ -166,7 +168,7 @@ void SpringSmoothGlobal(std::vector<VertexType*> Vertices, std::vector<bool> Fix
 
     for (unsigned int i=0; i<Vertices.size(); i++) {
         std::array<double, 3> cp;
-        std::array<int, 3> dofid = {-1, -1, -1};
+        std::array<int, 3> dofid = {{-1, -1, -1}};
         for (int j=0; j<3; j++) {
             cp.at(j) = Vertices.at(i)->get_c(j);
             if (!Fixed[i]) {
@@ -431,9 +433,9 @@ void SpringSmooth (std::vector<VertexType*> Vertices, std::vector<bool> Fixed, s
                     std::vector<VertexType*> MyConnections = Connections.at(i);
 
                     for (unsigned k=0; k<MyConnections.size(); k++) {
-                        ConnectionCoords.push_back({PreviousPositions.at(ConnectionVertexIndex.at(i).at(k))[0],
+                        ConnectionCoords.push_back({{PreviousPositions.at(ConnectionVertexIndex.at(i).at(k))[0],
                                                     PreviousPositions.at(ConnectionVertexIndex.at(i).at(k))[1],
-                                                    PreviousPositions.at(ConnectionVertexIndex.at(i).at(k))[2]});
+                                                    PreviousPositions.at(ConnectionVertexIndex.at(i).at(k))[2]}});
                     }
 
                     arma::vec xc = {PreviousPositions.at(i)[0], PreviousPositions.at(i)[1], PreviousPositions.at(i)[2]};

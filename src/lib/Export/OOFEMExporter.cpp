@@ -53,8 +53,8 @@ void OOFEMExporter::WriteVolumeData(std::string Filename)
     }
 
     // Find node sets
-    std::array<double, 3> MaxCoords = {UsedVertices[0]->get_c(0), UsedVertices[0]->get_c(1), UsedVertices[0]->get_c(2) };
-    std::array<double, 3> MinCoords = {UsedVertices[0]->get_c(0), UsedVertices[0]->get_c(1), UsedVertices[0]->get_c(2) };
+    std::array<double, 3> MaxCoords = {{UsedVertices[0]->get_c(0), UsedVertices[0]->get_c(1), UsedVertices[0]->get_c(2) }};
+    std::array<double, 3> MinCoords = {{UsedVertices[0]->get_c(0), UsedVertices[0]->get_c(1), UsedVertices[0]->get_c(2) }};
 
     for (VertexType *v: UsedVertices) {
         for (int i=0; i<3; i++) {
@@ -145,12 +145,13 @@ void OOFEMExporter::WriteVolumeData(std::string Filename)
     for (auto test: Self2OofemMaterials) {
         OOFEMFile << "# Material " << test.first << " in source file\n";
         //OOFEMFile << "hyperelmat " << i++ << " d 1 k " << 100 + i*10 << " g " << 100 + i*10 << "\n";
-        OOFEMFile << "IsoLE " << i++ << " d 1.0 E " << 200 +i*10 << "e9 n 0.3 tAlpha 0.0\n";
+        OOFEMFile << "IsoLE " << i << " d 1.0 E " << 200 +i*10 << "e9 n 0.3 tAlpha 0.0\n";
+        i++;
         // OOFEMFile << "isole " << i++ << " d 1 E 1 n .5 tAlpha 0\n";
     }
 
     // Write boundary conditions
-    std::array<double, 3> center = {(MaxCoords[0]+MinCoords[0])/2.0, (MaxCoords[1]+MinCoords[1])/2.0, (MaxCoords[2]+MinCoords[2])/2.0};
+    std::array<double, 3> center = {{(MaxCoords[0]+MinCoords[0])/2.0, (MaxCoords[1]+MinCoords[1])/2.0, (MaxCoords[2]+MinCoords[2])/2.0}};
     OOFEMFile << "PrescribedGradient 1 loadTimeFunction 1 ccoord 3 " << center[0] << " " \
               << center[1] << " " << center[2] << " gradient 3 3 {0.2 0.0 0.0;0.0 0.0 0.0;0.0 0.0 0.0} set 2 dofs 3 1 2 3\n";
 
@@ -186,8 +187,8 @@ void OOFEMExporter::WriteVolumeData(std::string Filename)
     OOFEMFile << "\n";
 
     // Individual max and min sets in all directions
-    std::array<std::string, 3> MaxComments = {"# Max X", "# Max Y", "# Max Z"};
-    std::array<std::string, 3> MinComments = {"# Min X", "# Min Y", "# Min Z"};
+    std::array<std::string, 3> MaxComments = {{"# Max X", "# Max Y", "# Max Z"}};
+    std::array<std::string, 3> MinComments = {{"# Min X", "# Min Y", "# Min Z"}};
     for (int i=0; i<3; i++) {
         // Write max nodes
         OOFEMFile << MaxComments[i] << " nodes\n";

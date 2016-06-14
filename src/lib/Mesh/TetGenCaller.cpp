@@ -134,7 +134,7 @@ MeshData *TetGenCaller::Execute()
 
     CopyMeshFromSelf(&in);
 
-    tetrahedralize("pqA", &in, &out, NULL); //pq1.414a0.1
+    tetrahedralize((char *)"pqA", &in, &out, NULL); //pq1.414a0.1
 
     return CopyTetMesh(&out);
 
@@ -147,7 +147,7 @@ void TetGenCaller :: TestMesh()
 
     CopyMeshFromSelf(&in);
 
-    tetrahedralize("pd", &in, &out);
+    tetrahedralize((char *)"pd", &in, &out);
 
     //printf("%u\n", out.mesh_dim);
 

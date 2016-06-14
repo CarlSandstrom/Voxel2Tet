@@ -30,7 +30,7 @@ int main( int argc, char *argv[] )
     double length=1.0;
     int dimensions= std::ceil(length/spacing);
 
-    v2t.LoadCallback(&GiveMaterialIDByCoordinateCube, {0,0,0}, {spacing, spacing, spacing}, {dimensions, dimensions, dimensions});
+    v2t.LoadCallback(&GiveMaterialIDByCoordinateCube, {{0,0,0}}, {{spacing, spacing, spacing}}, {{dimensions, dimensions, dimensions}});
     v2t.Process();
     v2t.ExportSurface("/tmp/Voxel2Tet/TetGenTest.off", voxel2tet::FT_OFF);
 

@@ -1,7 +1,7 @@
 cmake_minimum_required (VERSION 2.6)
 project (Voxel2Tet)
 
-set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -Wall -ffloat-store -std=c++11 -llapack -lblas -lm")
+set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -Wall -Wno-missing-braces -std=c++11")
 
 option(OPENMP "Specifies if OpenMP support should be active" OFF)
 

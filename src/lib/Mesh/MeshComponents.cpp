@@ -15,7 +15,7 @@ VertexType :: VertexType (double x, double y, double z)
     this->originalcoordinates[0] = x;
     this->originalcoordinates[1] = y;
     this->originalcoordinates[2] = z;
-    this->Fixed = {false, false, false};
+    this->Fixed = {{false, false, false}};
 }
 
 void VertexType :: set_c(std::array<double,3> newc)
@@ -121,7 +121,7 @@ std::array<double, 3> EdgeType :: GiveCenterPoint()
     double x = (this->Vertices[0]->get_c(0)+this->Vertices[1]->get_c(0)) / 2.0;
     double y = (this->Vertices[0]->get_c(1)+this->Vertices[1]->get_c(1)) / 2.0;
     double z = (this->Vertices[0]->get_c(2)+this->Vertices[1]->get_c(2)) / 2.0;
-    return {x, y, z};
+    return {{x, y, z}};
 }
 
 // TriangleType
@@ -197,7 +197,7 @@ double TriangleType :: GiveSignedArea()
 
 std::array<double, 3> TriangleType::GiveCenterOfMass()
 {
-    std::array<double, 3> cm = {0,0,0};
+    std::array<double, 3> cm = {{0,0,0}};
     for (int i=0; i<3; i++) {
         for (int j=0; j<3; j++) {
             cm[i]=cm[i]+this->Vertices[j]->get_c(i)/3;
@@ -334,7 +334,7 @@ void TriangleType :: FlipNormal()
 
 std::array<double, 3> TetType :: GiveCenterOfMass()
 {
-    std::array<double, 3> cm = {0,0,0};
+    std::array<double, 3> cm = {{0,0,0}};
     for (VertexType *v: this->Vertices) {
         for (int i=0; i<3; i++) {
             cm[i] = cm[i] + v->get_c(i)/4;

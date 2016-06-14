@@ -19,7 +19,7 @@ bool Volume::IsPointInside(std::array<double, 3> P)
     // Use Ray-Casting method
 
     // Find a point that definitely is located outside of the volume
-    std::array<double, 3> MinPoint = {this->Surfaces[0]->Vertices[0]->get_c(0), this->Surfaces[0]->Vertices[0]->get_c(1), this->Surfaces[0]->Vertices[0]->get_c(2)};
+    std::array<double, 3> MinPoint = {{this->Surfaces[0]->Vertices[0]->get_c(0), this->Surfaces[0]->Vertices[0]->get_c(1), this->Surfaces[0]->Vertices[0]->get_c(2)}};
     std::vector<VertexType*> Vertices = this->GiveVertices();
 
     for (VertexType *v: Vertices) {

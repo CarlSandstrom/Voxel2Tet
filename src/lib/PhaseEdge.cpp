@@ -117,10 +117,10 @@ void PhaseEdge :: SortAndFixBrokenEdge(std::vector<PhaseEdge*> *FixedEdges)
                     }
 
                     if (i==0) {
-                        NewEdgeSegment = new std::array<VertexType*, 2> {NextLastVertex, VertexToFind};
+                        NewEdgeSegment = new std::array<VertexType*, 2> {{NextLastVertex, VertexToFind}};
                         NewPhaseEdge->EdgeSegments.insert(NewPhaseEdge->EdgeSegments.begin(), *NewEdgeSegment);
                     } else {
-                        NewEdgeSegment = new std::array<VertexType*, 2> {VertexToFind, NextLastVertex};
+                        NewEdgeSegment = new std::array<VertexType*, 2> {{VertexToFind, NextLastVertex}};
                         NewPhaseEdge->EdgeSegments.push_back(*NewEdgeSegment);
                     }
                     VertexToFind = NextLastVertex;
@@ -190,9 +190,9 @@ void PhaseEdge :: GiveTopologyLists(std::vector<std::vector<VertexType *>> *Conn
 
         // Set start and end points to fixed
         if (std::find(this->FixedVertices.begin(), this->FixedVertices.end(), FlatList.at(i))==this->FixedVertices.end()  ) {
-            FixedDirections = {false, false, false};
+            FixedDirections = {{false, false, false}};
         } else {
-            FixedDirections = {true, true, true};
+            FixedDirections = {{true, true, true}};
         }
 
         FixedDirectionsList->push_back(FixedDirections);
@@ -213,7 +213,7 @@ void PhaseEdge :: Smooth(MeshData *Mesh, double c, double alpha, double charleng
 
     this->GiveTopologyLists(&Connections, &FixedDirectionsList);
 
-    for (VertexType *v: FlatList) {
+    for (size_t i=0; i<FlatList.size(); i++) {
         FixedList.push_back(false);
     }
 
@@ -223,7 +223,7 @@ void PhaseEdge :: Smooth(MeshData *Mesh, double c, double alpha, double charleng
 
 void PhaseEdge :: AddPhaseEdgeSegment(VertexType *v1, VertexType *v2)
 {
-    EdgeSegments.push_back({v1, v2});
+    EdgeSegments.push_back({{v1, v2}});
 }
 
 }

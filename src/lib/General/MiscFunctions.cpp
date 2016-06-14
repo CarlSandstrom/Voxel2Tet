@@ -5,7 +5,9 @@
 #include <stdarg.h>
 #include <MeshComponents.h>
 #include <sstream>
+#ifdef OPENMP
 #include <omp.h>
+#endif
 
 #include "MeshData.h"
 
