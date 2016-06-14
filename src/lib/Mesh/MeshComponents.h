@@ -18,9 +18,17 @@ private:
     std::array<double,3> c;
 
 public:
+    /**
+     * @brief Specifies the value of the 'c' constant in the non-linear spring
+     */
+    double c_constant;
+
     int ID;
+
     int tag;
+
     std::vector<PhaseEdge*> PhaseEdges;
+
     void AddPhaseEdge(PhaseEdge*);
 
     /**

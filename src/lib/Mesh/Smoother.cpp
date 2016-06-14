@@ -367,17 +367,20 @@ void SpringSmooth (std::vector<VertexType*> Vertices, std::vector<bool> Fixed, s
     int MAX_ITER_COUNT=100000;
 
     // Create vectors for current and previous positions
+    std::vector<std::array<double, 3>> OriginalPositions;
     std::vector<std::array<double, 3>> CurrentPositions;
     std::vector<std::array<double, 3>> PreviousPositions;
 
     for (unsigned int i=0; i<Vertices.size(); i++) {
         std::array<double, 3> cp;
-        std::array<double, 3> pp;
+
         for (int j=0; j<3; j++) {
-            cp.at(j) = pp.at(j) = Vertices.at(i)->get_c(j);
+            cp.at(j) = Vertices.at(i)->get_c(j);
         }
+
+        OriginalPositions.push_back(cp);
         CurrentPositions.push_back(cp);
-        PreviousPositions.push_back(pp);
+        PreviousPositions.push_back(cp);
     }
 
     // Create vector-vector for accessing neightbours
@@ -388,6 +391,11 @@ void SpringSmooth (std::vector<VertexType*> Vertices, std::vector<bool> Fixed, s
             int VertexIndex = std::distance(Vertices.begin(), std::find(Vertices.begin(), Vertices.end(), v));
             ConnectionVertexIndex.at(ConnectionVertexIndex.size()-1).push_back(VertexIndex);
         }
+    }
+
+    // Reset 'c' constant for all vertices
+    for (VertexType *v: Vertices) {
+        v->c_constant = c;
     }
 
 #if EXPORT_SMOOTHING_ANIMATION == 1
@@ -434,12 +442,12 @@ void SpringSmooth (std::vector<VertexType*> Vertices, std::vector<bool> Fixed, s
 
                     for (unsigned k=0; k<MyConnections.size(); k++) {
                         ConnectionCoords.push_back({{PreviousPositions.at(ConnectionVertexIndex.at(i).at(k))[0],
-                                                    PreviousPositions.at(ConnectionVertexIndex.at(i).at(k))[1],
-                                                    PreviousPositions.at(ConnectionVertexIndex.at(i).at(k))[2]}});
+                                                     PreviousPositions.at(ConnectionVertexIndex.at(i).at(k))[1],
+                                                     PreviousPositions.at(ConnectionVertexIndex.at(i).at(k))[2]}});
                     }
 
                     arma::vec xc = {PreviousPositions.at(i)[0], PreviousPositions.at(i)[1], PreviousPositions.at(i)[2]};
-                    arma::vec x0 = {Vertices.at(i)->get_c(0), Vertices.at(i)->get_c(1), Vertices.at(i)->get_c(2)};
+                    arma::vec x0 = {OriginalPositions.at(i)[0], OriginalPositions.at(i)[1], OriginalPositions.at(i)[2]};
 
                     // Compute out-of-balance vector
                     arma::vec R = ComputeOutOfBalance(ConnectionCoords, xc, x0, alpha, c);
@@ -474,7 +482,6 @@ void SpringSmooth (std::vector<VertexType*> Vertices, std::vector<bool> Fixed, s
                         deltamaxvalues[threadid] = arma::norm(d);
                         deltamaxnodes[threadid] = i;
                     }
-
                 }
             }
 /*
