@@ -354,14 +354,25 @@ std::vector<std::pair<TriangleType *, TriangleType *>> CheckPenetration(std::vec
 {
 
     std::vector<std::pair<TriangleType *, TriangleType *>> IntersectingTriangles;
+    std::vector<TriangleType *> Triangles;
 
-    bool DoesIntersect = false;
+    for (VertexType *v: *Vertices) {
+        for(TriangleType *t: v->Triangles) {
+            Triangles.push_back(t);
+        }
+    }
+    std::sort(Triangles.begin(), Triangles.end());
+    Triangles.erase(std::unique(Triangles.begin(), Triangles.end()), Triangles.end());
+    // return IntersectingTriangles;
 
-    for (size_t i=0; i<Mesh->Triangles.size(); i++) {
-        TriangleType *t1 = Mesh->Triangles.at(i);
+    for (TriangleType *t1: Triangles) {
 
-        for (size_t j=i+1; j<Mesh->Triangles.size(); j++) {
-            TriangleType *t2 = Mesh->Triangles.at(j);
+        std::array<double, 3> c = t1->GiveCenterOfMass();
+        double d = t1->GiveLongestEdgeLength();
+
+        std::vector<TriangleType *> NearTriangles = Mesh->GetTrianglesAround(c, d*2);
+
+        for (TriangleType *t2: NearTriangles) {
             if (t1!=t2){
                 if (Mesh->CheckTrianglePenetration(t1, t2)) {
                     Mesh->CheckTrianglePenetration(t1, t2);
@@ -373,10 +384,20 @@ std::vector<std::pair<TriangleType *, TriangleType *>> CheckPenetration(std::vec
                     LOG("t2(%u): (%f, %f, %f), (%f, %f, %f), (%f, %f, %f)\n", t2->ID, t2->Vertices.at(0)->get_c(0), t2->Vertices.at(0)->get_c(1), t2->Vertices.at(0)->get_c(2),
                         t2->Vertices.at(1)->get_c(0), t2->Vertices.at(1)->get_c(1), t2->Vertices.at(1)->get_c(2),
                         t2->Vertices.at(2)->get_c(0), t2->Vertices.at(2)->get_c(1), t2->Vertices.at(2)->get_c(2));
-                    //Mesh->CheckTrianglePenetration(t1, t2);
-                    DoesIntersect = true;
-                    for (VertexType *v: t1->Vertices) v->c_constant = v->c_constant * 0.75;
-                    for (VertexType *v: t2->Vertices) v->c_constant = v->c_constant * 0.75;
+/*
+                    std::vector<VertexType*>  StiffenVertices;
+
+                    for (VertexType *v: t1->Vertices) StiffenVertices.push_back(v);
+                    for (VertexType *v: t2->Vertices) StiffenVertices.push_back(v);
+
+                    std::sort(StiffenVertices.begin(), StiffenVertices.end());
+                    StiffenVertices.erase(std::unique(StiffenVertices.begin(), StiffenVertices.end()), StiffenVertices.end());
+
+                    for (VertexType *v: StiffenVertices) {
+                        //v->c_constant = v->c_constant * 0.75;
+                        printf("(%u: c)=%f, ", v->ID, v->c_constant);
+                    }
+                    LOG("\n", 0);*/
                 }
             }
         }
@@ -434,6 +455,9 @@ void SpringSmooth (std::vector<VertexType*> Vertices, std::vector<bool> Fixed, s
 #endif
 
     bool intersecting = true;
+    int intersecting_count=0;
+
+    CheckPenetration(&Vertices, Mesh);
 
     while (intersecting) {
         intersecting = false;
@@ -518,7 +542,6 @@ void SpringSmooth (std::vector<VertexType*> Vertices, std::vector<bool> Fixed, s
                     }
                 }
 
-
                 // Update previous positions
                 for (size_t i=0; i<Vertices.size(); i++) {
                     for (int j=0; j<3; j++) {
@@ -572,8 +595,9 @@ void SpringSmooth (std::vector<VertexType*> Vertices, std::vector<bool> Fixed, s
         // Check for intersecting triangles. If some triangles intersect, stiffen the structure in that area and re-smooth
         std::vector<std::pair<TriangleType *, TriangleType *>> IntersectingTriangles = CheckPenetration(&Vertices, Mesh);
         if (IntersectingTriangles.size()>0) {
+
             intersecting = true;
-            STATUS("Stiffen and re-smooth surface/edge due to intersecting triangles\n", 0);
+            STATUS("Stiffen and re-smooth surface/edge due to %u intersecting triangles, iteration %u\n", IntersectingTriangles.size(), intersecting_count);
 
             // Stiffen spring
             std::vector<VertexType *> StiffenVertices;
@@ -583,7 +607,13 @@ void SpringSmooth (std::vector<VertexType*> Vertices, std::vector<bool> Fixed, s
             }
             std::sort(StiffenVertices.begin(), StiffenVertices.end());
             StiffenVertices.erase(std::unique(StiffenVertices.begin(), StiffenVertices.end()), StiffenVertices.end());
-            for (VertexType *v: StiffenVertices) v->c_constant = v->c_constant * .75;
+
+            if (intersecting_count>50) {
+                STATUS("Too many intersection iterations. Just let it be and it might turn out ok anyway due to the mesh coarsening.\n", 0);
+                return;
+            }
+
+            for (VertexType *v: StiffenVertices) v->c_constant = v->c_constant * .95;
 
             // Revert to original coordinates
             for (size_t i=0; i<Vertices.size(); i++) {
@@ -593,6 +623,16 @@ void SpringSmooth (std::vector<VertexType*> Vertices, std::vector<bool> Fixed, s
                 PreviousPositions.at(i) = OriginalPositions.at(i);
                 CurrentPositions.at(i) = OriginalPositions.at(i);
             }
+
+            intersecting_count++;
+
+#if EXPORT_SMOOTHING_ANIMATION == 1
+    std::ostringstream FileName;
+    if (Mesh!=NULL) {
+        FileName << "/tmp/Smoothing" << 0 << ".vtp";
+        Mesh->ExportSurface( FileName.str(), FT_VTK );
+    }
+#endif
         } else {
             intersecting = false;
             // Update vertices

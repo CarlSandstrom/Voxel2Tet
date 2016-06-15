@@ -306,6 +306,20 @@ std::array<EdgeType *, 3> TriangleType :: GiveEdges()
 
 }
 
+double TriangleType::GiveLongestEdgeLength()
+{
+    double l=0.0;
+    for (int i=0; i<3; i++) {
+        int nexti = (i==2) ? 0 : i+1;
+        double d0 = (this->Vertices[i]->get_c(0)-this->Vertices[nexti]->get_c(0));
+        double d1 = (this->Vertices[i]->get_c(1)-this->Vertices[nexti]->get_c(1));
+        double d2 = (this->Vertices[i]->get_c(2)-this->Vertices[nexti]->get_c(2));
+        double alpha = sqrt(d0*d0+d1*d1+d2*d2);
+        if (alpha>l) l=alpha;
+    }
+    return l;
+}
+
 void TriangleType :: UpdateNormal()
 {
 

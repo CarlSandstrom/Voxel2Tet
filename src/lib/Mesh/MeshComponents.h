@@ -99,6 +99,7 @@ public:
 
     EdgeType * GiveEdge(int Index);
     std::array<EdgeType *, 3> GiveEdges();
+    double GiveLongestEdgeLength();
 
     // Compute area of triangle
     double GiveArea();
