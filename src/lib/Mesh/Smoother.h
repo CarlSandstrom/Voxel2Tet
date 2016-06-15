@@ -28,7 +28,7 @@ void SpringSmoothGlobal(std::vector<VertexType*> Vertices, std::vector<bool> Fix
                   double c, double alpha, double charlength, bool Automatic_c=false,
                   MeshData *Mesh=NULL);
 
-bool CheckPenetration(std::vector<VertexType *> *Vertices, MeshData *Mesh);
+std::vector<std::pair<TriangleType *, TriangleType *>> CheckPenetration(std::vector<VertexType *> *Vertices, MeshData *Mesh);
 
 void SpringSmooth(std::vector<VertexType*> Vertices, std::vector<bool> Fixed,
                   std::vector<std::vector<VertexType*>> Connections,

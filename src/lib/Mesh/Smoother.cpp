@@ -351,14 +351,38 @@ void SpringSmoothGlobal(std::vector<VertexType*> Vertices, std::vector<bool> Fix
 
 }
 
-bool CheckPenetration(std::vector<VertexType *> *Vertices, MeshData *Mesh)
+std::vector<std::pair<TriangleType *, TriangleType *>> CheckPenetration(std::vector<VertexType *> *Vertices, MeshData *Mesh)
 {
 
-    for (VertexType *v: *Vertices) {
-        std::vector<TriangleType *> VertexTriangles = v->Triangles;
-        LOG("\n", 0);
-    }
+    std::vector<std::pair<TriangleType *, TriangleType *>> IntersectingTriangles;
 
+    bool DoesIntersect = false;
+
+    for (size_t i=0; i<Mesh->Triangles.size(); i++) {
+        TriangleType *t1 = Mesh->Triangles.at(i);
+
+        for (size_t j=i+1; j<Mesh->Triangles.size(); j++) {
+            TriangleType *t2 = Mesh->Triangles.at(j);
+            if (t1!=t2){
+                if (Mesh->CheckTrianglePenetration(t1, t2)) {
+                    Mesh->CheckTrianglePenetration(t1, t2);
+                    IntersectingTriangles.push_back({t1, t2});
+                    LOG("Triangles %u and %u intersect!\n", t1->ID, t2->ID);
+                    LOG("t1(%u): (%f, %f, %f), (%f, %f, %f), (%f, %f, %f)\n", t1->ID, t1->Vertices.at(0)->get_c(0), t1->Vertices.at(0)->get_c(1), t1->Vertices.at(0)->get_c(2),
+                        t1->Vertices.at(1)->get_c(0), t1->Vertices.at(1)->get_c(1), t1->Vertices.at(1)->get_c(2),
+                        t1->Vertices.at(2)->get_c(0), t1->Vertices.at(2)->get_c(1), t1->Vertices.at(2)->get_c(2));
+                    LOG("t2(%u): (%f, %f, %f), (%f, %f, %f), (%f, %f, %f)\n", t2->ID, t2->Vertices.at(0)->get_c(0), t2->Vertices.at(0)->get_c(1), t2->Vertices.at(0)->get_c(2),
+                        t2->Vertices.at(1)->get_c(0), t2->Vertices.at(1)->get_c(1), t2->Vertices.at(1)->get_c(2),
+                        t2->Vertices.at(2)->get_c(0), t2->Vertices.at(2)->get_c(1), t2->Vertices.at(2)->get_c(2));
+                    //Mesh->CheckTrianglePenetration(t1, t2);
+                    DoesIntersect = true;
+                    for (VertexType *v: t1->Vertices) v->c_constant = v->c_constant * 0.75;
+                    for (VertexType *v: t2->Vertices) v->c_constant = v->c_constant * 0.75;
+                }
+            }
+        }
+    }
+    return IntersectingTriangles;
 }
 
 void SpringSmooth (std::vector<VertexType*> Vertices, std::vector<bool> Fixed, std::vector<std::vector<VertexType*>> Connections,
@@ -406,155 +430,182 @@ void SpringSmooth (std::vector<VertexType*> Vertices, std::vector<bool> Fixed, s
     }
 #endif
 
-    int itercount = 0;
-    int threadcount = 1;
-    double deltamax = 1e8;
-    int deltamaxnode;
-
 #ifdef OPENMP
     threadcount = omp_get_max_threads();
 #endif
 
-    while ((itercount < MAX_ITER_COUNT) & (deltamax>(charlength*1e-3))) {
+    bool intersecting = true;
 
-        deltamax=0.0;
-        int deltamaxnodes[threadcount];
-        double deltamaxvalues[threadcount];
+    while (intersecting) {
+        intersecting = false;
+        int itercount = 0;
+        int threadcount = 1;
+        double deltamax = 1e8;
+        int deltamaxnode;
 
-        for (int i=0; i<threadcount; i++) {
-            deltamaxnodes[i]=0;
-            deltamaxvalues[i]=0.0;
-        }
+        while ((itercount < MAX_ITER_COUNT) & (deltamax>(charlength*1e-3))) {
 
-        //#pragma omp parallel default(shared)
-        {
-            int threadid=0;
+            deltamax=0.0;
+            int deltamaxnodes[threadcount];
+            double deltamaxvalues[threadcount];
+
+            for (int i=0; i<threadcount; i++) {
+                deltamaxnodes[i]=0;
+                deltamaxvalues[i]=0.0;
+            }
+
+            //#pragma omp parallel default(shared)
+            {
+                int threadid=0;
 #ifdef OPENMP
-            threadid=omp_get_thread_num();
+                threadid=omp_get_thread_num();
 #endif
 
-            //#pragma omp for schedule(static, 100)
-            for (size_t i=0; i<Vertices.size(); i++) {
-                if (!Fixed[i]) {
+                //#pragma omp for schedule(static, 100)
+                for (size_t i=0; i<Vertices.size(); i++) {
+                    if (!Fixed[i]) {
 
-                    std::vector<std::array<double, 3>> ConnectionCoords;
-                    std::vector<VertexType*> MyConnections = Connections.at(i);
+                        std::vector<std::array<double, 3>> ConnectionCoords;
+                        std::vector<VertexType*> MyConnections = Connections.at(i);
 
-                    for (unsigned k=0; k<MyConnections.size(); k++) {
-                        ConnectionCoords.push_back({{PreviousPositions.at(ConnectionVertexIndex.at(i).at(k))[0],
-                                                     PreviousPositions.at(ConnectionVertexIndex.at(i).at(k))[1],
-                                                     PreviousPositions.at(ConnectionVertexIndex.at(i).at(k))[2]}});
-                    }
+                        for (unsigned k=0; k<MyConnections.size(); k++) {
+                            ConnectionCoords.push_back({{PreviousPositions.at(ConnectionVertexIndex.at(i).at(k))[0],
+                                                         PreviousPositions.at(ConnectionVertexIndex.at(i).at(k))[1],
+                                                         PreviousPositions.at(ConnectionVertexIndex.at(i).at(k))[2]}});
+                        }
 
-                    arma::vec xc = {PreviousPositions.at(i)[0], PreviousPositions.at(i)[1], PreviousPositions.at(i)[2]};
-                    arma::vec x0 = {OriginalPositions.at(i)[0], OriginalPositions.at(i)[1], OriginalPositions.at(i)[2]};
+                        arma::vec xc = {PreviousPositions.at(i)[0], PreviousPositions.at(i)[1], PreviousPositions.at(i)[2]};
+                        arma::vec x0 = {OriginalPositions.at(i)[0], OriginalPositions.at(i)[1], OriginalPositions.at(i)[2]};
 
-                    // Compute out-of-balance vector
-                    arma::vec R = ComputeOutOfBalance(ConnectionCoords, xc, x0, alpha, c);
-                    double err = arma::norm(R);
-                    int iter = 0;
+                        // Compute out-of-balance vector
+                        arma::vec R = ComputeOutOfBalance(ConnectionCoords, xc, x0, alpha, Vertices.at(i)->c_constant);
+                        double err = arma::norm(R);
+                        int iter = 0;
 
-                    // Find equilibrium
-                    while ((err>1e-5) & (iter<100000)) {
-                        arma::mat T = ComputeAnalyticalTangent(ConnectionCoords, xc, x0, alpha, c);
-                        arma::vec delta = -arma::solve(T, R);
-                        xc = xc + 1.*delta;
-                        R = ComputeOutOfBalance(ConnectionCoords, xc, x0, alpha, c);
-                        err = arma::norm(R);
-                        iter ++;
-                    }
+                        // Find equilibrium
+                        while ((err>1e-5) & (iter<100000)) {
+                            arma::mat T = ComputeAnalyticalTangent(ConnectionCoords, xc, x0, alpha, Vertices.at(i)->c_constant);
+                            arma::vec delta = -arma::solve(T, R);
+                            xc = xc + 1.*delta;
+                            R = ComputeOutOfBalance(ConnectionCoords, xc, x0, alpha, Vertices.at(i)->c_constant);
+                            err = arma::norm(R);
+                            iter ++;
+                        }
 
-                    // If too many iterations, throw an exception and investigate...
-                    if (iter>99999) {
-                        throw(0);
-                    }
+                        // If too many iterations, throw an exception and investigate...
+                        if (iter>99999) {
+                            throw(0);
+                        }
 
-                    // Update current position
-                    for (int j=0; j<3; j++) {
-                        if (!Vertices.at(i)->Fixed[j]) {
-                            CurrentPositions.at(i)[j] = xc[j];
+                        // Update current position
+                        for (int j=0; j<3; j++) {
+                            if (!Vertices.at(i)->Fixed[j]) {
+                                CurrentPositions.at(i)[j] = xc[j];
+                            }
+                        }
+
+                        // Update maximum delta
+                        arma::vec d={PreviousPositions.at(i)[0]-CurrentPositions.at(i)[0], PreviousPositions.at(i)[1]-CurrentPositions.at(i)[1], PreviousPositions.at(i)[2]-CurrentPositions.at(i)[2]};
+                        if (arma::norm(d)>deltamaxvalues[threadid]) {
+                            deltamaxvalues[threadid] = arma::norm(d);
+                            deltamaxnodes[threadid] = i;
                         }
                     }
+                }
 
-                    // Update maximum delta
-                    arma::vec d={PreviousPositions.at(i)[0]-CurrentPositions.at(i)[0], PreviousPositions.at(i)[1]-CurrentPositions.at(i)[1], PreviousPositions.at(i)[2]-CurrentPositions.at(i)[2]};
-                    if (arma::norm(d)>deltamaxvalues[threadid]) {
-                        deltamaxvalues[threadid] = arma::norm(d);
-                        deltamaxnodes[threadid] = i;
+                for (unsigned int i=0; i<Vertices.size(); i++) {
+                    for (int j=0; j<3; j++) {
+                        Vertices.at(i)->set_c(CurrentPositions.at(i)[j], j); // TODO: Use array to improve performance
+                    }
+                }
+
+
+                // Update previous positions
+                for (size_t i=0; i<Vertices.size(); i++) {
+                    for (int j=0; j<3; j++) {
+                        if (!Vertices.at(i)->Fixed[j]) {
+                            PreviousPositions.at(i)[j] = CurrentPositions.at(i)[j];
+                        }
                     }
                 }
             }
-/*
+
+            deltamaxnode=0;
+            for (int i=0; i<threadcount; i++) {
+                if (deltamaxvalues[i]>deltamax) {
+                    deltamax = deltamaxvalues[i];
+                    deltamaxnode = deltamaxnodes[i];
+                }
+            }
+
+            STATUS("%c[2K\rIteration %u end with deltamax=%f at node %i\r", 27, itercount, deltamax, deltamaxnode);
+            fflush(stdout);
+
+            itercount ++;
+
+#if EXPORT_SMOOTHING_ANIMATION == 1
+            // ************************** DEBUG STUFF
+            // Update vertices
+            for (unsigned int i=0; i<Vertices.size(); i++) {
+                VertexType *v=Vertices.at(i);
+                for (int j=0; j<3; j++) {
+                    if (!v->Fixed[j]) {
+                        v->set_c(CurrentPositions.at(i)[j], j);
+                    }
+                }
+            }
+
+            if (Mesh!=NULL) {
+                FileName.str(""); FileName.clear();
+                FileName << "/tmp/Smoothing" << itercount++ << ".vtp";
+                Mesh->ExportSurface(FileName.str(), FT_VTK);
+            }
+            // ************************** /DEBUG STUFF
+#endif
+
+#if TEST_MESH_FOR_EACH_SMOOTHING
+            TetGenCaller Tetgen;
+            Tetgen.Mesh = Mesh;
+            Tetgen.TestMesh();
+#endif
+        }
+
+        // Check for intersecting triangles. If some triangles intersect, stiffen the structure in that area and re-smooth
+        std::vector<std::pair<TriangleType *, TriangleType *>> IntersectingTriangles = CheckPenetration(&Vertices, Mesh);
+        if (IntersectingTriangles.size()>0) {
+            intersecting = true;
+            STATUS("Stiffen and re-smooth surface/edge due to intersecting triangles\n", 0);
+
+            // Stiffen spring
+            std::vector<VertexType *> StiffenVertices;
+            for (std::pair<TriangleType *, TriangleType *> p: IntersectingTriangles) {
+                for (VertexType *v: p.first->Vertices) StiffenVertices.push_back(v);
+                for (VertexType *v: p.second->Vertices) StiffenVertices.push_back(v);
+            }
+            std::sort(StiffenVertices.begin(), StiffenVertices.end());
+            StiffenVertices.erase(std::unique(StiffenVertices.begin(), StiffenVertices.end()), StiffenVertices.end());
+            for (VertexType *v: StiffenVertices) v->c_constant = v->c_constant * .75;
+
+            // Revert to original coordinates
+            for (size_t i=0; i<Vertices.size(); i++) {
+                for (int j=0; j<3; j++) {
+                    Vertices.at(i)->set_c(OriginalPositions.at(i)[j], j);
+                }
+                PreviousPositions.at(i) = OriginalPositions.at(i);
+                CurrentPositions.at(i) = OriginalPositions.at(i);
+            }
+        } else {
+            intersecting = false;
+            // Update vertices
             for (unsigned int i=0; i<Vertices.size(); i++) {
                 for (int j=0; j<3; j++) {
                     Vertices.at(i)->set_c(CurrentPositions.at(i)[j], j); // TODO: Use array to improve performance
                 }
             }
-
-            CheckPenetration(&Vertices, Mesh);
-*/
-            // Update previous positions
-            for (size_t i=0; i<Vertices.size(); i++) {
-                for (int j=0; j<3; j++) {
-                    if (!Vertices.at(i)->Fixed[j]) {
-                        PreviousPositions.at(i)[j] = CurrentPositions.at(i)[j];
-                    }
-                }
-            }
-
         }
+        STATUS("\n", 0);
 
-        deltamaxnode=0;
-        for (int i=0; i<threadcount; i++) {
-            if (deltamaxvalues[i]>deltamax) {
-                deltamax = deltamaxvalues[i];
-                deltamaxnode = deltamaxnodes[i];
-            }
-        }
-
-        STATUS("%c[2K\rIteration %u end with deltamax=%f at node %i\r", 27, itercount, deltamax, deltamaxnode);
-        fflush(stdout);
-
-        itercount ++;
-
-#if EXPORT_SMOOTHING_ANIMATION == 1
-        // ************************** DEBUG STUFF
-        // Update vertices
-        for (unsigned int i=0; i<Vertices.size(); i++) {
-            VertexType *v=Vertices.at(i);
-            for (int j=0; j<3; j++) {
-                if (!v->Fixed[j]) {
-                    v->set_c(CurrentPositions.at(i)[j], j);
-                }
-            }
-        }
-
-        if (Mesh!=NULL) {
-            FileName.str(""); FileName.clear();
-            FileName << "/tmp/Smoothing" << itercount++ << ".vtp";
-            Mesh->ExportSurface(FileName.str(), FT_VTK);
-        }
-        // ************************** /DEBUG STUFF
-#endif
-
-#if TEST_MESH_FOR_EACH_SMOOTHING
-        TetGenCaller Tetgen;
-        Tetgen.Mesh = Mesh;
-        Tetgen.TestMesh();
-#endif
     }
-
-    if (itercount > 999) {
-        STATUS("WARNING: Smoothing did not converge\n", 0);
-    }
-
-    // Update vertices
-    for (unsigned int i=0; i<Vertices.size(); i++) {
-        for (int j=0; j<3; j++) {
-            Vertices.at(i)->set_c(CurrentPositions.at(i)[j], j); // TODO: Use array to improve performance
-        }
-    }
-    STATUS("\n", 0);
 
 }
 
