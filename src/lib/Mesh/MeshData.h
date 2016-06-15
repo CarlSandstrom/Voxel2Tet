@@ -75,6 +75,14 @@ public:
     void RemoveTetragedron(TetType *t);
 
     /**
+     * @brief GetTrianglesAround gives a vector containing all triangles with at least one vertex withing the sphere created by the coordinate c and distance r.
+     * @param c [in] Center of sphere
+     * @param r [in] Radius of sphere
+     * @return List of triangles
+     */
+    std::vector<TriangleType *> GetTrianglesAround(std::array<double, 3> c, double r);
+
+    /**
      * @brief CheckSameOrientation tells if two neighbouring triangles are oriented in the same
      * way by comparing the order of the vertices on the shared edge
      * @param t1

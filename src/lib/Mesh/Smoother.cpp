@@ -208,7 +208,6 @@ void SpringSmoothGlobal(std::vector<VertexType*> Vertices, std::vector<bool> Fix
 
     while ((itercount < MAX_ITER_COUNT) & (err>1e-6)) {
 
-        err = 0.0;
         Kff.zeros();
 
         for (size_t i=0; i<Vertices.size(); i++) {

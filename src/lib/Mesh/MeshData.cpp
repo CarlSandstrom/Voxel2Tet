@@ -314,6 +314,23 @@ void MeshData :: RemoveTetragedron(TetType *t)
     throw(0); // To be done...
 }
 
+std::vector<TriangleType *> MeshData::GetTrianglesAround(std::array<double, 3> c, double r)
+{
+    std::vector<VertexType *> NearVertices = this->VertexOctreeRoot->GiveVerticesWithinSphere(c[0], c[1], c[2], r);
+    std::sort(NearVertices.begin(), NearVertices.end());
+    NearVertices.erase( std::unique(NearVertices.begin(), NearVertices.end()), NearVertices.end());
+    std::vector<TriangleType *> NearTriangles;
+    for (VertexType *v: NearVertices) {
+        for (TriangleType *t: v->Triangles) {
+            NearTriangles.push_back(t);
+        }
+    }
+    std::sort(NearTriangles.begin(), NearTriangles.end());
+    NearTriangles.erase( std::unique(NearTriangles.begin(), NearTriangles.end()), NearTriangles.end());
+
+    return NearTriangles;
+}
+
 bool MeshData::CheckSameOrientation(TriangleType *t1, TriangleType *t2)
 {
     for (int i=0; i<3; i++) {
@@ -351,7 +368,7 @@ FC_MESH MeshData::CheckTrianglePenetration(TriangleType *t1, TriangleType *t2)
 
 FC_MESH MeshData :: CheckTrianglePenetration(std::array<VertexType *, 3> t1, std::array<VertexType *, 3> t2, int &sharedvertices)
 {
-
+/*
     // For perforance, check if bounding boxes of triangles intersect first
     std::array<double, 3> b1max;
     std::array<double, 3> b1min;
@@ -373,11 +390,10 @@ FC_MESH MeshData :: CheckTrianglePenetration(std::array<VertexType *, 3> t1, std
         if (b1max[i]<b2min[i]) bbOverlaps[i] = false;
         if (b2max[i]<b1min[i]) bbOverlaps[i] = false;
         overlaps = overlaps & bbOverlaps[i];
+        if (!overlaps) return FC_OK;
     }
 
-    if (!overlaps) return FC_OK;
-
-
+*/
     //LOG("Check for penetration of triangles [%u, %u, %u] and [%u, %u, %u]\n", t1[0]->ID, t1[1]->ID, t1[2]->ID, t2[0]->ID, t2[1]->ID, t2[2]->ID);
 
     sharedvertices=0;

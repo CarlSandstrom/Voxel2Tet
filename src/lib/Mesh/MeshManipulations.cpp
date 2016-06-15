@@ -278,21 +278,10 @@ FC_MESH MeshManipulations :: FlipEdge(EdgeType *Edge)
     }
 
     // Check if any of the new triangles penetrates any of the old triangles nearby
-    //dooutputlogmesh(*this, "/tmp/beforeflipping.vtp", FT_VTK);
 
     // Add all triangles nearby to NearTriangles
     std::array<double, 3> cm = NewEdge.GiveCenterPoint();
-    std::vector<VertexType *> NearVertices = this->VertexOctreeRoot->GiveVerticesWithinSphere(cm[0], cm[1], cm[2], NewEdge.GiveLength()*4);
-    std::sort(NearVertices.begin(), NearVertices.end());
-    NearVertices.erase( std::unique(NearVertices.begin(), NearVertices.end()), NearVertices.end());
-    std::vector<TriangleType *> NearTriangles;
-    for (VertexType *v: NearVertices) {
-        for (TriangleType *t: v->Triangles) {
-            NearTriangles.push_back(t);
-        }
-    }
-    std::sort(NearTriangles.begin(), NearTriangles.end());
-    NearTriangles.erase( std::unique(NearTriangles.begin(), NearTriangles.end()), NearTriangles.end());
+    std::vector<TriangleType *> NearTriangles = this->GetTrianglesAround(cm, NewEdge.GiveLength()*4);
 
     // Remove EdgeTriangles from NearTriangles
     for (int i=0; i<2; i++) NearTriangles.erase(std::remove(NearTriangles.begin(), NearTriangles.end(), EdgeTriangles[i]), NearTriangles.end());
@@ -407,17 +396,8 @@ FC_MESH MeshManipulations :: CollapseEdgeTest(std::vector<TriangleType *> *Trian
 
     // Collect all point close to the centerpoint of the edge to collapse. The, form a list of all triangles connected to those points and perform check on all triangles in that list (except with triangles to remove).
     std::array<double, 3> cp = EdgeToCollapse->GiveCenterPoint();
-    std::vector<VertexType *> VerticesNear = this->VertexOctreeRoot->GiveVerticesWithinSphere(cp[0], cp[1], cp[2], EdgeToCollapse->GiveLength()*4);
     std::vector<TriangleType *> TrianglesNear;
-
-    for (VertexType *v: VerticesNear) {
-        for (TriangleType *t: v->Triangles) {
-            TrianglesNear.push_back(t);
-        }
-    }
-
-    std::sort(TrianglesNear.begin(), TrianglesNear.end());
-    TrianglesNear.erase( std::unique(TrianglesNear.begin(), TrianglesNear.end()), TrianglesNear.end());
+    TrianglesNear = this->GetTrianglesAround(cp, EdgeToCollapse->GiveLength()*4);
 
     for (TriangleType *t: TrianglesNear) {
         bool DoCheck = true;
