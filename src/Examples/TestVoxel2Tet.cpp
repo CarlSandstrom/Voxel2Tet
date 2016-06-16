@@ -14,6 +14,9 @@ int main( int argc, char *argv[] )
 
     voxel2tet::Voxel2Tet v2t(Options);
 
+    printf("Voxel2Tet - ");
+    printf("Copyright Carl Sandström, 2015-2016\n\n");
+
     v2t.LoadFile(Options->GiveStringValue("input"));
 
     clock_t tstart = clock();

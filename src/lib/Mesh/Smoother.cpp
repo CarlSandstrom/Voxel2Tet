@@ -306,7 +306,7 @@ void SpringSmoothGlobal(std::vector<VertexType*> Vertices, std::vector<bool> Fix
             }
         }
 
-        STATUS("Iteration %i end with err=%f\n", itercount, err);
+        STATUS("\tIteration %i end with err=%f\n", itercount, err);
 
         itercount ++;
 
@@ -560,7 +560,7 @@ void SpringSmooth (std::vector<VertexType*> Vertices, std::vector<bool> Fixed, s
                 }
             }
 
-            STATUS("%c[2K\rIteration %u end with deltamax=%f at node %i\r", 27, itercount, deltamax, deltamaxnode);
+            STATUS("%c[2K\r\tIteration %u end with deltamax=%f at node %i\r", 27, itercount, deltamax, deltamaxnode);
             fflush(stdout);
 
             itercount ++;

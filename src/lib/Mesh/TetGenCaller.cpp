@@ -130,11 +130,14 @@ MeshData *TetGenCaller :: CopyTetMesh(tetgenio *io)
 MeshData *TetGenCaller::Execute()
 {
 
+    STATUS("\n== Create tet-mesh with TetGen ===================================\n", 0);
+
     tetgenio in, out;
 
     CopyMeshFromSelf(&in);
 
     tetrahedralize((char *)"pqA", &in, &out, NULL); //pq1.414a0.1
+    STATUS("==================================================================\n\n", 0);
 
     return CopyTetMesh(&out);
 
@@ -143,13 +146,15 @@ MeshData *TetGenCaller::Execute()
 void TetGenCaller :: TestMesh()
 {
 
+    STATUS("\n== Test mesh with TetGen =========================================\n", 0);
+
     tetgenio in, out;
 
     CopyMeshFromSelf(&in);
 
     tetrahedralize((char *)"pd", &in, &out);
 
-    //printf("%u\n", out.mesh_dim);
+    STATUS("==================================================================\n\n", 0);
 
 }
 

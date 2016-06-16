@@ -115,8 +115,8 @@ void Voxel2Tet :: FinalizeLoad()
         edgespring_c = Compute_c(cellspace[0]*Opt->GiveDoubleValue("edge_spring_c_factor"), edgespring_alpha);
     }
     
-    STATUS("Using spring_alpha=%f, spring_c=%f\n", spring_alpha, spring_c);
-    STATUS("Using edgespring_alpha=%f, edgespring_c=%f\n", edgespring_alpha, edgespring_c);
+    STATUS("\tUsing spring_alpha=%f, spring_c=%f\n", spring_alpha, spring_c);
+    STATUS("\tUsing edgespring_alpha=%f, edgespring_c=%f\n", edgespring_alpha, edgespring_c);
     
     BoundingBoxType bb;
     double spacing[3];
@@ -199,7 +199,7 @@ void Voxel2Tet :: ExportVolume(std::string FileName, Exporter_FileTypes FileType
 void Voxel2Tet::FindSurfaces()
 {
     
-    STATUS("Find surfaces\n", 0);
+    STATUS("\tFind surfaces\n", 0);
     
     int dim[3];
     double spacing[3], origin[3];
@@ -207,7 +207,7 @@ void Voxel2Tet::FindSurfaces()
     this->Imp->GiveSpacing(spacing);
     this->Imp->GiveOrigin(origin);
 
-    STATUS("Total volume: %f\n", dim[0]*spacing[0] * dim[1]*spacing[1] * dim[2]*spacing[2]);
+    STATUS("\tTotal volume: %f\n", dim[0]*spacing[0] * dim[1]*spacing[1] * dim[2]*spacing[2]);
     
     std::vector <double> signs = {1, -1};
     
