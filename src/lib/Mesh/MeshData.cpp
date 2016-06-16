@@ -426,6 +426,38 @@ FC_MESH MeshData :: CheckTrianglePenetration(std::array<VertexType *, 3> t1, std
             return FC_TRIANGLESINTERSECT;
         }
 
+    } else if (sharedvertices==1) {
+        VertexType *SharedVertex = SharedVerticesList[0];
+        for (int i = 0; i<2; i++) { // Edge index
+
+            std::array<VertexType *, 3> OtherTriangle = (i==0) ? t2 : t1;
+            std::array<VertexType *, 3> ThisTriangle = (i==0) ? t1 : t2;  // Triangle being checked if penetrated
+
+            std::array<VertexType *, 2> FreeEdge;
+            int k=0;
+            for (int j=0; j<3; j++) {
+                if (OtherTriangle[j]!=SharedVertex) {
+                    FreeEdge[k]=OtherTriangle[j];
+                    k++;
+                }
+            }
+
+            // Check if the free edge penetrates ThisTriangle
+            double V0[3] = {ThisTriangle[0]->get_c(0),ThisTriangle[0]->get_c(1),ThisTriangle[0]->get_c(2)};
+            double V1[3] = {ThisTriangle[1]->get_c(0),ThisTriangle[1]->get_c(1),ThisTriangle[1]->get_c(2)};
+            double V2[3] = {ThisTriangle[2]->get_c(0),ThisTriangle[2]->get_c(1),ThisTriangle[2]->get_c(2)};
+
+            double O[3] = {FreeEdge[0]->get_c(0), FreeEdge[0]->get_c(1), FreeEdge[0]->get_c(2)};
+            double D[3] = {FreeEdge[1]->get_c(0) - O[0], FreeEdge[1]->get_c(1) - O[1], FreeEdge[1]->get_c(2) - O[2]};
+            float alpha;
+
+            if (triangle_ray_intersection(V0, V1, V2, O, D, &alpha)) {
+                if ((alpha >=0.0) & (alpha <=1.0)) {
+                    return FC_TRIANGLESINTERSECT;
+                }
+            }
+
+        }
     } else if (sharedvertices==2) {
 
         // If two triangles share an edge, check if each remaining (not shared) vertex is located within the other triangle

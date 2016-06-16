@@ -402,12 +402,10 @@ FC_MESH MeshManipulations :: CollapseEdgeTest(std::vector<TriangleType *> *Trian
     TrianglesNear = this->GetTrianglesAround(cp, EdgeToCollapse->GiveLength()*4);
 
     for (TriangleType *t: TrianglesNear) {
-        bool DoCheck = true;
 
-        // Possible skip neighbors of new triangles
-        for (TriangleType *remt: *TrianglesToRemove) { // Skip triangles that will be removed
-            if (remt==t) DoCheck = false;
-        }
+        // Skip triangles that will be removed
+        bool DoCheck = true;
+        for (TriangleType *remt: *TrianglesToRemove) if (remt==t) DoCheck = false;
 
         if (DoCheck) {
             // For this test we need to change RemoveVertex --> SaveVertex
@@ -428,77 +426,11 @@ FC_MESH MeshManipulations :: CollapseEdgeTest(std::vector<TriangleType *> *Trian
                 FC_MESH nf = CheckTrianglePenetration(t1, t2, sv);
 
                 if (nf==FC_DUPLICATETRIANGLE) {
-                    if (newt->ID=-t->ID) nf=FC_OK;
+                    if (newt->ID==-t->ID) nf=FC_OK;
                 }
 
                 if (nf!=FC_OK) return nf;
 
-                // Skip if triangles sharen one ore more vertices
-/*                int sharedvertices=0;
-                std::vector<VertexType *> SharedVerticesList;
-                for (VertexType *v1: t->Vertices) {
-                    if (v1 == EdgeToCollapse->Vertices[RemoveVertexIndex]) v1 = EdgeToCollapse->Vertices[SaveVertexIndex];
-                    for (VertexType *v2: newt->Vertices) {
-                        if (v1==v2) {
-                            SharedVerticesList.push_back(v1);
-                            sharedvertices ++;
-                        }
-                    }
-                }
-
-                if (sharedvertices==0) {
-
-                    double V0[3] = {NearTriVertices[0]->get_c(0),NearTriVertices[0]->get_c(1),NearTriVertices[0]->get_c(2)};
-                    double V1[3] = {NearTriVertices[1]->get_c(0),NearTriVertices[1]->get_c(1),NearTriVertices[1]->get_c(2)};
-                    double V2[3] = {NearTriVertices[2]->get_c(0),NearTriVertices[2]->get_c(1),NearTriVertices[2]->get_c(2)};
-
-                    double U0[3] = {newt->Vertices[0]->get_c(0),newt->Vertices[0]->get_c(1),newt->Vertices[0]->get_c(2)};
-                    double U1[3] = {newt->Vertices[1]->get_c(0),newt->Vertices[1]->get_c(1),newt->Vertices[1]->get_c(2)};
-                    double U2[3] = {newt->Vertices[2]->get_c(0),newt->Vertices[2]->get_c(1),newt->Vertices[2]->get_c(2)};
-
-                    int intersects = tri_tri_intersect(V0, V1, V2, U0, U1, U2);
-
-                    if (intersects==1) {
-                        if (nf!=FC_TRIANGLESINTERSECT) throw(0);
-                        return FC_TRIANGLESINTERSECT;
-                    }
-                } else if (sharedvertices==1) {
-                    // I am a bit unsure if this is correct. Naturally two triangles with one shared vertex can intersect, but will we ever have that situation?
-                    // Anyway, best would be to check if edges not members of the other triangle penetrates the surface since there is a "bug" in the used algorithm that gives a "false" true if vertices are shared
-
-                } else if (sharedvertices==2) {
-                    // If two triangles share an edge, check if each remaining (not shared) vertex is located within the other triangle
-                    std::vector<VertexType *> UniqueVertices;
-                    for (std::array<VertexType *, 3> list: {NearTriVertices, newt->Vertices}) {
-                        for (VertexType *v: list) {
-                            if ( (v!=SharedVerticesList[0]) & (v!=SharedVerticesList[1])) {
-                                UniqueVertices.push_back(v);
-                            }
-                        }
-                    }
-                    double s0[3] = {SharedVerticesList[0]->get_c(0), SharedVerticesList[0]->get_c(1), SharedVerticesList[0]->get_c(2)};
-                    double s1[3] = {SharedVerticesList[1]->get_c(0), SharedVerticesList[1]->get_c(1), SharedVerticesList[1]->get_c(2)};
-
-                    double u0[3] = {UniqueVertices[0]->get_c(0), UniqueVertices[0]->get_c(1), UniqueVertices[0]->get_c(2)};
-                    double u1[3] = {UniqueVertices[1]->get_c(0), UniqueVertices[1]->get_c(1), UniqueVertices[1]->get_c(2)};
-
-                    if (tri_tri_intersect_shared_edge(s0, s1, u0, u1)) {
-                        if (nf!=FC_TRIANGLESINTERSECT) throw(0);
-                        return FC_TRIANGLESINTERSECT;
-                    }
-
-                } else if (sharedvertices==3) {
-
-                    LOG ("Duplicate triangle, newt.id=%i, t.id=%i\n", newt->ID, t->ID);
-                    if (t->ID!=-newt->ID) {
-                        if (nf!=FC_DUPLICATETRIANGLE) throw(0);
-                        return FC_DUPLICATETRIANGLE;
-                    } else {
-                        nf=FC_OK;
-                    }
-                }
-
-                if (nf!=FC_OK) throw(0);*/
             }
         }
     }
@@ -696,6 +628,8 @@ FC_MESH MeshManipulations :: CheckCoarsenNormal(std::vector<TriangleType*> *OldT
 
 FC_MESH MeshManipulations :: CheckCoarsenNormalImproved(std::vector<TriangleType*> *OldTriangles, std::vector<TriangleType*> *TrianglesToRemove, std::vector<TriangleType*> *NewTriangles)
 {
+
+    // This is very unfinished....
 
     double MaxAngle = 0;
 
