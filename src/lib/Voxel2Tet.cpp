@@ -157,7 +157,9 @@ void Voxel2Tet::LoadData()
     STATUS ("Load data\n", 0);
     
     if (this->Opt->has_key("i")) {
+        Timer.StartTimer("Load file");
         LoadFile(this->Opt->GiveStringValue("i"));
+        Timer.StopTimer();
     }
     
 }
@@ -180,6 +182,7 @@ void Voxel2Tet::ExportSurface(std::string FileName, Exporter_FileTypes FileType)
 
 void Voxel2Tet :: Tetrahedralize()
 {
+    Timer.StartTimer("Tetrahedralize");
     TetGenCaller Generator;
     Generator.Mesh = this->Mesh;
 #if TEST_MESH_BETWEEN_STEPS_TETGEN == 1
@@ -211,6 +214,7 @@ void Voxel2Tet :: Tetrahedralize()
         t->MaterialID = Tetgen2Self[t->MaterialID];
 
     }
+    Timer.StopTimer();
 
 }
 
@@ -892,8 +896,13 @@ void Voxel2Tet::Process()
 
     int outputindex = 0;
     
+    // Find surface
+    Timer.StartTimer("Find surfaces");
     this->FindSurfaces();
-    
+    Timer.StopTimer();
+
+    // Compute volumes enclosed by surfaces
+    Timer.StartTimer("Compute volumes");
     std::vector<std::vector<double>> PhaseVolumes;
     std::vector<double> CurrentVolumes;
     std::vector<int> PhaseList;
@@ -901,18 +910,21 @@ void Voxel2Tet::Process()
     double TotalVolume = GetListOfVolumes(CurrentVolumes, PhaseList);
     LOG("Total volume: %f\n", TotalVolume);
     PhaseVolumes.push_back(CurrentVolumes);
+    Timer.StopTimer();
     
     if (this->Opt->GiveBooleanValue("exportsteps"))
         this->Mesh->ExportSurface(strfmt("%s_step_%u.vtp", this->Opt->GiveStringValue("output").c_str(), outputindex++) , FT_VTK );
         
+    Timer.StartTimer("Find edges");
     this->FindEdges();
+    Timer.StopTimer();
 
-    clock_t t1 = clock();
-
+    Timer.StartTimer("Smooth edges");
     double Spacing[3];
     this->Imp->GiveSpacing(Spacing);
 
     this->SmoothEdgesSimultaneously(edgespring_c, edgespring_alpha, Spacing[0], false);
+    Timer.StopTimer();
 
 #if TEST_MESH_BETWEEN_STEPS_TETGEN == 1
     TetGenCaller Generator;
@@ -926,16 +938,16 @@ void Voxel2Tet::Process()
     if (this->Opt->GiveBooleanValue("exportsteps"))
         this->Mesh->ExportSurface(strfmt("%s_step_%u.vtp", this->Opt->GiveStringValue("output").c_str(), outputindex++) , FT_VTK );
 
+    Timer.StartTimer("Smooth surfaces");
     this->SmoothSurfaces(spring_c, spring_alpha, 0, false);
-    clock_t t2 = clock();
+    Timer.StopTimer();
+
 #if TEST_MESH_BETWEEN_STEPS_TETGEN == 1
     Generator.TestMesh();
 #endif
 
     GetListOfVolumes(CurrentVolumes, PhaseList);
     PhaseVolumes.push_back(CurrentVolumes);
-
-    STATUS("Smoothing completed in %fs\n", float(t2-t1)/(double)CLOCKS_PER_SEC);
     
     if (this->Opt->GiveBooleanValue("exportsteps"))
         this->Mesh->ExportSurface(strfmt("%s_step_%u.vtp", this->Opt->GiveStringValue("output").c_str(), outputindex++) , FT_VTK );
@@ -950,7 +962,9 @@ void Voxel2Tet::Process()
     if (this->Opt->GiveBooleanValue("exportsteps"))
         this->Mesh->ExportSurface(strfmt("%s_step_%u.vtp", this->Opt->GiveStringValue("output").c_str(), outputindex++) , FT_VTK );
 
+    Timer.StartTimer("Coarsen mesh");
     this->Mesh->CoarsenMeshImproved();
+    Timer.StopTimer();
 
     this->UpdateSurfaces();
 
@@ -983,6 +997,7 @@ void Voxel2Tet::Process()
 #if EXPORT_MESH_COARSENING == 1
     dooutputlogmesh(*this->Mesh, (char*) "/tmp/finalcoarsening%u.vtp", 0);
 #endif
+    this->Timer.PrintTable();
     
 }
 

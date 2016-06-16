@@ -16,6 +16,7 @@
 #include "MiscFunctions.h"
 #include "PhaseEdge.h"
 #include "MeshGenerator3D.h"
+#include "TimeStamp.h"
 
 namespace voxel2tet
 {
@@ -57,6 +58,8 @@ private:
     double edgespring_c;
 
     bool auto_c;
+
+    TimeStamp Timer;
 
 public:
     Voxel2Tet(Options *Opt);
