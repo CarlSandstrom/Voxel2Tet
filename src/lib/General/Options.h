@@ -15,10 +15,14 @@ class Options
 private:
     ValueMap OptionMap;
     ValueMap DefaultMap;
+    std::vector<std::string> RequiredFields;
 public:
     Options( int argc, char *argv[], ValueMap DefaultValues, std::vector<std::string> RequiredFields );
 
     void AddDefaultMap(std::string keyname, std::string value);
+    void AddRequiredKey(std::string keyname);
+
+    void CheckRequiredFields();
 
     bool has_key(std::string keyname);
 

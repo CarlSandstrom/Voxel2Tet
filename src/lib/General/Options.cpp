@@ -9,6 +9,10 @@ namespace voxel2tet
 Options :: Options(int argc, char *argv[], ValueMap DefaultValues , std::vector<std::string> RequiredFields)
 {
 
+    for (std::string s: RequiredFields) {
+        this->RequiredFields.push_back(s);
+    }
+
     // Parse command line arguments and simply store them in a map
     for (int i=1; i<argc; i++) {
         if (char(argv[i][0]) == '-') {
@@ -40,21 +44,32 @@ Options :: Options(int argc, char *argv[], ValueMap DefaultValues , std::vector<
     }
     this->DefaultMap = DefaultValues;
 
+    this->CheckRequiredFields();
+
+}
+
+void Options :: CheckRequiredFields()
+{
     // Check for required fields
     bool FieldsOk = true;
-    for (std::string s: RequiredFields) {
+    for (std::string s: this->RequiredFields) {
         if (!this->has_key(s)) {
             STATUS("Input parameter \"%s\" is required\n", s.c_str());
             FieldsOk = false;
         }
     }
     if (!FieldsOk) exit(-1);
-
 }
 
 void Options :: AddDefaultMap(std::string keyname, std::string value)
 {
     this->DefaultMap[keyname] = value;
+}
+
+void Options :: AddRequiredKey(std::string keyname)
+{
+    this->RequiredFields.push_back(keyname);
+    this->CheckRequiredFields();
 }
 
 bool Options :: has_key(std::string keyname)

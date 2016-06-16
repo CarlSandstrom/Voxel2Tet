@@ -64,6 +64,7 @@ public:
 
     MeshManipulations *Mesh;
 
+    void PrintHelp();
 
     /**
      * @brief GetListOfVolumes return a std::vector of volumes for each phase and a vector for the phase

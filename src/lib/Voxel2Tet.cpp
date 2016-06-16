@@ -70,6 +70,27 @@ Voxel2Tet::~Voxel2Tet()
     
 }
 
+void Voxel2Tet::PrintHelp()
+{
+    printf("\nCommand:");
+    printf("\n\tVoxel2Tet -input filename [options]");
+    printf("\nArguments:");
+    printf("\n\tfilename\t name of file containing voxel data");
+    printf("\n\toptions");
+    printf("\n\t\t-output filename  \tFollowed by the name of the output file (without extension)");
+    printf("\n\t\t-exportvtksurface \tExport the final surface in VTK format");
+    printf("\n\t\t-exportvtkvolume  \tExport the final volume in VTK format");
+    printf("\n\t\t-exportoff        \tExport the funal surface in .OFF format");
+    printf("\n\t\t-exportoofem      \tExport final volume as input file for OOFEM");
+    printf("\n\t\t-exportabaqus     \tExport final volume as input file for Abaqus");
+    printf("\n\t\t-exportsteps      \tExport the result of each step in VTK format (mainly for debugging purposes)");
+    printf("\n\t\t-datacontainer name\t(Dream3D input) Name of data group, default 'VoxelDataContainer'");
+    printf("\n\t\t-materialid name  \t(Dream3D input) Field containing an identifier for the phase, default 'GrainIds'");
+    printf("");
+    printf("");
+    printf("\n\n");
+}
+
 void Voxel2Tet::LoadCallback(cbMaterialIDByCoordinate MaterialIDByCoordinate, std::array<double,3> origin, std::array<double,3> spacing, std::array<int,3> dimensions)
 {
     STATUS ("Setup callback functions\n", 0);
