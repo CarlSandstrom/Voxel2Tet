@@ -64,6 +64,8 @@ void MeshManipulations :: SortEdgesByMinArea()
 
 void MeshManipulations :: RemoveDegenerateTriangles()
 {
+    // TODO: Is this used? I think not...
+
     STATUS("Remove degenerate triangles...\n", 0);
 
     // Find triangles with zero-area
@@ -417,13 +419,22 @@ FC_MESH MeshManipulations :: CollapseEdgeTest(std::vector<TriangleType *> *Trian
                 }
             }
 
-            double V0[3] = {NearTriVertices[0]->get_c(0),NearTriVertices[0]->get_c(1),NearTriVertices[0]->get_c(2)};
-            double V1[3] = {NearTriVertices[1]->get_c(0),NearTriVertices[1]->get_c(1),NearTriVertices[1]->get_c(2)};
-            double V2[3] = {NearTriVertices[2]->get_c(0),NearTriVertices[2]->get_c(1),NearTriVertices[2]->get_c(2)};
             for (TriangleType *newt: *NewTriangles) {
 
+                std::array<VertexType *, 3> t1 = {NearTriVertices[0], NearTriVertices[1], NearTriVertices[2]};
+                std::array<VertexType *, 3> t2 = {newt->Vertices[0], newt->Vertices[1], newt->Vertices[2]};
+
+                int sv;
+                FC_MESH nf = CheckTrianglePenetration(t1, t2, sv);
+
+                if (nf==FC_DUPLICATETRIANGLE) {
+                    if (newt->ID=-t->ID) nf=FC_OK;
+                }
+
+                if (nf!=FC_OK) return nf;
+
                 // Skip if triangles sharen one ore more vertices
-                int sharedvertices=0;
+/*                int sharedvertices=0;
                 std::vector<VertexType *> SharedVerticesList;
                 for (VertexType *v1: t->Vertices) {
                     if (v1 == EdgeToCollapse->Vertices[RemoveVertexIndex]) v1 = EdgeToCollapse->Vertices[SaveVertexIndex];
@@ -436,14 +447,20 @@ FC_MESH MeshManipulations :: CollapseEdgeTest(std::vector<TriangleType *> *Trian
                 }
 
                 if (sharedvertices==0) {
+
+                    double V0[3] = {NearTriVertices[0]->get_c(0),NearTriVertices[0]->get_c(1),NearTriVertices[0]->get_c(2)};
+                    double V1[3] = {NearTriVertices[1]->get_c(0),NearTriVertices[1]->get_c(1),NearTriVertices[1]->get_c(2)};
+                    double V2[3] = {NearTriVertices[2]->get_c(0),NearTriVertices[2]->get_c(1),NearTriVertices[2]->get_c(2)};
+
                     double U0[3] = {newt->Vertices[0]->get_c(0),newt->Vertices[0]->get_c(1),newt->Vertices[0]->get_c(2)};
                     double U1[3] = {newt->Vertices[1]->get_c(0),newt->Vertices[1]->get_c(1),newt->Vertices[1]->get_c(2)};
                     double U2[3] = {newt->Vertices[2]->get_c(0),newt->Vertices[2]->get_c(1),newt->Vertices[2]->get_c(2)};
+
                     int intersects = tri_tri_intersect(V0, V1, V2, U0, U1, U2);
+
                     if (intersects==1) {
+                        if (nf!=FC_TRIANGLESINTERSECT) throw(0);
                         return FC_TRIANGLESINTERSECT;
-                    } else {
-                        //LOG("Triangles does not intersect\n", 0);
                     }
                 } else if (sharedvertices==1) {
                     // I am a bit unsure if this is correct. Naturally two triangles with one shared vertex can intersect, but will we ever have that situation?
@@ -466,6 +483,7 @@ FC_MESH MeshManipulations :: CollapseEdgeTest(std::vector<TriangleType *> *Trian
                     double u1[3] = {UniqueVertices[1]->get_c(0), UniqueVertices[1]->get_c(1), UniqueVertices[1]->get_c(2)};
 
                     if (tri_tri_intersect_shared_edge(s0, s1, u0, u1)) {
+                        if (nf!=FC_TRIANGLESINTERSECT) throw(0);
                         return FC_TRIANGLESINTERSECT;
                     }
 
@@ -473,9 +491,14 @@ FC_MESH MeshManipulations :: CollapseEdgeTest(std::vector<TriangleType *> *Trian
 
                     LOG ("Duplicate triangle, newt.id=%i, t.id=%i\n", newt->ID, t->ID);
                     if (t->ID!=-newt->ID) {
+                        if (nf!=FC_DUPLICATETRIANGLE) throw(0);
                         return FC_DUPLICATETRIANGLE;
+                    } else {
+                        nf=FC_OK;
                     }
                 }
+
+                if (nf!=FC_OK) throw(0);*/
             }
         }
     }
