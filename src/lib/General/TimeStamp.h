@@ -9,7 +9,8 @@ namespace voxel2tet
 {
 
 /**
- * @brief Simple timer to store times between StartTimer and StopTimer members being called
+ * @brief Simple timer to store times between StartTimer and StopTimer members being called. A pair of time spent
+ * and an associated message is stored in a table.
  */
 class TimeStamp
 {
@@ -41,7 +42,7 @@ public:
 
     /**
      * @brief Returns time passed between initialization and now
-     * @return
+     * @return Time passed between initialization and now
      */
     int GiveTotalTime();
 
