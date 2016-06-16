@@ -10,6 +10,8 @@
 #define EXPORT_MESH_COARSENING 0
 #define EXPORT_SMOOTHING_ANIMATION 0
 
+#define TEST_MESH_BETWEEN_STEPS_TETGEN 0
+
 #define SMOOTH_EDGES_INDIVIDUALLY 0
 
 #define LOG(format, args...) dolog (__FUNCTION__, format, args)

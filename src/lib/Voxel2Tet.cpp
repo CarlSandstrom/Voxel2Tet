@@ -182,7 +182,9 @@ void Voxel2Tet :: Tetrahedralize()
 {
     TetGenCaller Generator;
     Generator.Mesh = this->Mesh;
+#if TEST_MESH_BETWEEN_STEPS_TETGEN == 1
     Generator.TestMesh();
+#endif
 
     MeshData *Mesh = Generator.Execute();
 
@@ -887,8 +889,6 @@ void Voxel2Tet::Process()
 #ifdef OPENMP
     STATUS ("\tUsing OpenMP and %u threads\n", omp_get_max_threads());
 #endif
-    TetGenCaller Generator;
-    Generator.Mesh = this->Mesh;
 
     int outputindex = 0;
     
@@ -913,7 +913,12 @@ void Voxel2Tet::Process()
     this->Imp->GiveSpacing(Spacing);
 
     this->SmoothEdgesSimultaneously(edgespring_c, edgespring_alpha, Spacing[0], false);
+
+#if TEST_MESH_BETWEEN_STEPS_TETGEN == 1
+    TetGenCaller Generator;
+    Generator.Mesh = this->Mesh;
     Generator.TestMesh();
+#endif
 
     GetListOfVolumes(CurrentVolumes, PhaseList);
     PhaseVolumes.push_back(CurrentVolumes);
@@ -923,7 +928,9 @@ void Voxel2Tet::Process()
 
     this->SmoothSurfaces(spring_c, spring_alpha, 0, false);
     clock_t t2 = clock();
+#if TEST_MESH_BETWEEN_STEPS_TETGEN == 1
     Generator.TestMesh();
+#endif
 
     GetListOfVolumes(CurrentVolumes, PhaseList);
     PhaseVolumes.push_back(CurrentVolumes);
