@@ -21,12 +21,33 @@ Voxel2Tet::Voxel2Tet(Options *Opt)
     this->Opt = Opt;
 
     // Set defult options
+
+    // Smoothing options
     this->Opt->AddDefaultMap("spring_c_factor", "1");
     this->Opt->AddDefaultMap("spring_alpha", "2");
 
-    this->Opt->AddDefaultMap("edge_spring_c_factor", ".8");
+    this->Opt->AddDefaultMap("edge_spring_c_factor", "1");
     this->Opt->AddDefaultMap("edge_spring_alpha", "3");
 
+    // Dream3D options
+    this->Opt->AddDefaultMap("DataContainer", "VoxelDataContainer");
+    this->Opt->AddDefaultMap("MaterialId", "GrainIds");
+
+    // Export filters
+    this->Opt->AddDefaultMap("exportvtksurface", "1");
+    this->Opt->AddDefaultMap("exportvtkvolume", "1");
+    this->Opt->AddDefaultMap("exportoff", "0");
+    this->Opt->AddDefaultMap("exportoofem", "0");
+    this->Opt->AddDefaultMap("exportabaqus", "0");
+    this->Opt->AddDefaultMap("exportsteps", "0");
+
+    // Input/output
+    if (!this->Opt->has_key("output")) {
+        std::string inputname = this->Opt->GiveStringValue("input");
+        size_t lastindex = inputname.find_last_of(".");
+        std::string name = inputname.substr(0, lastindex);
+        this->Opt->AddDefaultMap("output", name.c_str());
+    }
 
     LOG("Starting Voxel2Tet\n", 0);
 }
@@ -167,11 +188,6 @@ void Voxel2Tet :: Tetrahedralize()
         t->MaterialID = Tetgen2Self[t->MaterialID];
 
     }
-
-    NewMesh->ExportVolume("/tmp/TetVolume0.vtu", FT_VTK);
-    NewMesh->ExportVolume("/tmp/TetVolume1.vtu", FT_VTK);
-    NewMesh->ExportVolume("/tmp/TetVolume.in", FT_OOFEM);
-
 
 }
 
@@ -845,7 +861,7 @@ Volume * Voxel2Tet::FindVolumeContainingPoint (std::array<double, 3> P)
 
 void Voxel2Tet::Process()
 {
-    STATUS ("Proccess content\n", 0);
+    STATUS ("Start smoothing process...\n", 0);
     
 #ifdef OPENMP
     STATUS ("\tUsing OpenMP and %u threads\n", omp_get_max_threads());
@@ -865,7 +881,8 @@ void Voxel2Tet::Process()
     LOG("Total volume: %f\n", TotalVolume);
     PhaseVolumes.push_back(CurrentVolumes);
     
-    this->Mesh->ExportSurface(strfmt("/tmp/Voxeltest%u.vtp", outputindex++) , FT_VTK );
+    if (this->Opt->GiveBooleanValue("exportsteps"))
+        this->Mesh->ExportSurface(strfmt("%s_step_%u.vtp", this->Opt->GiveStringValue("output").c_str(), outputindex++) , FT_VTK );
         
     this->FindEdges();
 
@@ -880,7 +897,9 @@ void Voxel2Tet::Process()
     GetListOfVolumes(CurrentVolumes, PhaseList);
     PhaseVolumes.push_back(CurrentVolumes);
 
-    this->Mesh->ExportSurface(strfmt("/tmp/Voxeltest%u.vtp", outputindex++), FT_VTK);
+    if (this->Opt->GiveBooleanValue("exportsteps"))
+        this->Mesh->ExportSurface(strfmt("%s_step_%u.vtp", this->Opt->GiveStringValue("output").c_str(), outputindex++) , FT_VTK );
+
     this->SmoothSurfaces(spring_c, spring_alpha, 0, false);
     clock_t t2 = clock();
     Generator.TestMesh();
@@ -890,7 +909,9 @@ void Voxel2Tet::Process()
 
     STATUS("Smoothing completed in %fs\n", float(t2-t1)/(double)CLOCKS_PER_SEC);
     
-    this->Mesh->ExportSurface(strfmt("/tmp/Voxeltest%u.vtp", outputindex++), FT_VTK);
+    if (this->Opt->GiveBooleanValue("exportsteps"))
+        this->Mesh->ExportSurface(strfmt("%s_step_%u.vtp", this->Opt->GiveStringValue("output").c_str(), outputindex++) , FT_VTK );
+
     this->Mesh->FlipAll();
 
     this->UpdateSurfaces();
@@ -898,7 +919,9 @@ void Voxel2Tet::Process()
     GetListOfVolumes(CurrentVolumes, PhaseList);
     PhaseVolumes.push_back(CurrentVolumes);
 
-    this->Mesh->ExportSurface(strfmt("/tmp/Voxeltest%u.vtp", outputindex++), FT_VTK);
+    if (this->Opt->GiveBooleanValue("exportsteps"))
+        this->Mesh->ExportSurface(strfmt("%s_step_%u.vtp", this->Opt->GiveStringValue("output").c_str(), outputindex++) , FT_VTK );
+
     this->Mesh->CoarsenMeshImproved();
 
     this->UpdateSurfaces();
@@ -906,14 +929,16 @@ void Voxel2Tet::Process()
     GetListOfVolumes(CurrentVolumes, PhaseList);
     PhaseVolumes.push_back(CurrentVolumes);
 
-    this->Mesh->ExportSurface(strfmt("/tmp/Voxeltest%u.vtp", outputindex++), FT_VTK);
+    if (this->Opt->GiveBooleanValue("exportsteps"))
+        this->Mesh->ExportSurface(strfmt("%s_step_%u.vtp", this->Opt->GiveStringValue("output").c_str(), outputindex++) , FT_VTK );
     this->Mesh->FlipAll();
     this->UpdateSurfaces();
 
     GetListOfVolumes(CurrentVolumes, PhaseList);
     PhaseVolumes.push_back(CurrentVolumes);
 
-    this->Mesh->ExportSurface(strfmt("/tmp/Voxeltest%u.vtp", outputindex++), FT_VTK);
+    if (this->Opt->GiveBooleanValue("exportsteps"))
+        this->Mesh->ExportSurface(strfmt("%s_step_%u.vtp", this->Opt->GiveStringValue("output").c_str(), outputindex++) , FT_VTK );
 
     for (int p: PhaseList) {
         printf("%u\t\t", p);
@@ -931,6 +956,25 @@ void Voxel2Tet::Process()
     dooutputlogmesh(*this->Mesh, (char*) "/tmp/finalcoarsening%u.vtp", 0);
 #endif
     
+}
+
+void Voxel2Tet::ExportAll()
+{
+
+    // Surfaces
+    if (this->Opt->GiveBooleanValue("exportvtksurface"))
+        this->Mesh->ExportSurface( strfmt("%s.surface.vtp", this->Opt->GiveStringValue("output").c_str()), FT_VTK);
+
+    if (this->Opt->GiveBooleanValue("exportoff"))
+        this->Mesh->ExportSurface( strfmt("%s.surface.off", this->Opt->GiveStringValue("output").c_str()), FT_OFF);
+
+    // Volumes
+    if (this->Opt->GiveBooleanValue("exportvtkvolume"))
+        this->Mesh->ExportVolume( strfmt("%s.volume.vtp", this->Opt->GiveStringValue("output").c_str()), FT_VTK);
+
+    if (this->Opt->GiveBooleanValue("exportoofem"))
+        this->Mesh->ExportVolume( strfmt("%s.in", this->Opt->GiveStringValue("output").c_str()), FT_OOFEM);
+
 }
 
 }

@@ -89,6 +89,11 @@ public:
 
     void LoadData();
     void Process();
+
+    /**
+     * @brief Exports volumes and surfaces according to flags in Opt member
+     */
+    void ExportAll();
 };
 
 }

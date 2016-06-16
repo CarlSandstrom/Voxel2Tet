@@ -67,7 +67,7 @@ voxel2tet::MeshData *createmesh(int n)
 int main( int argc, char *argv[] ) {
     int vertexsidecount = 4;
     std::map <std::string, std::string> DefaultOptions;
-    voxel2tet::Options *Options = new voxel2tet::Options(argc, argv, DefaultOptions);
+    voxel2tet::Options *Options = new voxel2tet::Options(argc, argv, DefaultOptions, {});
 
     voxel2tet::MeshManipulations *mesh = static_cast <voxel2tet::MeshManipulations*> (createmesh(vertexsidecount)) ;
 

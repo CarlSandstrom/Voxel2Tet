@@ -59,7 +59,7 @@ int main( int argc, char *argv[] )
 {
 
     std::map <std::string, std::string> DefaultOptions;
-    voxel2tet::Options *Options = new voxel2tet::Options(argc, argv, DefaultOptions);
+    voxel2tet::Options *Options = new voxel2tet::Options(argc, argv, DefaultOptions, {});
 
     voxel2tet::Voxel2Tet v2t(Options);
 

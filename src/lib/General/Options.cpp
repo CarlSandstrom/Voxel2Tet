@@ -1,11 +1,12 @@
 #include <cstdlib>
 
 #include "Options.h"
+#include "MiscFunctions.h"
 
 namespace voxel2tet
 {
 
-Options :: Options( int argc, char *argv[], ValueMap DefaultValues )
+Options :: Options(int argc, char *argv[], ValueMap DefaultValues , std::vector<std::string> RequiredFields)
 {
 
     // Parse command line arguments and simply store them in a map
@@ -38,6 +39,17 @@ Options :: Options( int argc, char *argv[], ValueMap DefaultValues )
         }
     }
     this->DefaultMap = DefaultValues;
+
+    // Check for required fields
+    bool FieldsOk = true;
+    for (std::string s: RequiredFields) {
+        if (!this->has_key(s)) {
+            STATUS("Input parameter \"%s\" is required\n", s.c_str());
+            FieldsOk = false;
+        }
+    }
+    if (!FieldsOk) exit(-1);
+
 }
 
 void Options :: AddDefaultMap(std::string keyname, std::string value)

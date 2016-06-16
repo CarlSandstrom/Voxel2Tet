@@ -16,7 +16,7 @@ private:
     ValueMap OptionMap;
     ValueMap DefaultMap;
 public:
-    Options( int argc, char *argv[], ValueMap DefaultValues );
+    Options( int argc, char *argv[], ValueMap DefaultValues, std::vector<std::string> RequiredFields );
 
     void AddDefaultMap(std::string keyname, std::string value);
 

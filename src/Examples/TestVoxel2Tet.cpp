@@ -10,20 +10,20 @@ int main( int argc, char *argv[] )
 {
 
     std::map <std::string, std::string> DefaultOptions;
-    voxel2tet::Options *Options = new voxel2tet::Options(argc, argv, DefaultOptions);
+    voxel2tet::Options *Options = new voxel2tet::Options(argc, argv, DefaultOptions, {"input"});
 
     voxel2tet::Voxel2Tet v2t(Options);
 
-    v2t.LoadFile(Options->GiveStringValue("i"));
+    v2t.LoadFile(Options->GiveStringValue("input"));
 
     clock_t tstart = clock();
     v2t.Process();
     clock_t tstopprocess = clock();
 
-    v2t.ExportSurface("/tmp/Voxeltest.off", voxel2tet::FT_OFF);
-
     v2t.Tetrahedralize();
     clock_t tstoptet = clock();
+
+    v2t.ExportAll();
 
     double ProcessTime = double(tstopprocess-tstart) / CLOCKS_PER_SEC;
     double TetTime = double(tstoptet-tstopprocess) / CLOCKS_PER_SEC;
