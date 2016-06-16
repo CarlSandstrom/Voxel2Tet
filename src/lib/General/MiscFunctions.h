@@ -32,10 +32,6 @@ namespace voxel2tet
 
 class MeshData;
 
-//TODO: Are these used?
-extern "C" int outputindex;
-extern "C" MeshData* GlobalMesh;
-
 void dolog(const char *functionname, const char *fmt, ...);
 void dooutputstat(const char *fmt, ...);
 void dooutputlogmesh(MeshData &Mesh, char *filename, ...);
