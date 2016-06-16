@@ -596,17 +596,36 @@ void SpringSmooth (std::vector<VertexType*> Vertices, std::vector<bool> Fixed, s
         std::vector<std::pair<TriangleType *, TriangleType *>> IntersectingTriangles = CheckPenetration(&Vertices, Mesh);
         if (IntersectingTriangles.size()>0) {
 
+            // Pull back nodes until no intersecting triangles remain
+            intersecting_count=0;
+            while (IntersectingTriangles.size()>0) {
+
+                STATUS("Stiffen and re-smooth surface/edge due to %u intersecting triangles, iteration %u\n", IntersectingTriangles.size(), intersecting_count);
+
+                // Stiffen spring
+                std::vector<VertexType *> TriangleVertices;
+                for (std::pair<TriangleType *, TriangleType *> p: IntersectingTriangles) {
+                    for (VertexType *v: p.first->Vertices) TriangleVertices.push_back(v);
+                    for (VertexType *v: p.second->Vertices) TriangleVertices.push_back(v);
+                }
+
+                std::sort(TriangleVertices.begin(), TriangleVertices.end());
+                TriangleVertices.erase(std::unique(TriangleVertices.begin(), TriangleVertices.end()), TriangleVertices.end());
+
+                for (VertexType *v: TriangleVertices) {
+                    arma::vec displacement = {v->get_c(0)-v->originalcoordinates[0], v->get_c(1)-v->originalcoordinates[1], v->get_c(2)-v->originalcoordinates[2]};
+                    arma::vec newdisplacement = displacement*.9;
+
+                    for (int i=0; i<3; i++) v->set_c(v->originalcoordinates[i]+newdisplacement[i], i);
+                }
+
+                IntersectingTriangles = CheckPenetration(&Vertices, Mesh);
+                intersecting_count++;
+            }
+/*
             intersecting = true;
             STATUS("Stiffen and re-smooth surface/edge due to %u intersecting triangles, iteration %u\n", IntersectingTriangles.size(), intersecting_count);
 
-            // Stiffen spring
-            std::vector<VertexType *> StiffenVertices;
-            for (std::pair<TriangleType *, TriangleType *> p: IntersectingTriangles) {
-                for (VertexType *v: p.first->Vertices) StiffenVertices.push_back(v);
-                for (VertexType *v: p.second->Vertices) StiffenVertices.push_back(v);
-            }
-            std::sort(StiffenVertices.begin(), StiffenVertices.end());
-            StiffenVertices.erase(std::unique(StiffenVertices.begin(), StiffenVertices.end()), StiffenVertices.end());
 
             if (intersecting_count>50) {
                 STATUS("Too many intersection iterations. Just let it be and it might turn out ok anyway due to the mesh coarsening.\n", 0);
@@ -624,7 +643,7 @@ void SpringSmooth (std::vector<VertexType*> Vertices, std::vector<bool> Fixed, s
                 CurrentPositions.at(i) = OriginalPositions.at(i);
             }
 
-            intersecting_count++;
+            intersecting_count++;*/
 
 #if EXPORT_SMOOTHING_ANIMATION == 1
     std::ostringstream FileName;

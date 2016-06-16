@@ -22,10 +22,10 @@ Voxel2Tet::Voxel2Tet(Options *Opt)
 
     // Set defult options
     this->Opt->AddDefaultMap("spring_c_factor", "1");
-    this->Opt->AddDefaultMap("spring_alpha", "3");
+    this->Opt->AddDefaultMap("spring_alpha", "2");
 
     this->Opt->AddDefaultMap("edge_spring_c_factor", ".8");
-    this->Opt->AddDefaultMap("edge_spring_alpha", "4");
+    this->Opt->AddDefaultMap("edge_spring_alpha", "3");
 
 
     LOG("Starting Voxel2Tet\n", 0);
