@@ -54,7 +54,7 @@ void Options :: CheckRequiredFields()
     bool FieldsOk = true;
     for (std::string s: this->RequiredFields) {
         if (!this->has_key(s)) {
-            STATUS("Input parameter \"%s\" is required\n", s.c_str());
+            STATUS("Input parameter \"-%s\" is required. Use \"-help\" for a list of avalible option\n", s.c_str());
             FieldsOk = false;
         }
     }
