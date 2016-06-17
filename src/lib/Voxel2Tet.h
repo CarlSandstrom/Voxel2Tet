@@ -22,9 +22,9 @@ namespace voxel2tet
 {
 
 /**
- * @brief The Voxel2Tet class
+ * @brief The main class of the library. It supplies functions for loading and exporting data through one function, starting the smoothing process and more overall functions.
  */
-class Voxel2Tet
+class Voxel2TetClass
 {
 private:
     Options *Opt;
@@ -62,8 +62,8 @@ private:
     TimeStamp Timer;
 
 public:
-    Voxel2Tet(Options *Opt);
-    ~Voxel2Tet();
+    Voxel2TetClass(Options *Opt);
+    ~Voxel2TetClass();
 
     MeshManipulations *Mesh;
 

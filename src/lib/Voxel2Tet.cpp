@@ -16,7 +16,7 @@
 namespace voxel2tet
 {
 
-Voxel2Tet::Voxel2Tet(Options *Opt)
+Voxel2TetClass::Voxel2TetClass(Options *Opt)
 {
     this->Opt = Opt;
 
@@ -52,7 +52,7 @@ Voxel2Tet::Voxel2Tet(Options *Opt)
     LOG("Starting Voxel2Tet\n", 0);
 }
 
-Voxel2Tet::~Voxel2Tet()
+Voxel2TetClass::~Voxel2TetClass()
 {
     for (unsigned int i=0; i<PhaseEdges.size(); i++) {
         delete this->PhaseEdges.at(i);
@@ -70,7 +70,7 @@ Voxel2Tet::~Voxel2Tet()
     
 }
 
-void Voxel2Tet::PrintHelp()
+void Voxel2TetClass::PrintHelp()
 {
     printf("\nCommand:");
     printf("\n\tVoxel2Tet -input filename [options]");
@@ -91,7 +91,7 @@ void Voxel2Tet::PrintHelp()
     printf("\n\n");
 }
 
-void Voxel2Tet::LoadCallback(cbMaterialIDByCoordinate MaterialIDByCoordinate, std::array<double,3> origin, std::array<double,3> spacing, std::array<int,3> dimensions)
+void Voxel2TetClass::LoadCallback(cbMaterialIDByCoordinate MaterialIDByCoordinate, std::array<double,3> origin, std::array<double,3> spacing, std::array<int,3> dimensions)
 {
     STATUS ("Setup callback functions\n", 0);
     CallbackImporter *DataReader = new CallbackImporter(MaterialIDByCoordinate, origin, spacing, dimensions);
@@ -99,7 +99,7 @@ void Voxel2Tet::LoadCallback(cbMaterialIDByCoordinate MaterialIDByCoordinate, st
     FinalizeLoad();
 }
 
-void Voxel2Tet::LoadFile(std::string Filename)
+void Voxel2TetClass::LoadFile(std::string Filename)
 {
     STATUS ("Load file %s\n", Filename.c_str());
     Dream3DDataReader *DataReader = new Dream3DDataReader(this->Opt->GiveStringValue("DataContainer"), this->Opt->GiveStringValue("MaterialId") );
@@ -109,7 +109,7 @@ void Voxel2Tet::LoadFile(std::string Filename)
     
 }
 
-void Voxel2Tet :: FinalizeLoad()
+void Voxel2TetClass :: FinalizeLoad()
 {
     
     double cellspace[3];
@@ -152,7 +152,7 @@ void Voxel2Tet :: FinalizeLoad()
     Mesh = new MeshManipulations(bb);
 }
 
-void Voxel2Tet::LoadData()
+void Voxel2TetClass::LoadData()
 {
     STATUS ("Load data\n", 0);
     
@@ -164,7 +164,7 @@ void Voxel2Tet::LoadData()
     
 }
 
-void Voxel2Tet :: UpdateSurfaces()
+void Voxel2TetClass :: UpdateSurfaces()
 {
     for (Surface *s: this->Surfaces) {
         s->Triangles.clear();
@@ -175,12 +175,12 @@ void Voxel2Tet :: UpdateSurfaces()
     }
 }
 
-void Voxel2Tet::ExportSurface(std::string FileName, Exporter_FileTypes FileType)
+void Voxel2TetClass::ExportSurface(std::string FileName, Exporter_FileTypes FileType)
 {
     this->Mesh->ExportSurface(FileName, FileType);
 }
 
-void Voxel2Tet :: Tetrahedralize()
+void Voxel2TetClass :: Tetrahedralize()
 {
     Timer.StartTimer("Tetrahedralize");
     TetGenCaller Generator;
@@ -218,12 +218,12 @@ void Voxel2Tet :: Tetrahedralize()
 
 }
 
-void Voxel2Tet :: ExportVolume(std::string FileName, Exporter_FileTypes FileType)
+void Voxel2TetClass :: ExportVolume(std::string FileName, Exporter_FileTypes FileType)
 {
     this->Mesh->ExportVolume(FileName, FileType);
 }
 
-void Voxel2Tet::FindSurfaces()
+void Voxel2TetClass::FindSurfaces()
 {
     
     STATUS("\tFind surfaces\n", 0);
@@ -360,7 +360,7 @@ void Voxel2Tet::FindSurfaces()
 }
 
 
-void Voxel2Tet :: FindEdges()
+void Voxel2TetClass :: FindEdges()
 {
     
     STATUS ("Find edges\n\tIdentify vertices shared by surfaces...\n", 0);
@@ -605,7 +605,7 @@ void Voxel2Tet :: FindEdges()
     
 }
 
-void Voxel2Tet :: SmoothEdgesIndividually(double c, double alpha, double charlength, bool Automatic_c)
+void Voxel2TetClass :: SmoothEdgesIndividually(double c, double alpha, double charlength, bool Automatic_c)
 {
     STATUS("Smooth edges (individually)\n", 0);
     for (unsigned int i=0; i<this->PhaseEdges.size(); i++) {
@@ -615,7 +615,7 @@ void Voxel2Tet :: SmoothEdgesIndividually(double c, double alpha, double charlen
     }
 }
 
-void Voxel2Tet :: SmoothEdgesSimultaneously(double c, double alpha, double charlength, bool Automatic_c)
+void Voxel2TetClass :: SmoothEdgesSimultaneously(double c, double alpha, double charlength, bool Automatic_c)
 {
     STATUS("Smooth edges (simultaneously)\n", 0);
     
@@ -712,7 +712,7 @@ void Voxel2Tet :: SmoothEdgesSimultaneously(double c, double alpha, double charl
     
 }
 
-void Voxel2Tet :: SmoothSurfaces(double c, double alpha, double charlength, bool Automatic_c)
+void Voxel2TetClass :: SmoothSurfaces(double c, double alpha, double charlength, bool Automatic_c)
 {
     STATUS("Smooth surfaces\n", 0);
 
@@ -724,7 +724,7 @@ void Voxel2Tet :: SmoothSurfaces(double c, double alpha, double charlength, bool
     }
 }
 
-void Voxel2Tet :: SmoothAllAtOnce(double c, double alpha, double charlength, bool Automatic_c)
+void Voxel2TetClass :: SmoothAllAtOnce(double c, double alpha, double charlength, bool Automatic_c)
 {
     STATUS("Smooth complete structure\n", 0);
     
@@ -764,7 +764,7 @@ void Voxel2Tet :: SmoothAllAtOnce(double c, double alpha, double charlength, boo
     SpringSmooth(this->Mesh->Vertices, FixedDirectionsList, Connections, c, alpha, charlength, Automatic_c);
 }
 
-PhaseEdge* Voxel2Tet :: AddPhaseEdge(std::vector<VertexType*> EdgeSegment, std::vector<int> Phases)
+PhaseEdge* Voxel2TetClass :: AddPhaseEdge(std::vector<VertexType*> EdgeSegment, std::vector<int> Phases)
 {
     // Ensure that Phases argument is unique
     std::sort(Phases.begin(), Phases.end());
@@ -800,7 +800,7 @@ PhaseEdge* Voxel2Tet :: AddPhaseEdge(std::vector<VertexType*> EdgeSegment, std::
     
 }
 
-void Voxel2Tet :: AddSurfaceSquare(std::vector<int> VertexIDs, std::vector<int> phases, int normalphase)
+void Voxel2TetClass :: AddSurfaceSquare(std::vector<int> VertexIDs, std::vector<int> phases, int normalphase)
 {
     // Check is surface exists
     Surface *ThisSurface = NULL;
@@ -859,7 +859,7 @@ void Voxel2Tet :: AddSurfaceSquare(std::vector<int> VertexIDs, std::vector<int> 
     
 }
 
-double Voxel2Tet::GetListOfVolumes(std::vector<double> &VolumeList, std::vector<int> &PhaseList)
+double Voxel2TetClass::GetListOfVolumes(std::vector<double> &VolumeList, std::vector<int> &PhaseList)
 {
 
     VolumeList.clear();
@@ -876,7 +876,7 @@ double Voxel2Tet::GetListOfVolumes(std::vector<double> &VolumeList, std::vector<
 
 }
 
-Volume * Voxel2Tet::FindVolumeContainingPoint (std::array<double, 3> P)
+Volume * Voxel2TetClass::FindVolumeContainingPoint (std::array<double, 3> P)
 {
     for (Volume *v: this->Volumes) {
         if (v->IsPointInside(P)) {
@@ -886,7 +886,7 @@ Volume * Voxel2Tet::FindVolumeContainingPoint (std::array<double, 3> P)
     return NULL;
 }
 
-void Voxel2Tet::Process()
+void Voxel2TetClass::Process()
 {
     STATUS ("Start smoothing process...\n", 0);
     
@@ -1001,7 +1001,7 @@ void Voxel2Tet::Process()
     
 }
 
-void Voxel2Tet::ExportAll()
+void Voxel2TetClass::ExportAll()
 {
 
     // Surfaces
