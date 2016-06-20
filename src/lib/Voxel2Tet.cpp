@@ -102,9 +102,22 @@ void Voxel2Tet::LoadCallback(cbMaterialIDByCoordinate MaterialIDByCoordinate, st
 void Voxel2Tet::LoadFile(std::string Filename)
 {
     STATUS ("Load file %s\n", Filename.c_str());
-    Dream3DDataReader *DataReader = new Dream3DDataReader(this->Opt->GiveStringValue("DataContainer"), this->Opt->GiveStringValue("MaterialId") );
-    DataReader->LoadFile(Filename);
-    this->Imp = DataReader;
+
+    // Find extension for input file
+    char *ext;
+    ext = strrchr((char *)Filename.c_str(), '.')+1;
+
+    Importer *Import;
+
+    if (strcasecmp(ext, "dream3d") | strcasecmp(ext, "hdf5")) {
+        Import = new Dream3DDataReader(this->Opt->GiveStringValue("DataContainer"), this->Opt->GiveStringValue("MaterialId") );
+        Import->LoadFile(Filename);
+    } else if (strcasecmp(ext, "vtk")) {
+
+    }
+
+
+    this->Imp = Import;
     FinalizeLoad();
     
 }
