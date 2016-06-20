@@ -35,6 +35,7 @@ int main( int argc, char *argv[] )
 
     v2t.Tetrahedralize();
 
+    //v2t.ExportAllSurfaces();
     v2t.ExportAllVolumes();
 
     clock_t tstoptet = clock();

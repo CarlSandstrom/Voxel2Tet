@@ -196,7 +196,7 @@ void Voxel2Tet :: Tetrahedralize()
 
     // Update tetrahedrons with material information
 
-    // Create mapping
+    // Create mapping for tetrahedrons
     std::map<int, int> Tetgen2Self; // first: Tetgen material ID, second: Phase
     std::map<int, int>::iterator MapIter;
 
@@ -214,6 +214,8 @@ void Voxel2Tet :: Tetrahedralize()
         t->MaterialID = Tetgen2Self[t->MaterialID];
 
     }
+
+    // Create mapping for triangles
 
     this->Mesh = NewMesh;
 
@@ -1021,7 +1023,7 @@ void Voxel2Tet::ExportAllVolumes()
 
     // Volumes
     if (this->Opt->GiveBooleanValue("exportvtkvolume"))
-        this->Mesh->ExportVolume( strfmt("%s.volume.vtp", this->Opt->GiveStringValue("output").c_str()), FT_VTK);
+        this->Mesh->ExportVolume( strfmt("%s.volume.vtu", this->Opt->GiveStringValue("output").c_str()), FT_VTK);
 
     if (this->Opt->GiveBooleanValue("exportoofem"))
         this->Mesh->ExportVolume( strfmt("%s.in", this->Opt->GiveStringValue("output").c_str()), FT_OOFEM);
