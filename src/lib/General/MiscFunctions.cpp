@@ -59,6 +59,30 @@ std::vector<int> FindSubsetIndices(std::vector<T> Container, std::vector<T> Subs
     return Indices;
 }
 
+std::vector<std::string> SplitString (std::string Text, char Delimiter)
+{
+    int i=0;
+    std::vector<std::string> StringList;
+    std::string CurrentItem;
+
+    while (i<Text.length()) {
+        if (Text.at(i)!=Delimiter) {
+            CurrentItem += Text.at(i);
+        } else {
+            StringList.push_back(CurrentItem);
+            CurrentItem.clear();
+        }
+        i++;
+    }
+
+    if (CurrentItem.length()>0) {
+        StringList.push_back(CurrentItem);
+        CurrentItem.clear();
+    }
+
+    return StringList;
+}
+
 std::array<double,3> ComputeNormalizedVector(VertexType* v1, VertexType* v2)
 {
     std::array<double, 3> Normal;

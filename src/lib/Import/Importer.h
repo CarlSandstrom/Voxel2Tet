@@ -24,6 +24,7 @@ class Importer
 private:
     std :: vector <double> Spacing;
 public:
+    virtual void LoadFile(std::string FileName) = 0;
     virtual int GiveMaterialIDByCoordinate(double x, double y, double z) = 0;
     virtual int GiveMaterialIDByIndex(int xi, int yi, int zi) = 0;
     virtual void GiveSpacing(double spacing[3]) = 0;

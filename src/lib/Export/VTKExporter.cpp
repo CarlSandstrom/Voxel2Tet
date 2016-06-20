@@ -11,12 +11,11 @@ VTKExporter::VTKExporter()
 VTKExporter::VTKExporter(std :: vector <TriangleType*> *Triangles, std :: vector <VertexType*> *Vertices, std :: vector <EdgeType*> *Edges, std :: vector <TetType*> *Tets) :
     Exporter (Triangles, Vertices, Edges, Tets)
 {
-    //LOG("Create VTKExporter object\n",0);
 }
 
-vtkPoints* VTKExporter :: SetupVertices()
+vtkSmartPointer<vtkPoints> VTKExporter :: SetupVertices()
 {
-    vtkPoints *Points = vtkPoints::New();
+    vtkSmartPointer<vtkPoints> Points = vtkPoints::New();
 
     for (unsigned int i=0; i<this->Vertices->size(); i++) {
         VertexType *v=this->Vertices->at(i);
@@ -26,9 +25,9 @@ vtkPoints* VTKExporter :: SetupVertices()
     return Points;
 }
 
-vtkCellArray *VTKExporter::SetupTriangles()
+vtkSmartPointer<vtkCellArray> VTKExporter::SetupTriangles()
 {
-    vtkCellArray *Cells = vtkCellArray::New();
+    vtkSmartPointer<vtkCellArray> Cells = vtkCellArray::New();
     for (unsigned int i=0; i<this->Triangles->size(); i++) {
         TriangleType *t=this->Triangles->at(i);
         vtkSmartPointer<vtkTriangle> triangle = vtkSmartPointer<vtkTriangle>::New();
@@ -42,9 +41,9 @@ vtkCellArray *VTKExporter::SetupTriangles()
     return Cells;
 }
 
-vtkCellArray *VTKExporter :: SetupTetrahedrons()
+vtkSmartPointer<vtkCellArray> VTKExporter :: SetupTetrahedrons()
 {
-    vtkCellArray *Cells = vtkCellArray::New();
+    vtkSmartPointer<vtkCellArray> Cells = vtkCellArray::New();
     for (unsigned int i=0; i<this->Tets->size(); i++) {
         TetType *t = this->Tets->at(i);
         vtkSmartPointer<vtkTetra> tet = vtkSmartPointer<vtkTetra>::New();
@@ -57,86 +56,43 @@ vtkCellArray *VTKExporter :: SetupTetrahedrons()
     return Cells;
 }
 
-vtkIntArray *VTKExporter :: SetupInterfaceIDs()
+vtkSmartPointer<vtkIntArray> VTKExporter :: SetupTriangleField( std::string Name, int TriangleType::*FieldPtr )
 {
-    vtkIntArray *InterfaceIDs = vtkIntArray::New();
-    InterfaceIDs->SetNumberOfComponents(1);
-    InterfaceIDs->SetName("Surface ID");
+    vtkSmartPointer<vtkIntArray> Triangles = vtkIntArray::New();
+    Triangles->SetNumberOfComponents(1);
+    Triangles->SetName(Name.c_str());
     for (unsigned int i=0; i<this->Triangles->size(); i++) {
-        TriangleType *t=this->Triangles->at(i);
-        InterfaceIDs->InsertNextTuple1(t->InterfaceID);
+        TriangleType *v=this->Triangles->at(i);
+        int ThisValue=v->*FieldPtr;
+        Triangles->InsertNextValue(ThisValue);
     }
-    return InterfaceIDs;
+    return Triangles;
+
 }
 
-
-vtkIntArray *VTKExporter :: SetupTriangleIDs()
+vtkSmartPointer<vtkIntArray> VTKExporter :: SetupTetField( std::string Name, int TetType::*FieldPtr )
 {
-    vtkIntArray *TriangleIDs = vtkIntArray::New();
-    TriangleIDs->SetNumberOfComponents(1);
-    TriangleIDs->SetName("ID");
-    for (unsigned int i=0; i<this->Triangles->size(); i++) {
-        TriangleType *t=this->Triangles->at(i);
-        TriangleIDs->InsertNextTuple1(t->ID);
-    }
-    return TriangleIDs;
-}
-
-vtkIntArray *VTKExporter :: SetupTrianglePosNormal()
-{
-    vtkIntArray *TrianglePosNormal = vtkIntArray::New();
-    TrianglePosNormal->SetNumberOfComponents(1);
-    TrianglePosNormal->SetName("PosNormalPhaseID");
-    for (unsigned int i=0; i<this->Triangles->size(); i++) {
-        TriangleType *t=this->Triangles->at(i);
-        TrianglePosNormal->InsertNextTuple1(t->PosNormalMatID);
-    }
-    return TrianglePosNormal;
-}
-
-vtkIntArray *VTKExporter :: SetupTetIDs()
-{
-    vtkIntArray *TetIDs = vtkIntArray::New();
-    TetIDs->SetNumberOfComponents(1);
-    TetIDs->SetName("ID");
+    vtkSmartPointer<vtkIntArray> Triangles = vtkIntArray::New();
+    Triangles->SetNumberOfComponents(1);
+    Triangles->SetName(Name.c_str());
     for (unsigned int i=0; i<this->Tets->size(); i++) {
         TetType *t=this->Tets->at(i);
-        TetIDs->InsertNextTuple1(t->ID);
+        int ThisValue=t->*FieldPtr;
+        Triangles->InsertNextValue(ThisValue);
     }
-    return TetIDs;
+    return Triangles;
+
 }
 
-vtkIntArray *VTKExporter :: SetupTetPhaseID()
+vtkSmartPointer<vtkIntArray> VTKExporter :: SetupVertexField(std::string Name, int VertexType::*FieldPtr )
 {
-    vtkIntArray *TetPhaseIDs = vtkIntArray::New();
-    TetPhaseIDs->SetNumberOfComponents(1);
-    TetPhaseIDs->SetName("PhaseID");
-    for (unsigned int i=0; i<this->Tets->size(); i++) {
-        TetType *t=this->Tets->at(i);
-        TetPhaseIDs->InsertNextTuple1(t->MaterialID);
-    }
-    return TetPhaseIDs;
-}
-
-vtkIntArray *VTKExporter :: SetupVertexIDs()
-{
-    vtkIntArray *VertexIDs = vtkIntArray::New();
+    vtkSmartPointer<vtkIntArray> VertexIDs = vtkIntArray::New();
     VertexIDs->SetNumberOfComponents(1);
-    VertexIDs->SetName("Vertex ID");
+    VertexIDs->SetName(Name.c_str());
     for (unsigned int i=0; i<this->Vertices->size(); i++) {
         VertexType *v=this->Vertices->at(i);
-        VertexIDs->InsertNextValue(v->ID);
-    }
-    return VertexIDs;
-}
-
-vtkIntArray *VTKExporter :: SetupVertexTags()
-{
-    vtkIntArray *VertexIDs = vtkIntArray::New();
-    VertexIDs->SetName("Tag");
-    for (unsigned int i=0; i<this->Vertices->size(); i++) {
-        VertexType *v=this->Vertices->at(i);
-        VertexIDs->InsertNextValue(v->tag);
+        int ThisID=v->*FieldPtr;
+        VertexIDs->InsertNextValue(ThisID);
     }
     return VertexIDs;
 }
@@ -144,56 +100,38 @@ vtkIntArray *VTKExporter :: SetupVertexTags()
 void VTKExporter :: WriteSurfaceData(std::string Filename)
 {
 
-    vtkSmartPointer<vtkPoints> Points;
-    vtkSmartPointer<vtkCellArray> TriangleArrays;
-    Points.TakeReference(this->SetupVertices());
-    TriangleArrays.TakeReference(this->SetupTriangles());
+    vtkSmartPointer<vtkPoints> Points = this->SetupVertices();
+    vtkSmartPointer<vtkCellArray> TriangleArrays = this->SetupTriangles();
 
     vtkSmartPointer<vtkPolyData> PolyData = vtkSmartPointer<vtkPolyData>::New();
     PolyData->SetPoints (Points);
 
     // ID
-    vtkSmartPointer<vtkIntArray> VertexID;
-    VertexID.TakeReference(this->SetupVertexIDs());
-
-    vtkPointData *pd;
-    pd = PolyData->GetPointData();
-    pd->SetScalars(VertexID);
-    PolyData->Modified();
+    vtkSmartPointer<vtkIntArray> VertexID = SetupVertexField("Vertex ID", &VertexType::ID);
+    PolyData->GetPointData()->AddArray(VertexID);
 
     // tag
-/*    vtkSmartPointer<vtkIntArray> VertexTag;
-    VertexTag.TakeReference(this->SetupVertexTags());
-
-    vtkPointData *pdtag;
-    pdtag = PolyData->GetPointData();
-    pdtag->SetScalars(VertexTag);
-    PolyData->Modified();*/
+    vtkSmartPointer<vtkIntArray> VertexTag = SetupVertexField("Vertex tag", &VertexType::tag);
+    PolyData->GetPointData()->AddArray(VertexTag);
 
     // Triangles
     PolyData->SetPolys( TriangleArrays );
 
-    // Interface ID
-    vtkSmartPointer<vtkIntArray> InterfaceID;
-    InterfaceID.TakeReference(this->SetupInterfaceIDs());
+    // Interface ID            
+    vtkSmartPointer<vtkIntArray> InterfaceID = SetupTriangleField("Interface ID", &TriangleType::InterfaceID);
     PolyData->GetCellData()->AddArray(InterfaceID);
 
-    PolyData->Modified();
-
     // Triangle ID
-    vtkSmartPointer<vtkIntArray> TriangleID;
-    TriangleID.TakeReference(this->SetupTriangleIDs());
+    vtkSmartPointer<vtkIntArray> TriangleID = SetupTriangleField("Triangle ID", &TriangleType::ID);
     PolyData->GetCellData()->AddArray(TriangleID);
 
-    PolyData->Modified();
-
     // Positive normal phase
-    vtkSmartPointer<vtkIntArray> TrianglePosNormalPhase;
-    TrianglePosNormalPhase.TakeReference(this->SetupTrianglePosNormal());
+    vtkSmartPointer<vtkIntArray> TrianglePosNormalPhase = SetupTriangleField("PosNormalMatID", &TriangleType::PosNormalMatID);
     PolyData->GetCellData()->AddArray(TrianglePosNormalPhase);
 
-    PolyData->Modified();
-
+    // Negative normal phase
+    vtkSmartPointer<vtkIntArray> TriangleNegNormalPhase = SetupTriangleField("NegNormalMatID", &TriangleType::NegNormalMatID);
+    PolyData->GetCellData()->AddArray(TriangleNegNormalPhase);
 
     vtkSmartPointer<vtkXMLPolyDataWriter> XMLWriter = vtkSmartPointer<vtkXMLPolyDataWriter>::New();
     XMLWriter->SetFileName(Filename.c_str());
@@ -209,24 +147,19 @@ void VTKExporter :: WriteSurfaceData(std::string Filename)
 void VTKExporter :: WriteVolumeData(std::string Filename)
 {
 
-    vtkSmartPointer<vtkPoints> Points;
-    vtkSmartPointer<vtkCellArray> TetArrays;
-    Points.TakeReference(this->SetupVertices());
-    TetArrays.TakeReference(this->SetupTetrahedrons());
+    vtkSmartPointer<vtkPoints> Points = this->SetupVertices();
+    vtkSmartPointer<vtkCellArray> TetArrays = this->SetupTetrahedrons();
 
-    vtkSmartPointer<vtkUnstructuredGrid> UnstructuredGrid= vtkSmartPointer<vtkUnstructuredGrid>::New();
+    vtkSmartPointer<vtkUnstructuredGrid> UnstructuredGrid = vtkSmartPointer<vtkUnstructuredGrid>::New();
     UnstructuredGrid->SetPoints (Points);
+
     UnstructuredGrid->SetCells(VTK_TETRA, TetArrays );
 
-    vtkSmartPointer<vtkIntArray> RegionID;
-    RegionID.TakeReference(this->SetupTetIDs());
-    UnstructuredGrid->GetCellData()->AddArray(RegionID);
+    vtkSmartPointer<vtkIntArray> TetID=SetupTetField("Tet ID", &TetType::ID);
+    UnstructuredGrid->GetCellData()->AddArray(TetID);
 
-    vtkSmartPointer<vtkIntArray> PhaseID;
-    PhaseID.TakeReference(this->SetupTetPhaseID());
-    UnstructuredGrid->GetCellData()->AddArray(PhaseID);
-
-    UnstructuredGrid->Modified();
+    vtkSmartPointer<vtkIntArray> MatID=SetupTetField("Mat ID", &TetType::MaterialID);
+    UnstructuredGrid->GetCellData()->AddArray(MatID);
 
     vtkSmartPointer<vtkXMLUnstructuredGridWriter> XMLWriter = vtkSmartPointer<vtkXMLUnstructuredGridWriter>::New();
     XMLWriter->SetFileName(Filename.c_str());
@@ -235,6 +168,7 @@ void VTKExporter :: WriteVolumeData(std::string Filename)
 #else
     XMLWriter->SetInputData(UnstructuredGrid);
 #endif
+    XMLWriter->SetDataModeToAscii();
     XMLWriter->Write();
 
 }

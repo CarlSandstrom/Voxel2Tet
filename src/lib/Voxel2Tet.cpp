@@ -102,9 +102,22 @@ void Voxel2TetClass::LoadCallback(cbMaterialIDByCoordinate MaterialIDByCoordinat
 void Voxel2TetClass::LoadFile(std::string Filename)
 {
     STATUS ("Load file %s\n", Filename.c_str());
-    Dream3DDataReader *DataReader = new Dream3DDataReader(this->Opt->GiveStringValue("DataContainer"), this->Opt->GiveStringValue("MaterialId") );
-    DataReader->LoadFile(Filename);
-    this->Imp = DataReader;
+
+    // Find extension for input file
+    char *ext;
+    ext = strrchr((char *)Filename.c_str(), '.')+1;
+
+    Importer *Import;
+
+    if (strcasecmp(ext, "dream3d")==0 | strcasecmp(ext, "hdf5")==0) {
+        Import = new Dream3DDataReader(this->Opt->GiveStringValue("DataContainer"), this->Opt->GiveStringValue("MaterialId") );
+        Import->LoadFile(Filename);
+    } else if (strcasecmp(ext, "vtk")==0) {
+        Import = new VTKStructuredReader();
+        Import->LoadFile(Filename);
+    }
+
+    this->Imp = Import;
     FinalizeLoad();
     
 }
@@ -214,6 +227,11 @@ void Voxel2TetClass :: Tetrahedralize()
         t->MaterialID = Tetgen2Self[t->MaterialID];
 
     }
+
+    // Create mapping for triangles
+
+    this->Mesh = NewMesh;
+
     Timer.StopTimer();
 
 }
@@ -800,7 +818,7 @@ PhaseEdge* Voxel2TetClass :: AddPhaseEdge(std::vector<VertexType*> EdgeSegment, 
     
 }
 
-void Voxel2TetClass :: AddSurfaceSquare(std::vector<int> VertexIDs, std::vector<int> phases, int normalphase)
+void Voxel2TetClass   :: AddSurfaceSquare(std::vector<int> VertexIDs, std::vector<int> phases, int normalphase)
 {
     // Check is surface exists
     Surface *ThisSurface = NULL;
@@ -1001,7 +1019,7 @@ void Voxel2TetClass::Process()
     
 }
 
-void Voxel2TetClass::ExportAll()
+void Voxel2TetClass::ExportAllSurfaces()
 {
 
     // Surfaces
@@ -1011,9 +1029,14 @@ void Voxel2TetClass::ExportAll()
     if (this->Opt->GiveBooleanValue("exportoff"))
         this->Mesh->ExportSurface( strfmt("%s.surface.off", this->Opt->GiveStringValue("output").c_str()), FT_OFF);
 
+}
+
+void Voxel2TetClass::ExportAllVolumes()
+{
+
     // Volumes
     if (this->Opt->GiveBooleanValue("exportvtkvolume"))
-        this->Mesh->ExportVolume( strfmt("%s.volume.vtp", this->Opt->GiveStringValue("output").c_str()), FT_VTK);
+        this->Mesh->ExportVolume( strfmt("%s.volume.vtu", this->Opt->GiveStringValue("output").c_str()), FT_VTK);
 
     if (this->Opt->GiveBooleanValue("exportoofem"))
         this->Mesh->ExportVolume( strfmt("%s.in", this->Opt->GiveStringValue("output").c_str()), FT_OOFEM);
