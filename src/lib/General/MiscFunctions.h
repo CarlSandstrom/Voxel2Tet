@@ -36,6 +36,8 @@ void dolog(const char *functionname, const char *fmt, ...);
 void dooutputstat(const char *fmt, ...);
 void dooutputlogmesh(MeshData &Mesh, char *filename, ...);
 
+std::vector<std::string> SplitString (std::string Text, char Delimiter);
+
 template<typename ... Args>
 std::string strfmt( const std::string& format, Args ... args )
 {

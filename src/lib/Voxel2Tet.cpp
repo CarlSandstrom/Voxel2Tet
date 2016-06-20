@@ -109,13 +109,13 @@ void Voxel2Tet::LoadFile(std::string Filename)
 
     Importer *Import;
 
-    if (strcasecmp(ext, "dream3d") | strcasecmp(ext, "hdf5")) {
+    if (strcasecmp(ext, "dream3d")==0 | strcasecmp(ext, "hdf5")==0) {
         Import = new Dream3DDataReader(this->Opt->GiveStringValue("DataContainer"), this->Opt->GiveStringValue("MaterialId") );
         Import->LoadFile(Filename);
-    } else if (strcasecmp(ext, "vtk")) {
-
+    } else if (strcasecmp(ext, "vtk")==0) {
+        Import = new VTKStructuredReader();
+        Import->LoadFile(Filename);
     }
-
 
     this->Imp = Import;
     FinalizeLoad();
