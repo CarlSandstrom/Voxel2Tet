@@ -214,6 +214,9 @@ void Voxel2Tet :: Tetrahedralize()
         t->MaterialID = Tetgen2Self[t->MaterialID];
 
     }
+
+    this->Mesh = NewMesh;
+
     Timer.StopTimer();
 
 }
@@ -1001,7 +1004,7 @@ void Voxel2Tet::Process()
     
 }
 
-void Voxel2Tet::ExportAll()
+void Voxel2Tet::ExportAllSurfaces()
 {
 
     // Surfaces
@@ -1010,6 +1013,11 @@ void Voxel2Tet::ExportAll()
 
     if (this->Opt->GiveBooleanValue("exportoff"))
         this->Mesh->ExportSurface( strfmt("%s.surface.off", this->Opt->GiveStringValue("output").c_str()), FT_OFF);
+
+}
+
+void Voxel2Tet::ExportAllVolumes()
+{
 
     // Volumes
     if (this->Opt->GiveBooleanValue("exportvtkvolume"))

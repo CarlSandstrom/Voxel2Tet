@@ -96,9 +96,14 @@ public:
     void Process();
 
     /**
-     * @brief Exports volumes and surfaces according to flags in Opt member
+     * @brief Exports surfaces according to flags in Opt member
      */
-    void ExportAll();
+    void ExportAllSurfaces();
+
+    /**
+     * @brief Exports volumes according to flags in Opt member
+     */
+    void ExportAllVolumes();
 };
 
 }
