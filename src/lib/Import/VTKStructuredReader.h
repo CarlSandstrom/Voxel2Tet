@@ -16,14 +16,17 @@ class VTKStructuredReader : public Importer
 private:
     std::string VersionInfo;
     std::string Title;
+    std::string DataName;
+    std::string TableName;
 
     double spacing_data[3];
     double origin_data[3];
     int dimensions_data[3];
     int celldata;
 
-    BoundingBoxType BoundingBox;
     int *GrainIdsData;
+
+    BoundingBoxType BoundingBox;
 
 public:
     VTKStructuredReader();
