@@ -115,6 +115,8 @@ void Voxel2TetClass::LoadFile(std::string Filename)
     } else if (strcasecmp(ext, "vtk")==0) {
         Import = new VTKStructuredReader();
         Import->LoadFile(Filename);
+    } else {
+        STATUS("File extension %s not recognized\n", ext);
     }
 
     this->Imp = Import;

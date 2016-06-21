@@ -40,9 +40,9 @@ void VTKStructuredReader::LoadFile(std::string FileName)
                             STATUS ("Can only handle VTK files with dataset STRUCTURED_POINTS\n", 0);
                         }
                     } else if (strcasecmp(Strings[0].c_str(), "DIMENSIONS") == 0) {
-                        this->dimensions_data[0] = std::stoi (Strings[1]);
-                        this->dimensions_data[1] = std::stoi (Strings[2]);
-                        this->dimensions_data[2] = std::stoi (Strings[3]);
+                        this->dimensions_data[0] = std::stoi (Strings[1])-1;
+                        this->dimensions_data[1] = std::stoi (Strings[2])-1;
+                        this->dimensions_data[2] = std::stoi (Strings[3])-1;
                     } else if (strcasecmp(Strings[0].c_str(), "ORIGIN") == 0) {
                         this->origin_data[0] = std::stof (Strings[1]);
                         this->origin_data[1] = std::stof (Strings[2]);
@@ -53,7 +53,6 @@ void VTKStructuredReader::LoadFile(std::string FileName)
                         this->spacing_data[2] = std::stof (Strings[3]);
                         for (int i=0; i<3; i++) this->BoundingBox.minvalues[i] = this->origin_data[i];
                         for (int i=0; i<3; i++) this->BoundingBox.maxvalues[i] = this->origin_data[i]+this->dimensions_data[i]*this->spacing_data[i];
-
                     } else if (strcasecmp(Strings[0].c_str(), "CELL_DATA") == 0) {
                         this->celldata = std::stoi (Strings[1]);
                         this->GrainIdsData = (int*) malloc(sizeof(int)*this->celldata);
@@ -69,6 +68,7 @@ void VTKStructuredReader::LoadFile(std::string FileName)
                                 if (s.length()>0) {
                                     int Value = std::stoi (s);
                                     this->GrainIdsData[scount] = Value;
+                                    //printf("%u: %u\n", scount, Value);
                                     scount++;
                                 }
                             }
@@ -87,11 +87,34 @@ void VTKStructuredReader::LoadFile(std::string FileName)
 
 int VTKStructuredReader::GiveMaterialIDByCoordinate(double x, double y, double z)
 {
+    double coords[3]={x, y, z};
+    int indices[3];
+    for (int i=0; i<3; i++) {
+        double intcoord = (coords[i]-this->origin_data[i])/this->spacing_data[i];
+        indices[i] =  floor(intcoord);
+    }
+    return this->GiveMaterialIDByIndex(indices[0], indices[1], indices[2]);
 
 }
 
 int VTKStructuredReader::GiveMaterialIDByIndex(int xi, int yi, int zi)
 {
+    if (xi == -1) {
+        return -1;
+    } else if (xi == this->dimensions_data[0]) {
+        return -2;
+    } else if (yi == -1) {
+        return -3;
+    } else if (yi == this->dimensions_data[1]) {
+        return -4;
+    } else if (zi == -1) {
+        return -5;
+    } else if (zi == this->dimensions_data[2]) {
+        return -6;
+    }
+
+    int index = zi*this->dimensions_data[1]*this->dimensions_data[0] + yi*this->dimensions_data[0] + xi;
+    return this->GrainIdsData[index];
 
 }
 
@@ -112,6 +135,9 @@ void VTKStructuredReader::GiveDimensions(int dimensions[3])
 
 void VTKStructuredReader::GiveCoordinateByIndices(int xi, int yi, int zi, DoubleTriplet Coordinate)
 {
+    Coordinate.c[0] = xi*this->spacing_data[0] + this->origin_data[0];
+    Coordinate.c[1] = yi*this->spacing_data[1] + this->origin_data[1];
+    Coordinate.c[2] = zi*this->spacing_data[2] + this->origin_data[2];
 
 }
 
