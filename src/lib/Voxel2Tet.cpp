@@ -117,6 +117,7 @@ void Voxel2TetClass::LoadFile(std::string Filename)
         Import->LoadFile(Filename);
     } else {
         STATUS("File extension %s not recognized\n", ext);
+        exit(-1);
     }
 
     this->Imp = Import;
