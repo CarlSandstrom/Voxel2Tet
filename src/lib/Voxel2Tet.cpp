@@ -86,8 +86,6 @@ void Voxel2TetClass::PrintHelp()
     printf("\n\t\t-exportsteps      \tExport the result of each step in VTK format (mainly for debugging purposes)");
     printf("\n\t\t-datacontainer name\t(Dream3D input) Name of data group, default 'VoxelDataContainer'");
     printf("\n\t\t-materialid name  \t(Dream3D input) Field containing an identifier for the phase, default 'GrainIds'");
-    printf("");
-    printf("");
     printf("\n\n");
 }
 
@@ -109,7 +107,7 @@ void Voxel2TetClass::LoadFile(std::string Filename)
 
     Importer *Import;
 
-    if (strcasecmp(ext, "dream3d")==0 | strcasecmp(ext, "hdf5")==0) {
+    if ( (strcasecmp(ext, "dream3d")==0) | (strcasecmp(ext, "hdf5")==0)) {
         Import = new Dream3DDataReader(this->Opt->GiveStringValue("DataContainer"), this->Opt->GiveStringValue("MaterialId") );
         Import->LoadFile(Filename);
     } else if (strcasecmp(ext, "vtk")==0) {

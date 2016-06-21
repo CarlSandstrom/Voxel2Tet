@@ -61,7 +61,7 @@ std::vector<int> FindSubsetIndices(std::vector<T> Container, std::vector<T> Subs
 
 std::vector<std::string> SplitString (std::string Text, char Delimiter)
 {
-    int i=0;
+    size_t i=0;
     std::vector<std::string> StringList;
     std::string CurrentItem;
 

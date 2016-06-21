@@ -168,6 +168,9 @@ void MeshData :: ExportVolume(std::string FileName, Exporter_FileTypes FileType)
         exporter = new OOFEMExporter(&this->Triangles, &this->Vertices, &this->Edges, &this->Tets);
         break;
     }
+    default:
+        STATUS("No export filter found for %s\n", FileName);
+        return;
     }
     exporter->WriteVolumeData(FileName);
     free(exporter);
