@@ -33,6 +33,7 @@ private:
     vtkSmartPointer<vtkCellArray> SetupTetrahedrons();
 
     vtkSmartPointer<vtkIntArray> SetupVertexField(std::string Name, int (VertexType::*FieldPtr) );
+    vtkSmartPointer<vtkFloatArray> SetupVertexField(std::string Name, double (VertexType::*FieldPtr) );
     vtkSmartPointer<vtkIntArray> SetupTriangleField(std::string Name, int TriangleType::*FieldPtr );
     vtkSmartPointer<vtkIntArray> SetupTetField( std::string Name, int TetType::*FieldPtr );
 

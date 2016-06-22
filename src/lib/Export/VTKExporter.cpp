@@ -97,6 +97,18 @@ vtkSmartPointer<vtkIntArray> VTKExporter :: SetupVertexField(std::string Name, i
     return VertexIDs;
 }
 
+vtkSmartPointer<vtkFloatArray> VTKExporter::SetupVertexField(std::string Name, double (VertexType::*FieldPtr) )
+{
+    vtkSmartPointer<vtkFloatArray> VertexIDs = vtkFloatArray::New();
+    VertexIDs->SetNumberOfComponents(1);
+    VertexIDs->SetName(Name.c_str());
+    for (unsigned int i=0; i<this->Vertices->size(); i++) {
+        VertexType *v=this->Vertices->at(i);
+        VertexIDs->InsertNextValue(v->*FieldPtr);
+    }
+    return VertexIDs;
+}
+
 void VTKExporter :: WriteSurfaceData(std::string Filename)
 {
 
@@ -113,6 +125,10 @@ void VTKExporter :: WriteSurfaceData(std::string Filename)
     // tag
     vtkSmartPointer<vtkIntArray> VertexTag = SetupVertexField("Vertex tag", &VertexType::tag);
     PolyData->GetPointData()->AddArray(VertexTag);
+
+    // Error
+    vtkSmartPointer<vtkFloatArray> VertexError = SetupVertexField("Coarsen error", &VertexType::error);
+    PolyData->GetPointData()->AddArray(VertexError);
 
     // Triangles
     PolyData->SetPolys( TriangleArrays );
