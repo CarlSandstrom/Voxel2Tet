@@ -196,6 +196,9 @@ FC_MESH MeshManipulations :: FlipEdge(EdgeType *Edge)
     // Check if edge belongs to too many triangles
     if (EdgeTriangles.size()!=2) {
         LOG("\tUnable to flip edge. To many or only one triangle connected\n", 0);
+        for (TriangleType *t: EdgeTriangles) {
+            LOG("\t\t%u\n", t->ID);
+        }
         return FC_TOOMANYTRIANGLES;
     }
 
@@ -640,7 +643,7 @@ FC_MESH MeshManipulations :: CheckCoarsenNormal(std::vector<TriangleType*> *OldT
         }
 
         if (angle1 > TOL_COL_MAXNORMALCHANGE) {
-            LOG("Should not be collapsed...\n", 0);
+            LOG("Should not be collapsed... (angle1=%f) \n", angle1);
             return FC_NORMAL;
         }
 
@@ -670,18 +673,18 @@ FC_MESH MeshManipulations :: CheckCoarsenNormalImproved(std::vector<TriangleType
         double oldarea  = OldTriangles->at(i)->GiveArea();
         double newarea  = NewTriangles->at(i)->GiveArea();
 
+        LOG("angle1=%f,\tangle2=%f\tOldArea=%f\tNewArea=%f\n", angle1, angle2, oldarea, newarea);
+
         if (newarea < TOL_COL_SMALLESTAREA) {
             return FC_SMALLAREA;
         }
 
-        LOG("angle1=%f,\tangle2=%f\tOldArea=%f\tNewArea=%f\n", angle1, angle2, oldarea, newarea);
-
         MaxAngle = std::max(MaxAngle, std::min(fabs(angle1), fabs(angle2)));
 
-        /*        if (angle1 > TOL_COL_MAXNORMALCHANGE) {
+        if (angle1 > 3.141592/2) {
             LOG("Should not be collapsed...\n", 0);
             return FC_NORMAL;
-        }*/
+        }
 
     }
 
@@ -925,9 +928,6 @@ bool MeshManipulations :: CoarsenMeshImproved()
                         if (this->CollapseEdge(e, vi) == FC_OK) {
                             CoarseningOccurs = true;
 #if EXPORT_MESH_COARSENING
-                            std::ostringstream offname;
-                            offname << "/tmp/OffSurface_" << MeshIndex << ".off";
-                            this->ExportSurface(offname.str(), FT_OFF);
                             dooutputlogmesh(*this, "/tmp/Coarsening_%u.vtp", MeshIndex++);
 #endif
 
