@@ -20,6 +20,7 @@ public:
     Options( int argc, char *argv[], ValueMap DefaultValues, std::vector<std::string> RequiredFields );
 
     void AddDefaultMap(std::string keyname, std::string value);
+    void AddDefaultMap(std::string keyname, double value);
     void AddRequiredKey(std::string keyname);
 
     void CheckRequiredFields();

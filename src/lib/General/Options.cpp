@@ -66,6 +66,11 @@ void Options :: AddDefaultMap(std::string keyname, std::string value)
     this->DefaultMap[keyname] = value;
 }
 
+void Options :: AddDefaultMap(std::string keyname, double value)
+{
+    this->AddDefaultMap(keyname, strfmt("%f", value));
+}
+
 void Options :: AddRequiredKey(std::string keyname)
 {
     this->RequiredFields.push_back(keyname);

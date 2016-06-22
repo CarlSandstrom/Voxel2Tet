@@ -2,6 +2,9 @@
 #include <vector>
 #include <iterator>
 #include <time.h>
+#include <iostream>
+#include <fstream>
+
 #ifdef OPENMP
 #include <omp.h>
 #endif
@@ -23,10 +26,10 @@ Voxel2TetClass::Voxel2TetClass(Options *Opt)
     // Set defult options
 
     // Smoothing options
-    this->Opt->AddDefaultMap("spring_c_factor", "1");
+    this->Opt->AddDefaultMap("spring_c_factor", ".75");
     this->Opt->AddDefaultMap("spring_alpha", "2");
 
-    this->Opt->AddDefaultMap("edge_spring_c_factor", "1");
+    this->Opt->AddDefaultMap("edge_spring_c_factor", ".75");
     this->Opt->AddDefaultMap("edge_spring_alpha", "3");
 
     // Dream3D options
@@ -40,6 +43,20 @@ Voxel2TetClass::Voxel2TetClass(Options *Opt)
     this->Opt->AddDefaultMap("exportoofem", "0");
     this->Opt->AddDefaultMap("exportabaqus", "0");
     this->Opt->AddDefaultMap("exportsteps", "0");
+
+    // Mesh coarsening options
+    this->Opt->AddDefaultMap("TOL_MAXAREACHANGE", 1e-2);
+    this->Opt->AddDefaultMap("TOL_COL_SMALLESTAREA", 1e-8);
+    this->Opt->AddDefaultMap("TOL_COL_MAXNORMALCHANGE", 10*2*3.1415/360);
+    this->Opt->AddDefaultMap("TOL_COL_CHORD_MAXNORMALCHANGE", 10*2*3.141593/360);
+    this->Opt->AddDefaultMap("TOL_FLIP_SMALLESTAREA", 1e-8);
+    this->Opt->AddDefaultMap("TOL_FLIP_MAXNORMALCHANGE", 10*2*3.141593/360);
+    this->Opt->AddDefaultMap("TOL_FLIP_MAXNORMALDIFFERENCE", 10*2*3.1415/360);
+    this->Opt->AddDefaultMap("TOL_COL_MAXVOLUMECHANGE", .5*.5*.5*2);
+    this->Opt->AddDefaultMap("TOL_COL_MAXERROR", .5*.5*.5);
+
+    this->Opt->AddDefaultMap("TOL_COL_MAXVOLUMECHANGE_FACTOR", 2);
+    this->Opt->AddDefaultMap("TOL_COL_MAXERROR_FACTOR", 10);
 
     // Input/output
     if (!this->Opt->has_key("output")) {
@@ -134,6 +151,7 @@ void Voxel2TetClass :: FinalizeLoad()
     STATUS("\tVoxel dimensions are %f * %f * %f\n", cellspace[0],cellspace[1],cellspace[2]);
     STATUS("\tNumber of voxels:%u\n", dim[0]*dim[1]*dim[2]);
 
+    // Setup spring constants
     auto_c = false;
     spring_alpha = Opt->GiveDoubleValue("spring_alpha");
     edgespring_alpha = Opt->GiveDoubleValue("edge_spring_alpha");
@@ -153,6 +171,7 @@ void Voxel2TetClass :: FinalizeLoad()
     STATUS("\tUsing spring_alpha=%f, spring_c=%f\n", spring_alpha, spring_c);
     STATUS("\tUsing edgespring_alpha=%f, edgespring_c=%f\n", edgespring_alpha, edgespring_c);
     
+    // Setup bounding box
     BoundingBoxType bb;
     double spacing[3];
     
@@ -163,7 +182,29 @@ void Voxel2TetClass :: FinalizeLoad()
         bb.maxvalues[i] = bb.maxvalues[i] + spacing[i];
         bb.minvalues[i] = bb.minvalues[i] - spacing[i];
     }
+
+    // Setup tolearances in options
+    if (!this->Opt->has_key("TOL_MAXAREACHANGE")) this->Opt->AddDefaultMap("TOL_MAXAREACHANGE", 1e-2);
+    if (!this->Opt->has_key("TOL_COL_SMALLESTAREA")) this->Opt->AddDefaultMap("TOL_COL_SMALLESTAREA", 1e-8);
+    if (!this->Opt->has_key("TOL_COL_MAXNORMALCHANGE")) this->Opt->AddDefaultMap("TOL_COL_MAXNORMALCHANGE", 10*2*3.1415/360);
+    if (!this->Opt->has_key("TOL_COL_CHORD_MAXNORMALCHANGE")) this->Opt->AddDefaultMap("TOL_COL_CHORD_MAXNORMALCHANGE", 10*2*3.1415/360);
+    if (!this->Opt->has_key("TOL_FLIP_SMALLESTAREA")) this->Opt->AddDefaultMap("TOL_FLIP_SMALLESTAREA", 1e-8);
+    if (!this->Opt->has_key("TOL_FLIP_MAXNORMALCHANGE")) this->Opt->AddDefaultMap("TOL_FLIP_MAXNORMALCHANGE", 10*2*3.1415/360);
+    if (!this->Opt->has_key("TOL_FLIP_MAXNORMALDIFFERENCE")) this->Opt->AddDefaultMap("TOL_FLIP_MAXNORMALDIFFERENCE", 10*2*3.1415/360);
+
+    if (!this->Opt->has_key("TOL_COL_MAXVOLUMECHANGE_FACTOR")) this->Opt->AddDefaultMap("TOL_COL_MAXVOLUMECHANGE_FACTOR", 2);
+    if (!this->Opt->has_key("TOL_COL_MAXERROR_FACTOR")) this->Opt->AddDefaultMap("TOL_COL_MAXERROR_FACTOR", 10);
+
+    if (!this->Opt->has_key("TOL_COL_MAXVOLUMECHANGE")) this->Opt->AddDefaultMap("TOL_COL_MAXVOLUMECHANGE", cellspace[0]*cellspace[1]*cellspace[2]*this->Opt->GiveIntegerValue("TOL_COL_MAXVOLUMECHANGE_FACTOR"));
+    if (!this->Opt->has_key("TOL_COL_MAXERROR")) this->Opt->AddDefaultMap("TOL_COL_MAXERROR", cellspace[0]*cellspace[1]*cellspace[2]*this->Opt->GiveIntegerValue("TOL_COL_MAXERROR_FACTOR"));
+
+    // Create mesh managing object
     Mesh = new MeshManipulations(bb);
+
+
+    this->Mesh->TOL_COL_MAXVOLUMECHANGE = cellspace[0]*cellspace[1]*cellspace[2]*2;
+    this->Mesh->TOL_COL_MAXERROR = cellspace[0]*cellspace[1]*cellspace[2]*10;
+
 }
 
 void Voxel2TetClass::LoadData()
@@ -228,8 +269,7 @@ void Voxel2TetClass :: Tetrahedralize()
         t->MaterialID = Tetgen2Self[t->MaterialID];
 
     }
-
-    // Create mapping for triangles
+    free (this->Mesh);
 
     this->Mesh = NewMesh;
 
@@ -922,9 +962,7 @@ void Voxel2TetClass::Process()
 
     // Compute volumes enclosed by surfaces
     Timer.StartTimer("Compute volumes");
-    std::vector<std::vector<double>> PhaseVolumes;
-    std::vector<double> CurrentVolumes;
-    std::vector<int> PhaseList;
+
 
     double TotalVolume = GetListOfVolumes(CurrentVolumes, PhaseList);
     LOG("Total volume: %f\n", TotalVolume);
@@ -1044,4 +1082,95 @@ void Voxel2TetClass::ExportAllVolumes()
 
 }
 
+void Voxel2TetClass::ExportStatistics()
+{
+
+    int dimensions[3];
+    this->Imp->GiveDimensions(dimensions);
+    double origin[3];
+    this->Imp->GiveOrigin(origin);
+    double spacing[3];
+    this->Imp->GiveSpacing(spacing);
+
+    std::string Filename = strfmt("%s.stat", this->Opt->GiveStringValue("output").c_str());
+    STATUS("Write statistics output file %s\n", Filename.c_str());
+    std::ofstream StatFile;
+    StatFile.open(Filename);
+    StatFile << "Voxel2Tet statistics\n";
+    StatFile << "====================\n\n";
+    StatFile << "Input file:\t" << this->Opt->GiveStringValue("input") << "\n";
+    StatFile << "\tDimensions: " << dimensions[0] << "*" << dimensions[1] << "*" << dimensions[2] << " voxels\n";
+    StatFile << "\tOrigin:     " << origin[0] << "*" << origin[1] << "*" << origin[2] << "\n";
+    StatFile << "\tSpacing:    " << spacing[0] << "*" << spacing[1] << "*" << spacing[2] << "\n";
+    StatFile << "Output file:\t" << this->Opt->GiveStringValue("output") << "\n";
+
+    StatFile << "\nConstants used during smoothing\n";
+    StatFile <<   "-------------------------------\n";
+    StatFile << "Smoothing algorithm:\n";
+    StatFile << "edge_spring_alpha = " << edgespring_alpha << "\n";
+    StatFile << "edge_spring_c = " << edgespring_c << "\n";
+    StatFile << "spring_alpha = " << spring_alpha << "\n";
+    StatFile << "spring_c = " << spring_c << "\n";
+
+    StatFile << "\nMesh coarsening:\n";
+    StatFile << "TOL_MAXAREACHANGE = " << this->Opt->GiveStringValue("TOL_MAXAREACHANGE") << "\n";
+    StatFile << "TOL_COL_SMALLESTAREA = " << this->Opt->GiveStringValue("TOL_COL_SMALLESTAREA") << "\n";
+    StatFile << "TOL_COL_MAXNORMALCHANGE = " << this->Opt->GiveStringValue("TOL_COL_MAXNORMALCHANGE") << "\n";
+    StatFile << "TOL_COL_CHORD_MAXNORMALCHANGE = " << this->Opt->GiveStringValue("TOL_COL_CHORD_MAXNORMALCHANGE") << "\n";
+    StatFile << "TOL_FLIP_SMALLESTAREA = " << this->Opt->GiveStringValue("TOL_FLIP_SMALLESTAREA") << "\n";
+    StatFile << "TOL_FLIP_MAXNORMALCHANGE = " << this->Opt->GiveStringValue("TOL_FLIP_MAXNORMALCHANGE") << "\n";
+    StatFile << "TOL_FLIP_MAXNORMALDIFFERENCE = " << this->Opt->GiveStringValue("TOL_FLIP_MAXNORMALDIFFERENCE") << "\n";
+    StatFile << "TOL_COL_MAXVOLUMECHANGE = " << this->Opt->GiveStringValue("TOL_COL_MAXVOLUMECHANGE") << "\n";
+    StatFile << "TOL_COL_MAXERROR = " << this->Opt->GiveStringValue("TOL_COL_MAXERROR") << "\n";
+    StatFile << "TOL_COL_MAXVOLUMECHANGE_FACTOR = " << this->Opt->GiveStringValue("TOL_COL_MAXVOLUMECHANGE_FACTOR") << "\n";
+    StatFile << "TOL_COL_MAXERROR_FACTOR = " << this->Opt->GiveStringValue("TOL_COL_MAXERROR_FACTOR") << "\n";
+
+    StatFile << "\nMesh\n----\n";
+    StatFile << "Number of input voxels: " << dimensions[0]*dimensions[1]*dimensions[2] << "\n";
+    StatFile << "Number of input nodes: " << (dimensions[0]+1)*(dimensions[1]+1)*(dimensions[2]+1) << "\n";
+    StatFile << "Number of output elements: " << this->Mesh->Tets.size() << "\n";
+    StatFile << "Number of output nodes: " << this->Mesh->Vertices.size() << "\n";
+
+    StatFile << "\nVolume change (One column per phase):\nPhase\t";
+
+    for (int p: PhaseList) {
+        StatFile << p << "\t";
+    }
+
+    double Vtot=0;
+    double E=0;
+
+    StatFile << "\nVoxel\t";
+    for (size_t j=0; j<PhaseVolumes.at(0).size(); j++) {
+        StatFile << PhaseVolumes.at(0).at(j) << "\t";
+        Vtot = Vtot+PhaseVolumes.at(0).at(j);
+    }
+
+    StatFile << "\nTet  \t";
+    for (size_t j=0; j<PhaseVolumes.at(PhaseVolumes.size()-1).size(); j++) {
+        StatFile << PhaseVolumes.at(PhaseVolumes.size()-1).at(j) << "\t";
+    }
+
+    StatFile << "\n%    \t";
+
+    for (size_t j=0; j<PhaseVolumes.at(PhaseVolumes.size()-1).size(); j++) {
+        double change = PhaseVolumes.at(PhaseVolumes.size()-1).at(j)/PhaseVolumes.at(0).at(j);
+        StatFile <<  (change-1)*100 << "\t";
+    }
+
+    for (size_t i=0; i<PhaseVolumes.at(0).size(); i++) {
+        double ei = fabs(PhaseVolumes.at(0).at(i)-PhaseVolumes.at(PhaseVolumes.size()-1).at(i))*PhaseVolumes.at(0).at(i);
+        E = E + ei/Vtot;
+    }
+
+    StatFile << "\n\nWeighted error: " << E;
+
+    StatFile << "\n\nTime\n----\n";
+
+    std::vector<std::pair<double, std::string>> TimeTable = this->Timer.GetTable();
+    for (std::pair<double, std::string> stamp: TimeTable) {
+        StatFile << stamp.second << "\t" << stamp.first << "s\n";
+    }
+
+}
 }

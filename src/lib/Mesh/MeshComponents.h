@@ -23,6 +23,8 @@ public:
      */
     double c_constant;
 
+    double error;
+
     int ID;
 
     int tag;

@@ -35,12 +35,11 @@ int main( int argc, char *argv[] )
 
     v2t.Tetrahedralize();
 
-    //v2t.ExportAllSurfaces();
     v2t.ExportAllVolumes();
+    v2t.ExportStatistics();
 
     clock_t tstoptet = clock();
 
-    v2t.ExportAllVolumes();
 
     double ProcessTime = double(tstopprocess-tstart) / CLOCKS_PER_SEC;
     double TetTime = double(tstoptet-tstopprocess) / CLOCKS_PER_SEC;

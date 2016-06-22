@@ -10,12 +10,15 @@ MeshManipulations::MeshManipulations(BoundingBoxType BoundingBox) : MeshData(Bou
     TOL_MAXAREACHANGE = 1e-2;
 
     TOL_COL_SMALLESTAREA = 1e-8;
-    TOL_COL_MAXNORMALCHANGE = 20*2*3.1415/360;
-    TOL_COL_CHORD_MAXNORMALCHANGE = 15*2*3.141593/360;
+    TOL_COL_MAXNORMALCHANGE = 10*2*3.1415/360;
+    TOL_COL_CHORD_MAXNORMALCHANGE = 10*2*3.141593/360;
 
     TOL_FLIP_SMALLESTAREA = 1e-8;
-    TOL_FLIP_MAXNORMALCHANGE = 20*2*3.141593/360;
-    TOL_FLIP_MAXNORMALDIFFERENCE = 20*2*3.1415/360;
+    TOL_FLIP_MAXNORMALCHANGE = 10*2*3.141593/360;
+    TOL_FLIP_MAXNORMALDIFFERENCE = 10*2*3.1415/360;
+
+    TOL_COL_MAXVOLUMECHANGE = .5*.5*.5*2;
+    TOL_COL_MAXERROR = .5*.5*.5;
 }
 
 void MeshManipulations :: SortEdgesByLength()
@@ -376,9 +379,27 @@ FC_MESH MeshManipulations :: CollapseEdgeTest(std::vector<TriangleType *> *Trian
     FC_MESH FC;
 
     FC = this->CheckCoarsenNormal(TrianglesToSave, NewTriangles);
+
+    double error;
+    FC = this->CheckCoarsenNormalImproved(TrianglesToSave, TrianglesToRemove, NewTriangles, error);
     if (FC != FC_OK) {
         return FC;
     }
+
+    // Check if accumulated error will exceed limit
+    std::vector<VertexType *> eVertices;
+    for (TriangleType *t: *TrianglesToSave) {
+        for (int i=0; i<3; i++) {
+            eVertices.push_back(t->Vertices[i]);
+        }
+    }
+    std::sort(eVertices.begin(), eVertices.end());
+    eVertices.erase(std::unique(eVertices.begin(), eVertices.end()), eVertices.end());
+
+    double TotalError=0;
+    for (VertexType *v: eVertices) TotalError = TotalError + v->error;
+
+    if (TotalError > TOL_COL_MAXERROR) return FC_TOOLARGEERROR;
 
     LOG("Check validity of new chord...\n", 0);
     FC = this->CheckCoarsenChord(EdgeToCollapse, EdgeToCollapse->Vertices[RemoveVertexIndex], EdgeToCollapse->Vertices[SaveVertexIndex]);
@@ -433,6 +454,11 @@ FC_MESH MeshManipulations :: CollapseEdgeTest(std::vector<TriangleType *> *Trian
 
             }
         }
+    }
+
+    // Add new error
+    for (VertexType *v: eVertices) {
+        v->error = v->error + error/((double) eVertices.size());
     }
 
     return FC_OK;
@@ -626,7 +652,7 @@ FC_MESH MeshManipulations :: CheckCoarsenNormal(std::vector<TriangleType*> *OldT
         return FC_OK;
 }
 
-FC_MESH MeshManipulations :: CheckCoarsenNormalImproved(std::vector<TriangleType*> *OldTriangles, std::vector<TriangleType*> *TrianglesToRemove, std::vector<TriangleType*> *NewTriangles)
+FC_MESH MeshManipulations :: CheckCoarsenNormalImproved(std::vector<TriangleType*> *OldTriangles, std::vector<TriangleType*> *TrianglesToRemove, std::vector<TriangleType*> *NewTriangles, double &error)
 {
 
     // This is very unfinished....
@@ -659,7 +685,7 @@ FC_MESH MeshManipulations :: CheckCoarsenNormalImproved(std::vector<TriangleType
 
     }
 
-    if (MaxAngle > 95*2*3.141593/360)
+    if (MaxAngle > 45*2*3.141593/360)
         return FC_NORMAL;
 
     std::vector<TriangleType *> RemoveVolume=*OldTriangles;
@@ -706,7 +732,10 @@ FC_MESH MeshManipulations :: CheckCoarsenNormalImproved(std::vector<TriangleType
         double Vc = 1./6.*(v3x*(v1y*v2z-v2y*v1z) + v3y*(v2x*v1z-v1x*v2z) + v3z*(v1x*v2y-v1y*v2x))*ContributionSign;
         V = V - Vc;
     }
-    if (fabs(V)>1e-5) {
+
+    error = fabs(V);
+
+    if (error>TOL_COL_MAXVOLUMECHANGE) {
         return FC_AREACHANGETOOLARGE;
     } else {
         return FC_OK;

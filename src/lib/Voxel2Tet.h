@@ -64,6 +64,10 @@ private:
 
     TimeStamp Timer;
 
+    std::vector<std::vector<double>> PhaseVolumes;
+    std::vector<double> CurrentVolumes;
+    std::vector<int> PhaseList;
+
 public:
     Voxel2TetClass(Options *Opt);
     ~Voxel2TetClass();
@@ -107,6 +111,11 @@ public:
      * @brief Exports volumes according to flags in Opt member
      */
     void ExportAllVolumes();
+
+    /**
+     * @brief Exports statistics on current (finished) job
+     */
+    void ExportStatistics();
 };
 
 }

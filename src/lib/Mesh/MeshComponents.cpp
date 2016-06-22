@@ -17,6 +17,7 @@ VertexType :: VertexType (double x, double y, double z)
     this->originalcoordinates[2] = z;
     this->Fixed = {{false, false, false}};
     this->c_constant = 0.0;
+    this->error = 0.0;
 }
 
 void VertexType :: set_c(std::array<double,3> newc)

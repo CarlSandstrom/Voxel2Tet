@@ -69,24 +69,48 @@ public:
      */
     double TOL_FLIP_MAXNORMALDIFFERENCE;
 
+    /**
+     * @brief TOL_COL_MAXVOLUMECHANGE Maximum change in volume for one edge collapse
+     */
+    double TOL_COL_MAXVOLUMECHANGE;
+
+    /**
+     * @brief TOL_COL_MAXERROR Largest accumulated error in nodes for collapsing
+     */
+    double TOL_COL_MAXERROR;
+
     MeshManipulations(BoundingBoxType BoundingBox);
 
     void RemoveDegenerateTriangles();
 
+    /**
+     * @brief Flips edge if permitted
+     * @param Edge [in] Edge to be flipped
+     * @return Value depends on success of flip
+     */
     FC_MESH FlipEdge(EdgeType *Edge);
 
     /**
      * @brief Check if flipping is permitted. For return codes, see CollapseEdge
-     *
+     * @return Returns wether flipping is permitted
      */
     FC_MESH CheckFlipNormal(std::vector<TriangleType*> *OldTriangles, std::array<TriangleType*, 2> NewTriangles);
 
     /**
-     * @brief Collapses an edge. Returns FC_MESH value
-     *
+     * @brief Collapses an edge if possible. Returns FC_MESH value
+     * @return Returns wether collapsing was successfull or not
      */
     FC_MESH CollapseEdge(EdgeType *EdgeToCollapse, int RemoveVertexIndex, bool PerformTesting = true);
 
+    /**
+     * @brief Determines wether collapsing an edge is permitted
+     * @param TrianglesToSave [in] Triangles to keep
+     * @param TrianglesToRemove [in] Triangles to remove from existing triangulation
+     * @param NewTriangles [in] New triangles
+     * @param EdgeToCollapse [in] Edge to collapse
+     * @param RemoveVertexIndex [in] Index in EdgeToCollapse to the vertex about to be collapsed
+     * @return
+     */
     FC_MESH CollapseEdgeTest(std::vector<TriangleType *> *TrianglesToSave, std::vector<TriangleType *> *TrianglesToRemove, std::vector<TriangleType *> *NewTriangles, EdgeType *EdgeToCollapse, int RemoveVertexIndex);
 
     /**
@@ -99,9 +123,10 @@ public:
      * @param OldTriangles
      * @param TrianglesToRemove
      * @param NewTriangles
+     * @param error [out] Accumulated error
      * @return
      */
-    FC_MESH CheckCoarsenNormalImproved(std::vector<TriangleType*> *OldTriangles, std::vector<TriangleType*> *TrianglesToRemove, std::vector<TriangleType*> *NewTriangles);
+    FC_MESH CheckCoarsenNormalImproved(std::vector<TriangleType*> *OldTriangles, std::vector<TriangleType*> *TrianglesToRemove, std::vector<TriangleType*> *NewTriangles, double &error);
 
     FC_MESH CheckCoarsenChord(EdgeType *EdgeToCollapse, VertexType* RemoveVertex, VertexType* SaveVertex);
 
