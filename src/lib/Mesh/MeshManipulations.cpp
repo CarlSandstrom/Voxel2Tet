@@ -64,48 +64,6 @@ void MeshManipulations :: SortEdgesByMinArea()
     }
 }
 
-
-void MeshManipulations :: RemoveDegenerateTriangles()
-{
-    // TODO: Is this used? I think not...
-
-    STATUS("Remove degenerate triangles...\n", 0);
-
-    // Find triangles with zero-area
-    for (unsigned int i=0; i<this->Triangles.size(); i++) {
-        TriangleType *t = this->Triangles.at(i);
-
-        int index;
-        double LargestAngle = t->GiveLargestAngle(&index);
-
-        LOG("Triangle #%i@%p  has largest angle %f\n", i, t, LargestAngle);
-        if (LargestAngle > 3) {
-            // Note that this can occur by either a very small angle and/or two vertices located very close to each other
-            LOG("Triangle #%i@%p has a too large largest angle\n", i, t);
-
-            // Find largest angle and the associated index
-
-            // Find opposite edge and flip that edge
-            std::array<EdgeType *, 3> Edges = t->GiveEdges();
-            EdgeType *OppositeEdge = NULL;
-            for (EdgeType *e: Edges) {
-                if ( (e->Vertices[0]!=t->Vertices[index]) & (e->Vertices[1]!=t->Vertices[index])) {
-                    OppositeEdge = e;
-                    break;
-                }
-            }
-
-            if (OppositeEdge==NULL) {
-                LOG ("Something unexpected occured\n", 0);
-            }
-
-            if (!this->FlipEdge(OppositeEdge)) {
-                STATUS("The longest edge of triangle %u failed to flip\n", i);
-            }
-        }
-    }
-}
-
 FC_MESH MeshManipulations :: GetFlippedEdgeData(EdgeType *EdgeToFlip, EdgeType *NewEdge, std::array<TriangleType*, 2> *NewTriangles)
 {
     LOG("Get flipped edge data for edge %p\n", EdgeToFlip);
@@ -381,7 +339,7 @@ FC_MESH MeshManipulations :: CollapseEdgeTest(std::vector<TriangleType *> *Trian
     LOG("Check validity of new normals...\n", 0);
     FC_MESH FC;
 
-    FC = this->CheckCoarsenNormal(TrianglesToSave, NewTriangles);
+    //FC = this->CheckCoarsenNormal(TrianglesToSave, NewTriangles);
 
     double error;
     FC = this->CheckCoarsenNormalImproved(TrianglesToSave, TrianglesToRemove, NewTriangles, error);
