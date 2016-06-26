@@ -66,7 +66,7 @@ void MeshManipulations :: SortEdgesByMinArea()
 
 FC_MESH MeshManipulations :: GetFlippedEdgeData(EdgeType *EdgeToFlip, EdgeType *NewEdge, std::array<TriangleType*, 2> *NewTriangles)
 {
-    LOG("Get flipped edge data for edge %p\n", EdgeToFlip);
+    LOG("Get flipped edge data for edge %u@%p\n", EdgeToFlip->ID, EdgeToFlip);
 
     std::vector<TriangleType *> EdgeTriangles = EdgeToFlip->GiveTriangles();
 
@@ -147,7 +147,7 @@ FC_MESH MeshManipulations :: GetFlippedEdgeData(EdgeType *EdgeToFlip, EdgeType *
 
 FC_MESH MeshManipulations :: FlipEdge(EdgeType *Edge)
 {
-    LOG ("Flip edge %p (%u, %u)\n", Edge, Edge->Vertices[0]->ID, Edge->Vertices[1]->ID);
+    LOG ("Flip edge %u@%p (%u, %u)\n", Edge->ID, Edge, Edge->Vertices[0]->ID, Edge->Vertices[1]->ID);
 
     std::vector<TriangleType *> EdgeTriangles = Edge->GiveTriangles();
 
@@ -289,6 +289,9 @@ FC_MESH MeshManipulations :: FlipEdge(EdgeType *Edge)
         this->AddTriangle(t);
     }
 
+    // Remove edge from list
+    this->Edges.erase(std::remove(this->Edges.begin(), this->Edges.end(), Edge), this->Edges.end());
+
     // 5. Free old triangles
     for (TriangleType *t: EdgeTriangles) {
         this->RemoveTriangle(t);
@@ -429,7 +432,7 @@ FC_MESH MeshManipulations :: CollapseEdge(EdgeType *EdgeToCollapse, int RemoveVe
 {
     // TODO: In its current setting, this procedure only checks if collapsing is ok from the current topology. It should compare to the original topology, otherwise degeneration can occur gradually
 
-    LOG("Collapse edge %p (%u, %u) by removing vertex %u\n", EdgeToCollapse, EdgeToCollapse->Vertices[0]->ID,
+    LOG("Collapse edge %u@%p (%u, %u) by removing vertex %u\n", EdgeToCollapse->ID, EdgeToCollapse, EdgeToCollapse->Vertices[0]->ID,
             EdgeToCollapse->Vertices[1]->ID, EdgeToCollapse->Vertices[RemoveVertexIndex]->ID);
 
     // Cannot remove a fixed vertex

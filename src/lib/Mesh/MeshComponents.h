@@ -73,6 +73,7 @@ public:
 
 class EdgeType {
 public:
+    int ID;
     std::array<VertexType *, 2> Vertices;
 
     std::vector<TriangleType *> GiveTriangles();

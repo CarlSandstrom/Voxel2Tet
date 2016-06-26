@@ -25,6 +25,7 @@ class MeshData
 {
 private:
     int TriangleCounter;
+    int EdgeCounter;
 
 public:
     void DoSanityCheck();

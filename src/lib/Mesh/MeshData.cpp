@@ -14,6 +14,7 @@ MeshData::MeshData(BoundingBoxType BoundingBox)
     this->BoundingBox = BoundingBox;
     this->VertexOctreeRoot = new VertexOctreeNode(this->BoundingBox, &this->Vertices, 0);
     this->TriangleCounter = 0;
+    this->EdgeCounter = 0;
 }
 
 MeshData::~MeshData()
@@ -186,9 +187,11 @@ EdgeType *MeshData :: AddEdge(std::vector<int> VertexIDs)
     VertexType *OtherVertex = this->Vertices.at(OtherVertexID);
 
     std::vector <EdgeType*> Edges = this->Vertices.at(ThisVertexID)->Edges;
+
+    // TODO: Is this neccessary? Seems expensive...
     for (auto Edge: Edges) {
         if ( ( (Edge->Vertices[0] == ThisVertex) & (Edge->Vertices[1] == OtherVertex) ) | ( (Edge->Vertices[1] == ThisVertex) & (Edge->Vertices[0] == OtherVertex) )) {
-            LOG("Edge %p already exists\n", Edge);
+            LOG("Edge %u@%p already exists\n", Edge->ID, Edge);
             return Edge;
         }
     }
@@ -203,15 +206,20 @@ EdgeType *MeshData :: AddEdge(std::vector<int> VertexIDs)
 }
 
 EdgeType *MeshData :: AddEdge(EdgeType *e) {
+
+    e->ID = this->EdgeCounter;
+    this->EdgeCounter++;
     for (VertexType *v: e->Vertices) {
         v->AddEdge(e);
     }
+    LOG("Add edge %u@%p from vertices (%u, %u)\n", e->ID, e, e->Vertices[0]->ID, e->Vertices[1]->ID);
     this->Edges.push_back(e);
     return e;
 }
 
 void MeshData :: RemoveEdge(EdgeType *e)
 {
+    LOG("Remove edge %u@%p (%u, %u)\n", e->ID, e, e->Vertices[0]->ID, e->Vertices[1]->ID);
     for (VertexType *v: e->Vertices) {
         v->RemoveEdge(e);
     }
