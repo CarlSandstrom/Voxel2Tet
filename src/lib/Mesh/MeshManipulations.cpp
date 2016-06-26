@@ -290,7 +290,8 @@ FC_MESH MeshManipulations :: FlipEdge(EdgeType *Edge)
     }
 
     // Remove edge from list
-    this->Edges.erase(std::remove(this->Edges.begin(), this->Edges.end(), Edge), this->Edges.end());
+    this->RemoveEdge(Edge);
+    //this->Edges.erase(std::remove(this->Edges.begin(), this->Edges.end(), Edge), this->Edges.end());
 
     // 5. Free old triangles
     for (TriangleType *t: EdgeTriangles) {
@@ -557,10 +558,13 @@ FC_MESH MeshManipulations :: CollapseEdge(EdgeType *EdgeToCollapse, int RemoveVe
     bool edgeflipped = true;
     while (edgeflipped) {
         edgeflipped = false;
-        for (EdgeType *e: ConnectedEdges) {
+        size_t i=0;
+        while (i<SaveVertex->Edges.size()) {
+            EdgeType *e = SaveVertex->Edges[i];
             if (FlipEdge(e)!=FC_OK) {
                 //FlipEdge(e);
                 LOG("Failed to flip edge\n", 0);
+                i++;
             } else {
                 LOG("Edge flipped!\n", 0);
                 edgeflipped = true;
@@ -822,11 +826,15 @@ int MeshManipulations::FlipAll()
     bool edgeflipped = true;
     while (edgeflipped) {
         edgeflipped = false;
-        for (EdgeType *e: this->Edges) {
+        size_t j=0;
+        while (j<this->Edges.size()) {
+            EdgeType *e=this->Edges[j];
             LOG ("Flip edge iteration %u: edge @%p (%u, %u)\n", i, e, e->Vertices[0]->ID, e->Vertices[1]->ID);
             if (this->FlipEdge(e)==FC_OK) {
                 flipcount++;
                 edgeflipped = true;
+            } else {
+                j++;
             }
             //this->ExportSurface(strfmt("/tmp/Flip%u.vtp", outputindex++), FT_VTK);
             i++;

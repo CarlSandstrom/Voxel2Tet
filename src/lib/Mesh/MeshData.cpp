@@ -180,24 +180,7 @@ void MeshData :: ExportVolume(std::string FileName, Exporter_FileTypes FileType)
 EdgeType *MeshData :: AddEdge(std::vector<int> VertexIDs)
 {
 
-    // Check if edge already exists
-    int ThisVertexID = VertexIDs.at(0);
-    int OtherVertexID = VertexIDs.at(1);
-    VertexType *ThisVertex = this->Vertices.at(ThisVertexID);
-    VertexType *OtherVertex = this->Vertices.at(OtherVertexID);
-
-    std::vector <EdgeType*> Edges = this->Vertices.at(ThisVertexID)->Edges;
-
-    // TODO: Is this neccessary? Seems expensive...
-    for (auto Edge: Edges) {
-        if ( ( (Edge->Vertices[0] == ThisVertex) & (Edge->Vertices[1] == OtherVertex) ) | ( (Edge->Vertices[1] == ThisVertex) & (Edge->Vertices[0] == OtherVertex) )) {
-            LOG("Edge %u@%p already exists\n", Edge->ID, Edge);
-            return Edge;
-        }
-    }
-
     EdgeType *NewEdge = new EdgeType;
-    LOG("Create edge from Vertex IDs %u and %u: %p\n", VertexIDs.at(0), VertexIDs.at(1), NewEdge);
     for (unsigned int i: {0, 1}) {
         NewEdge->Vertices.at(i) =  this->Vertices.at(VertexIDs.at(i));
     }
@@ -205,7 +188,28 @@ EdgeType *MeshData :: AddEdge(std::vector<int> VertexIDs)
     return AddEdge(NewEdge);
 }
 
-EdgeType *MeshData :: AddEdge(EdgeType *e) {
+EdgeType *MeshData :: AddEdge(EdgeType *e)
+{
+
+    LOG("Create edge from Vertex IDs %u and %u: %p\n", e->Vertices[0]->ID, e->Vertices[1]->ID, e);
+
+    // Check if edge already exists (only check edges connected to the first vertex)
+    VertexType *ThisVertex = e->Vertices[0];
+    VertexType *OtherVertex = e->Vertices[1];
+
+    std::vector <EdgeType*> Edges = e->Vertices.at(0)->Edges;
+
+    for (auto Edge: Edges) {
+        if ( ( (Edge->Vertices[0] == ThisVertex) & (Edge->Vertices[1] == OtherVertex) ) | ( (Edge->Vertices[1] == ThisVertex) & (Edge->Vertices[0] == OtherVertex) )) {
+            LOG("Edge %u@%p already exists\n", Edge->ID, Edge);
+            return Edge;
+        }
+    }
+
+    if (e->Vertices[0] == e->Vertices[1]) {
+        STATUS("Vertices are the same\n", 0);
+        throw(0);
+    }
 
     e->ID = this->EdgeCounter;
     this->EdgeCounter++;
