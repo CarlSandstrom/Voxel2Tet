@@ -139,47 +139,37 @@ void Voxel2TetClass :: LoadFile(std :: string Filename)
 
 void Voxel2TetClass :: FinalizeLoad()
 {
-    double cellspace [ 3 ];
+
     int dim [ 3 ];
+    double cellspace [ 3 ];
     this->Imp->GiveSpacing(cellspace);
     this->Imp->GiveDimensions(dim);
 
     STATUS("\tVoxel dimensions are %f * %f * %f\n", cellspace [ 0 ], cellspace [ 1 ], cellspace [ 2 ]);
     STATUS("\tNumber of voxels:%u\n", dim [ 0 ] * dim [ 1 ] * dim [ 2 ]);
 
-    // Setup spring constants
-
-    // (dim[0], double c, dobule alpha, bool compute_c)
-
-    auto_c = false;
-    spring_alpha = Opt->GiveDoubleValue("spring_alpha");
-    edgespring_alpha = Opt->GiveDoubleValue("edge_spring_alpha");
+    // Setup smoothing classes
 
     if ( this->Opt->has_key("spring_c") ) {
-        this->SurfaceSmoother = new SmootherClass(dim[0], Opt->GiveDoubleValue("spring_c"), Opt->GiveDoubleValue("spring_alpha"), Opt->GiveDoubleValue("spring_c_factor"), false );
+        this->SurfaceSmoother = new SmootherClass(cellspace[0], Opt->GiveDoubleValue("spring_c"), Opt->GiveDoubleValue("spring_alpha"), Opt->GiveDoubleValue("spring_c_factor"), false );
     } else {
-        this->SurfaceSmoother = new SmootherClass(dim[0], Opt->GiveDoubleValue("spring_c"), Opt->GiveDoubleValue("spring_alpha"), Opt->GiveDoubleValue("spring_c_factor"), true );
+        this->SurfaceSmoother = new SmootherClass(cellspace[0], Opt->GiveDoubleValue("spring_c"), Opt->GiveDoubleValue("spring_alpha"), Opt->GiveDoubleValue("spring_c_factor"), true );
     }
 
     if ( this->Opt->has_key("edge_spring_c") ) {
-        this->EdgeSmoother = new SmootherClass(dim[0], Opt->GiveDoubleValue("edge_spring_c"), Opt->GiveDoubleValue("edge_spring_alpha"), Opt->GiveDoubleValue("edge_spring_c_factor"), false );
+        this->EdgeSmoother = new SmootherClass(cellspace[0], Opt->GiveDoubleValue("edge_spring_c"), Opt->GiveDoubleValue("edge_spring_alpha"), Opt->GiveDoubleValue("edge_spring_c_factor"), false );
     } else {
-        this->EdgeSmoother = new SmootherClass(dim[0], Opt->GiveDoubleValue("edge_spring_c"), Opt->GiveDoubleValue("edge_spring_alpha"), Opt->GiveDoubleValue("edge_spring_c_factor"), true );
+        this->EdgeSmoother = new SmootherClass(cellspace[0], Opt->GiveDoubleValue("edge_spring_c"), Opt->GiveDoubleValue("edge_spring_alpha"), Opt->GiveDoubleValue("edge_spring_c_factor"), true );
     }
-
-    STATUS("\tUsing spring_alpha=%f, spring_c=%f\n", spring_alpha, spring_c);
-    STATUS("\tUsing edgespring_alpha=%f, edgespring_c=%f\n", edgespring_alpha, edgespring_c);
 
     // Setup bounding box
     BoundingBoxType bb;
-    double spacing [ 3 ];
 
     bb = this->Imp->GiveBoundingBox();
-    this->Imp->GiveSpacing(spacing);
 
     for ( int i = 0; i < 3; i++ ) {
-        bb.maxvalues [ i ] = bb.maxvalues [ i ] + spacing [ i ];
-        bb.minvalues [ i ] = bb.minvalues [ i ] - spacing [ i ];
+        bb.maxvalues [ i ] = bb.maxvalues [ i ] + cellspace [ i ];
+        bb.minvalues [ i ] = bb.minvalues [ i ] - cellspace [ i ];
     }
 
     // Setup tolearances in options
@@ -1118,10 +1108,15 @@ void Voxel2TetClass :: ExportStatistics()
     StatFile << "\nConstants used during smoothing\n";
     StatFile <<   "-------------------------------\n";
     StatFile << "Smoothing algorithm:\n";
-    StatFile << "edge_spring_alpha = " << edgespring_alpha << "\n";
+    StatFile << "Surface smoother:\n";
+    StatFile << *this->SurfaceSmoother;
+    StatFile << "Edge smoother:\n";
+    StatFile << *this->EdgeSmoother;
+
+/*    StatFile << "edge_spring_alpha = " << edgespring_alpha << "\n";
     StatFile << "edge_spring_c = " << edgespring_c << "\n";
     StatFile << "spring_alpha = " << spring_alpha << "\n";
-    StatFile << "spring_c = " << spring_c << "\n";
+    StatFile << "spring_c = " << spring_c << "\n";*/
 
     StatFile << "\nMesh coarsening:\n";
     StatFile << "TOL_MAXAREACHANGE = " << this->Opt->GiveStringValue("TOL_MAXAREACHANGE") << "\n";

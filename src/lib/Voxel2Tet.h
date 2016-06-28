@@ -54,13 +54,6 @@ private:
 
     double eps = 1e-6;
 
-    double spring_alpha;
-    double spring_c;
-    double edgespring_alpha;
-    double edgespring_c;
-
-    bool auto_c;
-
     TimeStamp Timer;
 
     std :: vector< std :: vector< double > >PhaseVolumes;
