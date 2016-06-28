@@ -20,6 +20,10 @@ namespace voxel2tet
 class MeshManipulations : public MeshData
 {
 private:
+
+    double LongestEdgeLength;
+    void UpdateLongestEdgeLength();
+
     /**
      * @brief GetFlippedEdgeData Produce new edge and new triangles for a flipped edge
      * @param EdgeToFlip Vector to flip
@@ -33,6 +37,7 @@ private:
     void SortEdgesByMinArea();
 
 public:
+
     /**
      * @brief TOL_MAXAREACHANGE determines the maximum change in area of triangles associated with the collapse of n edge
      */

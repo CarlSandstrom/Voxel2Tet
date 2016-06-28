@@ -403,13 +403,12 @@ std :: vector< std :: pair< TriangleType *, TriangleType * > > SmootherClass::Ch
     }
     std :: sort( Triangles.begin(), Triangles.end() );
     Triangles.erase( std :: unique( Triangles.begin(), Triangles.end() ), Triangles.end() );
-    // return IntersectingTriangles;
 
     for ( TriangleType *t1 : Triangles ) {
         std :: array< double, 3 >c = t1->GiveCenterOfMass();
         double d = t1->GiveLongestEdgeLength();
 
-        std :: vector< TriangleType * >NearTriangles = Mesh->GetTrianglesAround(c, d * 2);
+        std :: vector< TriangleType * >NearTriangles = Mesh->GetTrianglesAround(c, d * 2); // TODO: 2 should to it, but keep it in mind
 
         for ( TriangleType *t2 : NearTriangles ) {
             if ( t1 != t2 ) {

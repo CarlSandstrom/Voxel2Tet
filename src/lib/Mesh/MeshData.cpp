@@ -227,6 +227,7 @@ void MeshData :: RemoveEdge(EdgeType *e)
     }
     this->Edges.erase( std :: remove(this->Edges.begin(), this->Edges.end(), e), this->Edges.end() );
     delete e;
+    e = NULL;
 }
 
 void MeshData :: RemoveTriangle(TriangleType *t)
@@ -237,6 +238,7 @@ void MeshData :: RemoveTriangle(TriangleType *t)
     }
     this->Triangles.erase( std :: remove(this->Triangles.begin(), this->Triangles.end(), t), this->Triangles.end() );
     delete t;
+    t = NULL;
 }
 
 TriangleType *MeshData :: AddTriangle(std :: vector< double >n0, std :: vector< double >n1, std :: vector< double >n2)
@@ -405,7 +407,7 @@ FC_MESH MeshData :: CheckTrianglePenetration(std :: array< VertexType *, 3 >t1, 
      *  }
      *
      */
-    //LOG("Check for penetration of triangles [%u, %u, %u] and [%u, %u, %u]\n", t1[0]->ID, t1[1]->ID, t1[2]->ID, t2[0]->ID, t2[1]->ID, t2[2]->ID);
+    //LOG("Check for penetration of triangles %u [%u, %u, %u] and %u [%u, %u, %u]\n", t1[0]->ID, t1[1]->ID, t1[2]->ID, t2[0]->ID, t2[1]->ID, t2[2]->ID);
 
     sharedvertices = 0;
     std :: vector< VertexType * >SharedVerticesList;

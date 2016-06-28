@@ -44,19 +44,19 @@ Voxel2TetClass :: Voxel2TetClass(Options *Opt)
     this->Opt->AddDefaultMap("exportsteps", "0");
 
     // Mesh coarsening options
-    this->Opt->AddDefaultMap("TOL_MAXAREACHANGE", 1e-2);
+/*    this->Opt->AddDefaultMap("TOL_MAXAREACHANGE", 1e-2);
     this->Opt->AddDefaultMap("TOL_COL_SMALLESTAREA", 1e-8);
     this->Opt->AddDefaultMap("TOL_COL_MAXNORMALCHANGE", 15 * 2 * 3.1415 / 360);
     this->Opt->AddDefaultMap("TOL_COL_CHORD_MAXNORMALCHANGE", 15 * 2 * 3.141593 / 360);
     this->Opt->AddDefaultMap("TOL_FLIP_SMALLESTAREA", 1e-8);
-    this->Opt->AddDefaultMap("TOL_FLIP_MAXNORMALCHANGE", 15 * 2 * 3.141593 / 360);
+    this->Opt->AddDefaultMap("TOL_FLIP_MAXNORMALCHANGE", 999999 * 2 * 3.141593 / 360);
     this->Opt->AddDefaultMap("TOL_FLIP_MAXNORMALDIFFERENCE", 15 * 2 * 3.1415 / 360);
     this->Opt->AddDefaultMap("TOL_COL_MAXVOLUMECHANGE", .5 * .5 * .5 * 2);
     this->Opt->AddDefaultMap("TOL_COL_MAXERROR", .5 * .5 * .5);
 
     this->Opt->AddDefaultMap("TOL_COL_MAXVOLUMECHANGE_FACTOR", 2);
     this->Opt->AddDefaultMap("TOL_COL_MAXERROR_FACTOR", 10);
-
+*/
     // Input/output
     if ( !this->Opt->has_key("output") ) {
         std :: string inputname = this->Opt->GiveStringValue("input");
@@ -189,7 +189,7 @@ void Voxel2TetClass :: FinalizeLoad()
         this->Opt->AddDefaultMap("TOL_FLIP_SMALLESTAREA", 1e-8);
     }
     if ( !this->Opt->has_key("TOL_FLIP_MAXNORMALCHANGE") ) {
-        this->Opt->AddDefaultMap("TOL_FLIP_MAXNORMALCHANGE", 10 * 2 * 3.1415 / 360);
+        this->Opt->AddDefaultMap("TOL_FLIP_MAXNORMALCHANGE", 20 * 2 * 3.1415 / 360);
     }
     if ( !this->Opt->has_key("TOL_FLIP_MAXNORMALDIFFERENCE") ) {
         this->Opt->AddDefaultMap("TOL_FLIP_MAXNORMALDIFFERENCE", 10 * 2 * 3.1415 / 360);

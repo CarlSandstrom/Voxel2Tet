@@ -186,6 +186,7 @@ FC_MESH MeshManipulations :: FlipEdge(EdgeType *Edge)
         LOG("\tUnable to flip edge. Changes in normal direction prevents flipping\n", 0);
         for ( TriangleType *t : NewTriangles ) {
             delete t;
+            t = NULL;
         }
         return FC;
     }
@@ -198,6 +199,7 @@ FC_MESH MeshManipulations :: FlipEdge(EdgeType *Edge)
         LOG("\tUnable to flip edge. New minimal angles worse than current (New: %f, Current: %f).\n", minAngleNew, minAngleCurrent);
         for ( TriangleType *t : NewTriangles ) {
             delete t;
+            t = NULL;
         }
         return FC_WORSEMINANGLE;
     }
@@ -207,6 +209,7 @@ FC_MESH MeshManipulations :: FlipEdge(EdgeType *Edge)
         LOG("\tUnable to flip edge. Flipping does not improve quality\n", minAngleNew, minAngleCurrent);
         for ( TriangleType *t : NewTriangles ) {
             delete t;
+            t = NULL;
         }
         return FC_ANGLESNOTIMPROVED;
     }
@@ -219,6 +222,7 @@ FC_MESH MeshManipulations :: FlipEdge(EdgeType *Edge)
         LOG("The combined area of the triangles changes too much. Prevent flipping.\n", 0);
         for ( TriangleType *t : NewTriangles ) {
             delete t;
+            t = NULL;
         }
         return FC_AREACHANGETOOLARGE;
     }
@@ -244,7 +248,7 @@ FC_MESH MeshManipulations :: FlipEdge(EdgeType *Edge)
 
     // Add all triangles nearby to NearTriangles
     std :: array< double, 3 >cm = NewEdge.GiveCenterPoint();
-    std :: vector< TriangleType * >NearTriangles = this->GetTrianglesAround(cm, NewEdge.GiveLength() * 4);
+    std :: vector< TriangleType * >NearTriangles = this->GetTrianglesAround(cm, this->LongestEdgeLength);
 
     // Remove EdgeTriangles from NearTriangles
     for ( int i = 0; i < 2; i++ ) {
@@ -388,7 +392,7 @@ FC_MESH MeshManipulations :: CollapseEdgeTest(std :: vector< TriangleType * > *T
     // Collect all point close to the centerpoint of the edge to collapse. The, form a list of all triangles connected to those points and perform check on all triangles in that list (except with triangles to remove).
     std :: array< double, 3 >cp = EdgeToCollapse->GiveCenterPoint();
     std :: vector< TriangleType * >TrianglesNear;
-    TrianglesNear = this->GetTrianglesAround(cp, EdgeToCollapse->GiveLength() * 4);
+    TrianglesNear = this->GetTrianglesAround(cp, this->LongestEdgeLength);
 
     for ( TriangleType *t : TrianglesNear ) {
         // Skip triangles that will be removed
@@ -515,6 +519,7 @@ FC_MESH MeshManipulations :: CollapseEdge(EdgeType *EdgeToCollapse, int RemoveVe
     if ( FC != FC_OK ) {
         for ( TriangleType *t : NewTriangles ) {
             delete t;
+            t = NULL;
         }
         return FC;
     }
@@ -855,6 +860,14 @@ int MeshManipulations :: FlipAll()
     }
     return flipcount;
 }
+void MeshManipulations :: UpdateLongestEdgeLength()
+{
+    this->LongestEdgeLength=0;
+    for (EdgeType *e: this->Edges) {
+        double ThisLength = e->GiveLength();
+        this->LongestEdgeLength = std::max(ThisLength, this->LongestEdgeLength);
+    }
+}
 
 bool MeshManipulations :: CoarsenMeshImproved()
 {
@@ -903,6 +916,7 @@ bool MeshManipulations :: CoarsenMeshImproved()
                     // If vertex v is not in the set of independent vertices, try to collapse
                     if ( std :: find(IndepSet.begin(), IndepSet.end(), v) == IndepSet.end() ) {
                         if ( this->CollapseEdge(e, vi) == FC_OK ) {
+                            this->UpdateLongestEdgeLength();
                             CoarseningOccurs = true;
 #if EXPORT_MESH_COARSENING
                             dooutputlogmesh(* this, "/tmp/Coarsening_%u.vtp", MeshIndex++);
