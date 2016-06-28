@@ -11,6 +11,7 @@ SmootherClass::SmootherClass(double VoxelCharLength, double c, double alpha, dou
 
     this->alpha = alpha;
     this->charlength = VoxelCharLength;
+    this->c_factor = c_factor;
 
     if (compute_c) {
         this->c = this->Compute_c(VoxelCharLength * c_factor, this->alpha);
@@ -25,6 +26,7 @@ double SmootherClass::Compute_c(double l, double alpha)
     double c = l; // Initial guess
     double R = exp( pow(l / c, alpha) ) - 1 - l;
     double err = fabs(R);
+    int iter = 0;
 
     while ( err > 1e-8 ) {
         double tangent = -exp( pow(l / c, alpha) ) * alpha * pow(l / c, alpha - 1) * l * pow(c, -2);
@@ -32,7 +34,15 @@ double SmootherClass::Compute_c(double l, double alpha)
         c = c + deltac;
         R = exp( pow(l / c, alpha) ) - 1 - l;
         err = fabs(R);
+        iter++;
+        if (iter > 1000) {
+            STATUS("Unable to find a suitable c\n", 0);
+            throw(0);
+        }
     }
+
+    STATUS("\tUsing alpha=%f, c=%f\n", alpha, c);
+
     return c;
 }
 
@@ -432,6 +442,13 @@ std :: vector< std :: pair< TriangleType *, TriangleType * > > SmootherClass::Ch
         }
     }
     return IntersectingTriangles;
+}
+
+std::ostream &operator<<(std::ostream &stream, const SmootherClass &Smoother)
+{
+    stream << "\talpha = " << Smoother.alpha << ", ";
+    stream << "c = " << Smoother.c << ", c_factor = " << Smoother.c_factor << "\n";
+    return stream;
 }
 
 void SmootherClass::SpringSmooth(std :: vector< VertexType * >Vertices, std :: vector< bool >Fixed, std :: vector< std :: vector< VertexType * > >Connections, voxel2tet :: MeshData *Mesh)

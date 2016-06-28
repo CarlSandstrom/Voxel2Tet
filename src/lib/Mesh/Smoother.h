@@ -21,9 +21,11 @@ class SmootherConfiguration
 
 class SmootherClass
 {
+    friend std::ostream &operator<<(std::ostream &stream, const SmootherClass &Smoother);
 private:
 
     double c;
+    double c_factor;
     double alpha;
     double charlength;
 
@@ -43,6 +45,7 @@ private:
 public:
     SmootherClass(double VoxelCharLength, double c, double alpha, double c_factor, bool compute_c=false);
     ~SmootherClass() {}
+
 
     void SpringSmooth(std :: vector< VertexType * >Vertices, std :: vector< bool >Fixed,
                       std :: vector< std :: vector< VertexType * > >Connections,
