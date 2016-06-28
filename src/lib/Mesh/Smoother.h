@@ -9,29 +9,45 @@
 #include "MeshComponents.h"
 #include "MeshData.h"
 #include "TetGenCaller.h"
+#include "Options.h"
 
 namespace voxel2tet
 {
-double Compute_c(double l, double alpha);
 
-arma :: vec ComputeOutOfBalance(std :: vector< std :: array< double, 3 > >ConnectionCoords, arma :: vec xc, arma :: vec x0, double alpha, double c);
+class SmootherConfiguration
+{
 
-arma :: mat ComputeNumericalTangent(std :: vector< std :: array< double, 3 > >ConnectionCoords, arma :: vec xc, arma :: vec x0, double alpha, double c);
+};
 
-arma :: mat ComputeAnalyticalTangent(std :: vector< std :: array< double, 3 > >ConnectionCoords, arma :: vec xc, arma :: vec x0, double alpha, double c);
+class SmootherClass
+{
+private:
 
-arma :: mat ComputeAnalyticalTangentGlobal(std :: vector< std :: array< double, 3 > >ConnectionCoords, arma :: vec xc, arma :: vec x0, double alpha, double c);
+    double c;
+    double alpha;
+    double charlength;
 
-void SpringSmoothGlobal(std :: vector< VertexType * >Vertices, std :: vector< bool >Fixed,
-                        std :: vector< std :: vector< VertexType * > >Connections,
-                        double c, double alpha, double charlength, bool Automatic_c = false,
-                        MeshData *Mesh = NULL);
+    double Compute_c(double l, double alpha);
+    arma :: vec ComputeOutOfBalance(std :: vector< std :: array< double, 3 > >ConnectionCoords, arma :: vec xc, arma :: vec x0, double alpha, double c);
+    arma :: mat ComputeNumericalTangent(std :: vector< std :: array< double, 3 > >ConnectionCoords, arma :: vec xc, arma :: vec x0, double alpha, double c);
+    arma :: mat ComputeAnalyticalTangent(std :: vector< std :: array< double, 3 > >ConnectionCoords, arma :: vec xc, arma :: vec x0, double alpha, double c);
+    arma :: mat ComputeAnalyticalTangentGlobal(std :: vector< std :: array< double, 3 > >ConnectionCoords, arma :: vec xc, arma :: vec x0, double alpha, double c);
 
-std :: vector< std :: pair< TriangleType *, TriangleType * > >CheckPenetration(std :: vector< VertexType * > *Vertices, MeshData *Mesh);
+    void SpringSmoothGlobal(std :: vector< VertexType * >Vertices, std :: vector< bool >Fixed,
+                            std :: vector< std :: vector< VertexType * > >Connections,
+                            double c, double alpha, double charlength, bool Automatic_c = false,
+                            MeshData *Mesh = NULL);
 
-void SpringSmooth(std :: vector< VertexType * >Vertices, std :: vector< bool >Fixed,
-                  std :: vector< std :: vector< VertexType * > >Connections,
-                  double c, double alpha, double charlength, bool Automatic_c = false,
-                  MeshData *Mesh = NULL);
+    std :: vector< std :: pair< TriangleType *, TriangleType * > >CheckPenetration(std :: vector< VertexType * > *Vertices, MeshData *Mesh);
+
+public:
+    SmootherClass(double VoxelCharLength, double c, double alpha, double c_factor, bool compute_c=false);
+    ~SmootherClass() {}
+
+    void SpringSmooth(std :: vector< VertexType * >Vertices, std :: vector< bool >Fixed,
+                      std :: vector< std :: vector< VertexType * > >Connections,
+                      MeshData *Mesh = NULL);
+};
+
 }
 #endif

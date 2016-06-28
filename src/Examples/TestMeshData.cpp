@@ -71,7 +71,7 @@ int main(int argc, char *argv[]) {
 
     voxel2tet :: MeshManipulations *mesh = static_cast< voxel2tet :: MeshManipulations * >( createmesh(vertexsidecount) );
 
-    voxel2tet :: PhaseEdge West(Options), East(Options), North(Options), South(Options);
+    voxel2tet :: PhaseEdge West(Options, NULL), East(Options, NULL), North(Options, NULL), South(Options, NULL);
 
     for ( voxel2tet :: VertexType *v : mesh->Vertices ) {
         std :: array< double, 3 >c = v->get_c();

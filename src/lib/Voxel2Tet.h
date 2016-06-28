@@ -37,10 +37,10 @@ private:
     void FindSurfaces();
     void FindEdges();
 
-    void SmoothEdgesIndividually(double c, double alpha, double charlength, bool Automatic_c = false);
-    void SmoothEdgesSimultaneously(double c, double alpha, double charlength, bool Automatic_c = false);
-    void SmoothSurfaces(double c, double alpha, double charlength, bool Automatic_c = false);
-    void SmoothAllAtOnce(double c, double alpha, double charlength, bool Automatic_c = false);
+    void SmoothEdgesIndividually();
+    void SmoothEdgesSimultaneously();
+    void SmoothSurfaces();
+    void SmoothAllAtOnce();
 
     void AddSurfaceSquare(std :: vector< int >VoxelIDs, std :: vector< int >phases, int normalphase);
     PhaseEdge *AddPhaseEdge(std :: vector< VertexType * >EdgeSegment, std :: vector< int >Phases);
@@ -66,6 +66,9 @@ private:
     std :: vector< std :: vector< double > >PhaseVolumes;
     std :: vector< double >CurrentVolumes;
     std :: vector< int >PhaseList;
+
+    SmootherClass *SurfaceSmoother;
+    SmootherClass *EdgeSmoother;
 
 public:
     Voxel2TetClass(Options *Opt);

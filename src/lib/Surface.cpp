@@ -2,11 +2,12 @@
 
 namespace voxel2tet
 {
-Surface :: Surface(int Phase1, int Phase2, Options *Opt)
+Surface :: Surface(int Phase1, int Phase2, Options *Opt, SmootherClass *Smoother)
 {
     this->Phases [ 0 ] = Phase1;
     this->Phases [ 1 ] = Phase2;
     this->Opt = Opt;
+    this->SurfaceSmooth = Smoother;
 }
 
 void Surface :: AddVertex(VertexType *Vertex)
@@ -29,7 +30,7 @@ void Surface :: AddTriangle(TriangleType *Triangle)
     this->Triangles.push_back(Triangle);
 }
 
-void Surface :: Smooth(MeshData *Mesh, double c, double alpha, double charlength, bool Automatic_c)
+void Surface :: Smooth(MeshData *Mesh)
 {
     std :: vector< VertexType * >SmoothVertices;
     std :: vector< std :: vector< VertexType * > >Connections;
@@ -56,7 +57,7 @@ void Surface :: Smooth(MeshData *Mesh, double c, double alpha, double charlength
         }
     }
 
-    SpringSmooth(this->Vertices, FixedList, Connections, c, alpha, charlength, Automatic_c, Mesh);
+    this->SurfaceSmooth->SpringSmooth(this->Vertices, FixedList, Connections, Mesh);
 }
 
 double Surface :: ComputeArea()

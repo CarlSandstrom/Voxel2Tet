@@ -5,7 +5,22 @@
 
 namespace voxel2tet
 {
-double Compute_c(double l, double alpha)
+
+SmootherClass::SmootherClass(double VoxelCharLength, double c, double alpha, double c_factor, bool compute_c)
+{
+
+    this->alpha = alpha;
+    this->charlength = VoxelCharLength;
+
+    if (compute_c) {
+        this->c = this->Compute_c(VoxelCharLength * c_factor, this->alpha);
+    } else {
+        this->c = c;
+    }
+
+}
+
+double SmootherClass::Compute_c(double l, double alpha)
 {
     double c = l; // Initial guess
     double R = exp( pow(l / c, alpha) ) - 1 - l;
@@ -21,7 +36,7 @@ double Compute_c(double l, double alpha)
     return c;
 }
 
-arma :: vec ComputeOutOfBalance(std :: vector< std :: array< double, 3 > >ConnectionCoords, arma :: vec xc, arma :: vec x0, double alpha, double c)
+arma :: vec SmootherClass::ComputeOutOfBalance(std :: vector< std :: array< double, 3 > >ConnectionCoords, arma :: vec xc, arma :: vec x0, double alpha, double c)
 {
     arma :: vec F = {
         0., 0., 0.
@@ -61,7 +76,7 @@ arma :: vec ComputeOutOfBalance(std :: vector< std :: array< double, 3 > >Connec
     return F;
 }
 
-arma :: mat  ComputeNumericalTangent(std :: vector< std :: array< double, 3 > >ConnectionCoords, arma :: vec xc, arma :: vec x0, double alpha, double c)
+arma :: mat  SmootherClass::ComputeNumericalTangent(std :: vector< std :: array< double, 3 > >ConnectionCoords, arma :: vec xc, arma :: vec x0, double alpha, double c)
 {
     double eps = 1e-10;
     arma :: mat Tangent = arma :: zeros< arma :: mat >(3, 3);
@@ -79,7 +94,7 @@ arma :: mat  ComputeNumericalTangent(std :: vector< std :: array< double, 3 > >C
     return Tangent;
 }
 
-arma :: mat ComputeAnalyticalTangent(std :: vector< std :: array< double, 3 > >ConnectionCoords, arma :: vec xc, arma :: vec x0, double alpha, double c)
+arma :: mat SmootherClass::ComputeAnalyticalTangent(std :: vector< std :: array< double, 3 > >ConnectionCoords, arma :: vec xc, arma :: vec x0, double alpha, double c)
 {
     arma :: mat Tangent = arma :: zeros< arma :: mat >(3, 3);
 
@@ -113,7 +128,7 @@ arma :: mat ComputeAnalyticalTangent(std :: vector< std :: array< double, 3 > >C
     return Tangent;
 }
 
-arma :: mat ComputeAnalyticalTangentGlobal(std :: vector< std :: array< double, 3 > >ConnectionCoords, arma :: vec xc, arma :: vec x0, double alpha, double c)
+arma :: mat SmootherClass::ComputeAnalyticalTangentGlobal(std :: vector< std :: array< double, 3 > >ConnectionCoords, arma :: vec xc, arma :: vec x0, double alpha, double c)
 {
     arma :: mat Tangent = arma :: zeros< arma :: mat >(3, ConnectionCoords.size() * 3 + 3);
     arma :: mat TangentSelf = arma :: zeros< arma :: mat >(3, 3);
@@ -158,7 +173,7 @@ arma :: mat ComputeAnalyticalTangentGlobal(std :: vector< std :: array< double, 
     return Tangent;
 }
 
-void SpringSmoothGlobal(std :: vector< VertexType * >Vertices, std :: vector< bool >Fixed, std :: vector< std :: vector< VertexType * > >Connections, double c, double alpha, double charlength, bool Automatic_c, voxel2tet :: MeshData *Mesh)
+void SmootherClass::SpringSmoothGlobal(std :: vector< VertexType * >Vertices, std :: vector< bool >Fixed, std :: vector< std :: vector< VertexType * > >Connections, double c, double alpha, double charlength, bool Automatic_c, voxel2tet :: MeshData *Mesh)
 {
     int MAX_ITER_COUNT = 1000;
 
@@ -366,7 +381,7 @@ void SpringSmoothGlobal(std :: vector< VertexType * >Vertices, std :: vector< bo
     }
 }
 
-std :: vector< std :: pair< TriangleType *, TriangleType * > >CheckPenetration(std :: vector< VertexType * > *Vertices, MeshData *Mesh)
+std :: vector< std :: pair< TriangleType *, TriangleType * > > SmootherClass::CheckPenetration(std :: vector< VertexType * > *Vertices, MeshData *Mesh)
 {
     std :: vector< std :: pair< TriangleType *, TriangleType * > >IntersectingTriangles;
     std :: vector< TriangleType * >Triangles;
@@ -419,9 +434,9 @@ std :: vector< std :: pair< TriangleType *, TriangleType * > >CheckPenetration(s
     return IntersectingTriangles;
 }
 
-void SpringSmooth(std :: vector< VertexType * >Vertices, std :: vector< bool >Fixed, std :: vector< std :: vector< VertexType * > >Connections,
-                  double c, double alpha, double charlength, bool Automatic_c, voxel2tet :: MeshData *Mesh)
+void SmootherClass::SpringSmooth(std :: vector< VertexType * >Vertices, std :: vector< bool >Fixed, std :: vector< std :: vector< VertexType * > >Connections, voxel2tet :: MeshData *Mesh)
 {
+
     int MAX_ITER_COUNT = 100000;
 
     // Create vectors for current and previous positions
@@ -471,7 +486,7 @@ void SpringSmooth(std :: vector< VertexType * >Vertices, std :: vector< bool >Fi
     bool intersecting = true;
     int intersecting_count = 0;
 
-    CheckPenetration(& Vertices, Mesh);
+    this->CheckPenetration(& Vertices, Mesh);
 
     while ( intersecting ) {
         intersecting = false;

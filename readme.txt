@@ -7,6 +7,7 @@ The code is in C++ and is written in a modular way such that new featers, such a
 
 The original intent was to allow for voxel representations of microstructures to be performed, but the software is general and in no way bound to microstructures.
 
+
 Installation
 ============
 
@@ -51,3 +52,15 @@ Mac OS
 ------
 
 To do...
+
+
+Coding conventions
+==================
+
+In order to maintain consistency in terms of coding convention, the tool "Uncrustify" (https://github.com/uncrustify/uncrustify) is used. If code is added or modified, run the tool using the file "uncrustify.cfg" in the project root directory as a configuration file. To run uncrustify on only one file, go to the root folder of Voxel2Tet and run the command (Linux):
+
+$ uncrustify -c ./uncrustify.cfg --replace [source file]
+
+where [source file] is replaced by the source file (either .cpp or .h). In order to run uncrustify on the whole project, go to the project root folder and run
+
+$ find ./ -iname "*.cpp" -or -iname "*.h" | xargs -n 1 -I @ uncrustify -c ~/uncrustify.cfg --replace @

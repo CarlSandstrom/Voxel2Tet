@@ -148,20 +148,23 @@ void Voxel2TetClass :: FinalizeLoad()
     STATUS("\tNumber of voxels:%u\n", dim [ 0 ] * dim [ 1 ] * dim [ 2 ]);
 
     // Setup spring constants
+
+    // (dim[0], double c, dobule alpha, bool compute_c)
+
     auto_c = false;
     spring_alpha = Opt->GiveDoubleValue("spring_alpha");
     edgespring_alpha = Opt->GiveDoubleValue("edge_spring_alpha");
 
     if ( this->Opt->has_key("spring_c") ) {
-        spring_c = Opt->GiveDoubleValue("spring_c");
+        this->SurfaceSmoother = new SmootherClass(dim[0], Opt->GiveDoubleValue("spring_c"), Opt->GiveDoubleValue("spring_alpha"), Opt->GiveDoubleValue("spring_c_factor"), false );
     } else {
-        spring_c = Compute_c(cellspace [ 0 ] * Opt->GiveDoubleValue("spring_c_factor"), spring_alpha);
+        this->SurfaceSmoother = new SmootherClass(dim[0], Opt->GiveDoubleValue("spring_c"), Opt->GiveDoubleValue("spring_alpha"), Opt->GiveDoubleValue("spring_c_factor"), true );
     }
 
     if ( this->Opt->has_key("edge_spring_c") ) {
-        edgespring_c = Opt->GiveDoubleValue("edge_spring_c");
+        this->EdgeSmoother = new SmootherClass(dim[0], Opt->GiveDoubleValue("edge_spring_c"), Opt->GiveDoubleValue("edge_spring_alpha"), Opt->GiveDoubleValue("edge_spring_c_factor"), false );
     } else {
-        edgespring_c = Compute_c(cellspace [ 0 ] * Opt->GiveDoubleValue("edge_spring_c_factor"), edgespring_alpha);
+        this->EdgeSmoother = new SmootherClass(dim[0], Opt->GiveDoubleValue("edge_spring_c"), Opt->GiveDoubleValue("edge_spring_alpha"), Opt->GiveDoubleValue("edge_spring_c_factor"), true );
     }
 
     STATUS("\tUsing spring_alpha=%f, spring_c=%f\n", spring_alpha, spring_c);
@@ -673,17 +676,17 @@ void Voxel2TetClass :: FindEdges()
     }
 }
 
-void Voxel2TetClass :: SmoothEdgesIndividually(double c, double alpha, double charlength, bool Automatic_c)
+void Voxel2TetClass :: SmoothEdgesIndividually()
 {
     STATUS("Smooth edges (individually)\n", 0);
     for ( unsigned int i = 0; i < this->PhaseEdges.size(); i++ ) {
         LOG("Smooth edge %i\n", i);
         PhaseEdge *e = this->PhaseEdges.at(i);
-        e->Smooth(this->Mesh, c, alpha, charlength, Automatic_c);
+        e->Smooth(this->Mesh);
     }
 }
 
-void Voxel2TetClass :: SmoothEdgesSimultaneously(double c, double alpha, double charlength, bool Automatic_c)
+void Voxel2TetClass :: SmoothEdgesSimultaneously()
 {
     STATUS("Smooth edges (simultaneously)\n", 0);
 
@@ -777,22 +780,22 @@ void Voxel2TetClass :: SmoothEdgesSimultaneously(double c, double alpha, double 
         delete v;
     }
 
-    SpringSmooth(VertexList, FixedDirectionsList, Connections, c, alpha, charlength, Automatic_c, this->Mesh);
+    this->EdgeSmoother->SpringSmooth(VertexList, FixedDirectionsList, Connections, this->Mesh);
 }
 
-void Voxel2TetClass :: SmoothSurfaces(double c, double alpha, double charlength, bool Automatic_c)
+void Voxel2TetClass :: SmoothSurfaces()
 {
     STATUS("Smooth surfaces\n", 0);
 
     int i = 1;
     for ( Surface *s : this->Surfaces ) {
         STATUS( "Smoothing surface %i (%i)\n", i, this->Surfaces.size() );
-        s->Smooth(this->Mesh, c, alpha, charlength, Automatic_c);
+        s->Smooth(this->Mesh);
         i++;
     }
 }
 
-void Voxel2TetClass :: SmoothAllAtOnce(double c, double alpha, double charlength, bool Automatic_c)
+void Voxel2TetClass :: SmoothAllAtOnce()
 {
     STATUS("Smooth complete structure\n", 0);
 
@@ -828,7 +831,7 @@ void Voxel2TetClass :: SmoothAllAtOnce(double c, double alpha, double charlength
         FixedDirectionsList.push_back(false);
     }
 
-    SpringSmooth(this->Mesh->Vertices, FixedDirectionsList, Connections, c, alpha, charlength, Automatic_c);
+    this->SurfaceSmoother->SpringSmooth(this->Mesh->Vertices, FixedDirectionsList, Connections);
 }
 
 PhaseEdge *Voxel2TetClass :: AddPhaseEdge(std :: vector< VertexType * >EdgeSegment, std :: vector< int >Phases)
@@ -852,7 +855,7 @@ PhaseEdge *Voxel2TetClass :: AddPhaseEdge(std :: vector< VertexType * >EdgeSegme
 
     // If PhaseEdge does not exists, create it
     if ( ThisPhaseEdge == NULL ) {
-        ThisPhaseEdge = new PhaseEdge(this->Opt);
+        ThisPhaseEdge = new PhaseEdge(this->Opt, this->EdgeSmoother);
         ThisPhaseEdge->Phases = Phases;
         this->PhaseEdges.push_back(ThisPhaseEdge);
     }
@@ -882,7 +885,7 @@ void Voxel2TetClass   :: AddSurfaceSquare(std :: vector< int >VertexIDs, std :: 
 
     // If not, create it and add it to the list
     if ( ThisSurface == NULL ) {
-        ThisSurface = new Surface(phases.at(0), phases.at(1), this->Opt);
+        ThisSurface = new Surface(phases.at(0), phases.at(1), this->Opt, this->SurfaceSmoother);
         this->Surfaces.push_back(ThisSurface);
         SurfaceID = this->Surfaces.size() - 1;
     }
@@ -985,7 +988,7 @@ void Voxel2TetClass :: Process()
     double Spacing [ 3 ];
     this->Imp->GiveSpacing(Spacing);
 
-    this->SmoothEdgesSimultaneously(edgespring_c, edgespring_alpha, Spacing [ 0 ], false);
+    this->SmoothEdgesSimultaneously();
     Timer.StopTimer();
 
 #if TEST_MESH_BETWEEN_STEPS_TETGEN == 1
@@ -1002,7 +1005,7 @@ void Voxel2TetClass :: Process()
     }
 
     Timer.StartTimer("Smooth surfaces");
-    this->SmoothSurfaces(spring_c, spring_alpha, 0, false);
+    this->SmoothSurfaces();
     Timer.StopTimer();
 
 #if TEST_MESH_BETWEEN_STEPS_TETGEN == 1

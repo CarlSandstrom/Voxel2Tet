@@ -3,9 +3,10 @@
 #include <vector>
 #include <array>
 #include <algorithm>
-
 #include <MeshComponents.h>
 #include <MiscFunctions.h>
+
+#include "Smoother.h"
 #include "Options.h"
 #include "MeshData.h"
 
@@ -43,11 +44,14 @@ private:
     std :: vector< VertexType * >FixedVertices;
 
 public:
+
+    SmootherClass *EdgeSmoother;
+
     /**
      * @brief Constructor
      * @param Opt Input. An Options object for communicating the command line parameters.
      */
-    PhaseEdge(Options *Opt);
+    PhaseEdge(Options *Opt, SmootherClass *EdgeSmoother);
 
     /**
      * @brief SortAndFixBrokenEdge Identifies all separate phase edges within this PhaseEdge object and outputs all (new) internally connected phase edges.
@@ -79,7 +83,7 @@ public:
      * @brief Perform smoothing on this PhaseEdge.
      * @param Mesh
      */
-    void Smooth(MeshData *Mesh, double c, double alpha, double charlength, bool Automatic_c = false);
+    void Smooth(MeshData *Mesh);
 
     /**
      * @brief Add an edge segment to the PhaseEdge

@@ -27,13 +27,15 @@ private:
     Options *Opt;
 public:
 
+    SmootherClass *SurfaceSmooth;
+
     /**
      * @brief Constructor for the Surface class
      * @param Phase1 Phase index on one side of the surface
      * @param Phase2 Phase index on the other side of the surface
      * @param Opt Options object for command line arguments and other settings
      */
-    Surface(int Phase1, int Phase2, Options *Opt);
+    Surface(int Phase1, int Phase2, Options *Opt, SmootherClass *Smoother);
 
     /**
      * @brief Holds phase indices for phases on either side of the surface
@@ -72,7 +74,7 @@ public:
      * @param Mesh Mesh to be smoothed
      * @param c Non-linear spring constant
      */
-    void Smooth(MeshData *Mesh, double c, double alpha, double charlength, bool Automatic_c = false);
+    void Smooth(MeshData *Mesh);
 
     /**
      * @brief Compute area of surface

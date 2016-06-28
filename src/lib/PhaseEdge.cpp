@@ -1,12 +1,11 @@
 #include "PhaseEdge.h"
-#include "Smoother.h"
-#include <array>
 
 namespace voxel2tet
 {
-PhaseEdge :: PhaseEdge(Options *Opt)
+PhaseEdge :: PhaseEdge(Options *Opt, SmootherClass *EdgeSmoother)
 {
     this->Opt = Opt;
+    this->EdgeSmoother = EdgeSmoother;
 }
 
 std :: vector< VertexType * >PhaseEdge :: GetFlatListOfVertices()
@@ -74,7 +73,7 @@ void PhaseEdge :: SortAndFixBrokenEdge(std :: vector< PhaseEdge * > *FixedEdges)
 
         LOG("Find connections for vertices (%u, %u)\n", ThisLink.at(0)->ID, ThisLink.at(1)->ID);
 
-        PhaseEdge *NewPhaseEdge = new PhaseEdge(this->Opt);
+        PhaseEdge *NewPhaseEdge = new PhaseEdge(this->Opt, this->EdgeSmoother);
         NewPhaseEdge->Phases = this->Phases;
         NewPhaseEdge->EdgeSegments.push_back(ThisLink);
         FixedEdges->push_back(NewPhaseEdge);
@@ -204,7 +203,7 @@ void PhaseEdge :: GiveTopologyLists(std :: vector< std :: vector< VertexType * >
     }
 }
 
-void PhaseEdge :: Smooth(MeshData *Mesh, double c, double alpha, double charlength, bool Automatic_c)
+void PhaseEdge :: Smooth(MeshData *Mesh)
 {
     if ( this->EdgeSegments.size() == 1 ) {
         return;
@@ -222,7 +221,7 @@ void PhaseEdge :: Smooth(MeshData *Mesh, double c, double alpha, double charleng
         FixedList.push_back(false);
     }
 
-    SpringSmooth(FlatList, FixedList, Connections, c, alpha, charlength, Automatic_c, Mesh);
+    this->EdgeSmoother->SpringSmooth(FlatList, FixedList, Connections, Mesh);
 }
 
 void PhaseEdge :: AddPhaseEdgeSegment(VertexType *v1, VertexType *v2)
