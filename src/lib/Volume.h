@@ -10,7 +10,6 @@
 
 namespace voxel2tet
 {
-
 class Volume
 {
 public:
@@ -18,11 +17,11 @@ public:
 
     Volume(int Phase);
 
-    std::vector<Surface*> Surfaces;
+    std :: vector< Surface * >Surfaces;
 
-    std::vector<TriangleType*> GiveTriangles();
+    std :: vector< TriangleType * >GiveTriangles();
 
-    std::vector<VertexType*> GiveVertices();
+    std :: vector< VertexType * >GiveVertices();
 
     /**
      * @brief IsPointInside determines if point P lies withing the volume
@@ -32,12 +31,11 @@ public:
      * @param P [in] Point coodrinates
      * @return True if point is within the volume, false if outside.
      */
-    bool IsPointInside(std::array<double, 3> P);
+    bool IsPointInside(std :: array< double, 3 >P);
 
     double ComputeVolume();
 
     int Phase;
 };
-
 }
 #endif // VOLUME_H

@@ -17,8 +17,7 @@
 
 namespace voxel2tet
 {
-
-class MeshManipulations: public MeshData
+class MeshManipulations : public MeshData
 {
 private:
     /**
@@ -28,7 +27,7 @@ private:
      * @param NewTriangles NewTriangles (out)
      * @return  Status
      */
-    FC_MESH GetFlippedEdgeData(EdgeType *EdgeToFlip, EdgeType *NewEdge, std::array<TriangleType*, 2> *NewTriangles);
+    FC_MESH GetFlippedEdgeData(EdgeType *EdgeToFlip, EdgeType *NewEdge, std :: array< TriangleType *, 2 > *NewTriangles);
 
     void SortEdgesByLength();
     void SortEdgesByMinArea();
@@ -94,7 +93,7 @@ public:
      * @brief Check if flipping is permitted. For return codes, see CollapseEdge
      * @return Returns wether flipping is permitted
      */
-    FC_MESH CheckFlipNormal(std::vector<TriangleType*> *OldTriangles, std::array<TriangleType*, 2> NewTriangles);
+    FC_MESH CheckFlipNormal(std :: vector< TriangleType * > *OldTriangles, std :: array< TriangleType *, 2 >NewTriangles);
 
     /**
      * @brief Collapses an edge if possible. Returns FC_MESH value
@@ -111,12 +110,12 @@ public:
      * @param RemoveVertexIndex [in] Index in EdgeToCollapse to the vertex about to be collapsed
      * @return
      */
-    FC_MESH CollapseEdgeTest(std::vector<TriangleType *> *TrianglesToSave, std::vector<TriangleType *> *TrianglesToRemove, std::vector<TriangleType *> *NewTriangles, EdgeType *EdgeToCollapse, int RemoveVertexIndex);
+    FC_MESH CollapseEdgeTest(std :: vector< TriangleType * > *TrianglesToSave, std :: vector< TriangleType * > *TrianglesToRemove, std :: vector< TriangleType * > *NewTriangles, EdgeType *EdgeToCollapse, int RemoveVertexIndex);
 
     /**
      * @brief Check if the change in normals of existing triangles are small enough to allow edge collapse
      */
-    FC_MESH CheckCoarsenNormal(std::vector<TriangleType*> *OldTriangles, std::vector<TriangleType*> *NewTriangles);
+    FC_MESH CheckCoarsenNormal(std :: vector< TriangleType * > *OldTriangles, std :: vector< TriangleType * > *NewTriangles);
 
     /**
      * @brief Check if edge collapse results in a too large loss of volume.
@@ -126,17 +125,15 @@ public:
      * @param error [out] Accumulated error
      * @return
      */
-    FC_MESH CheckCoarsenNormalImproved(std::vector<TriangleType*> *OldTriangles, std::vector<TriangleType*> *TrianglesToRemove, std::vector<TriangleType*> *NewTriangles, double &error);
+    FC_MESH CheckCoarsenNormalImproved(std :: vector< TriangleType * > *OldTriangles, std :: vector< TriangleType * > *TrianglesToRemove, std :: vector< TriangleType * > *NewTriangles, double &error);
 
-    FC_MESH CheckCoarsenChord(EdgeType *EdgeToCollapse, VertexType* RemoveVertex, VertexType* SaveVertex);
+    FC_MESH CheckCoarsenChord(EdgeType *EdgeToCollapse, VertexType *RemoveVertex, VertexType *SaveVertex);
 
     bool CoarsenMesh();
     bool CoarsenMeshImproved();
-    std::vector<VertexType *> FindIndependentSet();
+    std :: vector< VertexType * >FindIndependentSet();
 
     int FlipAll();
-
 };
-
 }
 #endif // MESHMANIPULATIONS_H

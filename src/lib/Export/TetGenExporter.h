@@ -10,16 +10,14 @@
 
 namespace voxel2tet
 {
-
 // TODO: Do we need this class?
-class TetGenExporter: public Exporter
+class TetGenExporter : public Exporter
 {
 public:
     TetGenExporter();
-    TetGenExporter(std :: vector <TriangleType*> *Triangles, std :: vector <VertexType*> *Vertices, std :: vector <EdgeType*> *Edges, std::vector<TetType *> *Tets);
-    virtual void WriteSurfaceData(std::string Filename);
-    virtual void WriteVolumeData(std::string Filename) {}
+    TetGenExporter(std :: vector< TriangleType * > *Triangles, std :: vector< VertexType * > *Vertices, std :: vector< EdgeType * > *Edges, std :: vector< TetType * > *Tets);
+    virtual void WriteSurfaceData(std :: string Filename);
+    virtual void WriteVolumeData(std :: string Filename) {}
 };
-
 }
 #endif // TETGETEXPORTER_H

@@ -11,7 +11,6 @@
 
 namespace voxel2tet
 {
-
 /**
  * @brief The Surface class holds information and means for manipulation of the surface separating
  * two materials.
@@ -39,41 +38,41 @@ public:
     /**
      * @brief Holds phase indices for phases on either side of the surface
      */
-    std::array<int, 2> Phases;
+    std :: array< int, 2 >Phases;
 
     /**
      * @brief Vertices List of vertices on the surface
      */
-    std::vector <VertexType*> Vertices;
+    std :: vector< VertexType * >Vertices;
 
     /**
      * @brief Triangles List of triangles on the surface
      */
-    std::vector <TriangleType*> Triangles;
+    std :: vector< TriangleType * >Triangles;
 
     /**
      * @brief PhaseEdges List of phase edges on the surface
      */
-    std::vector <PhaseEdge*> PhaseEdges;
+    std :: vector< PhaseEdge * >PhaseEdges;
 
     /**
      * @brief AddVertex Adds the vertex \p Vertex to the surface
      * @param Vertex Vertex to be added to the Surface object
      */
-    void AddVertex(VertexType* Vertex);
+    void AddVertex(VertexType *Vertex);
 
     /**
      * @brief AddTriangle Adds a triangle to the surface
      * @param Triangle Triangle to be added
      */
-    void AddTriangle(TriangleType* Triangle);
+    void AddTriangle(TriangleType *Triangle);
 
     /**
      * @brief Perform smoothing on this Surface object
      * @param Mesh Mesh to be smoothed
      * @param c Non-linear spring constant
      */
-    void Smooth(MeshData *Mesh, double c, double alpha, double charlength, bool Automatic_c=false);
+    void Smooth(MeshData *Mesh, double c, double alpha, double charlength, bool Automatic_c = false);
 
     /**
      * @brief Compute area of surface
@@ -93,8 +92,6 @@ public:
      * @return Integral of x.n
      */
     double ComputeIntegral_nx();
-
 };
-
 }
 #endif // SURFACE_H

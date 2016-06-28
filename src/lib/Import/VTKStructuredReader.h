@@ -10,20 +10,18 @@
 
 namespace voxel2tet
 {
-
 class VTKStructuredReader : public Importer
 {
 private:
-    std::string VersionInfo;
-    std::string Title;
-    std::string DataName;
-    std::string TableName;
+    std :: string VersionInfo;
+    std :: string Title;
+    std :: string DataName;
+    std :: string TableName;
     int celldata;
 public:
     VTKStructuredReader();
-    void LoadFile(std::string FileName);
+    void LoadFile(std :: string FileName);
 };
-
 }
 
 #endif // VTKSTRUCTUREDREADER_H

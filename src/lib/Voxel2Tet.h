@@ -23,7 +23,6 @@
 
 namespace voxel2tet
 {
-
 /**
  * @brief The main class of the library. It supplies functions for loading and exporting data through one function, starting the smoothing process and more overall functions.
  */
@@ -32,28 +31,28 @@ class Voxel2TetClass
 private:
     Options *Opt;
     Importer *Imp;
-    std::vector <Surface*> Surfaces;
-    std::vector <Volume*> Volumes;
-    std::vector <PhaseEdge*> PhaseEdges;
+    std :: vector< Surface * >Surfaces;
+    std :: vector< Volume * >Volumes;
+    std :: vector< PhaseEdge * >PhaseEdges;
     void FindSurfaces();
     void FindEdges();
 
-    void SmoothEdgesIndividually(double c, double alpha, double charlength, bool Automatic_c=false);
-    void SmoothEdgesSimultaneously(double c, double alpha, double charlength, bool Automatic_c=false);
-    void SmoothSurfaces(double c, double alpha, double charlength, bool Automatic_c=false);
-    void SmoothAllAtOnce(double c, double alpha, double charlength, bool Automatic_c=false);
+    void SmoothEdgesIndividually(double c, double alpha, double charlength, bool Automatic_c = false);
+    void SmoothEdgesSimultaneously(double c, double alpha, double charlength, bool Automatic_c = false);
+    void SmoothSurfaces(double c, double alpha, double charlength, bool Automatic_c = false);
+    void SmoothAllAtOnce(double c, double alpha, double charlength, bool Automatic_c = false);
 
-    void AddSurfaceSquare(std::vector<int> VoxelIDs, std::vector<int> phases, int normalphase);
-    PhaseEdge* AddPhaseEdge(std::vector<VertexType*> EdgeSegment, std::vector<int> Phases);
+    void AddSurfaceSquare(std :: vector< int >VoxelIDs, std :: vector< int >phases, int normalphase);
+    PhaseEdge *AddPhaseEdge(std :: vector< VertexType * >EdgeSegment, std :: vector< int >Phases);
 
     void FinalizeLoad();
 
-    template <typename T>
-    std::vector<int> FindSubsetIndices(std::vector<T> Container, std::vector<T> Subset);
+    template< typename T >
+    std :: vector< int >FindSubsetIndices(std :: vector< T >Container, std :: vector< T >Subset);
 
     void UpdateSurfaces();
 
-    double eps=1e-6;
+    double eps = 1e-6;
 
     double spring_alpha;
     double spring_c;
@@ -64,9 +63,9 @@ private:
 
     TimeStamp Timer;
 
-    std::vector<std::vector<double>> PhaseVolumes;
-    std::vector<double> CurrentVolumes;
-    std::vector<int> PhaseList;
+    std :: vector< std :: vector< double > >PhaseVolumes;
+    std :: vector< double >CurrentVolumes;
+    std :: vector< int >PhaseList;
 
 public:
     Voxel2TetClass(Options *Opt);
@@ -82,22 +81,22 @@ public:
      * @param PhaseList [Out] List of phases
      * @return Total volume
      */
-    double GetListOfVolumes(std::vector<double> &VolumeList, std::vector<int> &PhaseList);
+    double GetListOfVolumes(std :: vector< double > &VolumeList, std :: vector< int > &PhaseList);
 
-    void ExportSurface(std::string FileName, Exporter_FileTypes FileType);
+    void ExportSurface(std :: string FileName, Exporter_FileTypes FileType);
 
     void Tetrahedralize();
-    void ExportVolume(std::string FileName, Exporter_FileTypes FileType);
+    void ExportVolume(std :: string FileName, Exporter_FileTypes FileType);
 
-    void LoadFile(std::string FileName);
-    void LoadCallback(cbMaterialIDByCoordinate MaterialIDByCoordinate, std::array<double, 3> origin, std::array<double, 3> spacing, std::array<int, 3> dimensions);
+    void LoadFile(std :: string FileName);
+    void LoadCallback(cbMaterialIDByCoordinate MaterialIDByCoordinate, std :: array< double, 3 >origin, std :: array< double, 3 >spacing, std :: array< int, 3 >dimensions);
 
     /**
      * @brief FindVolumeContainingPoint finds the volume that contains the point P
      * @param P [in] Point
      * @return Pointer to volume object that contains P or NULL if none found.
      */
-    Volume *FindVolumeContainingPoint (std::array<double, 3> P);
+    Volume *FindVolumeContainingPoint(std :: array< double, 3 >P);
 
     void LoadData();
     void Process();
@@ -117,7 +116,6 @@ public:
      */
     void ExportStatistics();
 };
-
 }
 
 #endif // VOXEL2TET_H

@@ -11,16 +11,14 @@
 
 namespace voxel2tet
 {
-
-class OFFExporter: public Exporter
+class OFFExporter : public Exporter
 {
 public:
     OFFExporter();
-    OFFExporter(std :: vector <TriangleType*> *Triangles, std :: vector <VertexType*> *Vertices, std :: vector <EdgeType*> *Edges, std::vector<TetType *> *Tets);
-    virtual void WriteSurfaceData(std::string Filename);
-    virtual void WriteVolumeData(std::string Filename) {}
+    OFFExporter(std :: vector< TriangleType * > *Triangles, std :: vector< VertexType * > *Vertices, std :: vector< EdgeType * > *Edges, std :: vector< TetType * > *Tets);
+    virtual void WriteSurfaceData(std :: string Filename);
+    virtual void WriteVolumeData(std :: string Filename) {}
 };
-
 }
 
 #endif // OFFEXPORTER_H

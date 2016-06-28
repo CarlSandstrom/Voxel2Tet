@@ -5,8 +5,7 @@
 
 namespace voxel2tet
 {
-
-enum MeshGenerator_Type {MG_TETGEN};
+enum MeshGenerator_Type { MG_TETGEN };
 
 class MeshGenerator3D
 {
@@ -14,8 +13,7 @@ public:
     MeshGenerator3D();
     MeshData *Mesh;
 
-    virtual MeshData *Execute()=0;
+    virtual MeshData *Execute() = 0;
 };
-
 }
 #endif // MESHGENERATOR3D_H

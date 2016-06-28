@@ -7,7 +7,6 @@
 
 namespace voxel2tet
 {
-
 /**
  * @brief Simple timer to store times between StartTimer and StopTimer members being called. A pair of time spent
  * and an associated message is stored in a table.
@@ -15,11 +14,11 @@ namespace voxel2tet
 class TimeStamp
 {
 private:
-    std::vector<std::pair<double, std::string>> Table;
+    std :: vector< std :: pair< double, std :: string > >Table;
     clock_t t0;
     clock_t tend;
     clock_t inittime;
-    std::string CurrentMessage;
+    std :: string CurrentMessage;
 public:
     TimeStamp();
 
@@ -27,13 +26,13 @@ public:
      * @brief Clears list and starts first timer;
      * @param Message Message associated with initialization
      */
-    void Initialize(std::string Message);
+    void Initialize(std :: string Message);
 
     /**
      * @brief Starts the timer
      * @param Message Message to this item
      */
-    void StartTimer(std::string Message);
+    void StartTimer(std :: string Message);
 
     /**
      * @brief Stops current timer and stores message and time
@@ -55,8 +54,7 @@ public:
      * @brief Returns table of times and messages
      * @return Table of times and messages
      */
-    std::vector<std::pair<double, std::string>> GetTable();
+    std :: vector< std :: pair< double, std :: string > >GetTable();
 };
-
 }
 #endif // TIMESTAMP_H
