@@ -413,7 +413,7 @@ std :: vector< std :: pair< TriangleType *, TriangleType * > > SmootherClass::Ch
         for ( TriangleType *t2 : NearTriangles ) {
             if ( t1 != t2 ) {
                 if ( Mesh->CheckTrianglePenetration(t1, t2) ) {
-                    Mesh->CheckTrianglePenetration(t1, t2);
+                    //Mesh->CheckTrianglePenetration(t1, t2);
                     IntersectingTriangles.push_back({ t1, t2 });
                     LOG("Triangles %u and %u intersect!\n", t1->ID, t2->ID);
                     LOG( "t1(%u): (%f, %f, %f), (%f, %f, %f), (%f, %f, %f)\n", t1->ID, t1->Vertices.at(0)->get_c(0), t1->Vertices.at(0)->get_c(1), t1->Vertices.at(0)->get_c(2),
@@ -635,11 +635,6 @@ void SmootherClass::SpringSmooth(std :: vector< VertexType * >Vertices, std :: v
             // ************************** /DEBUG STUFF
 #endif
 
-#if TEST_MESH_FOR_EACH_SMOOTHING
-            TetGenCaller Tetgen;
-            Tetgen.Mesh = Mesh;
-            Tetgen.TestMesh();
-#endif
         }
 
         // Check for intersecting triangles. If some triangles intersect, stiffen the structure in that area and re-smooth
@@ -719,5 +714,12 @@ void SmootherClass::SpringSmooth(std :: vector< VertexType * >Vertices, std :: v
         }
         STATUS("\n", 0);
     }
+
+#if TEST_MESH_FOR_EACH_SMOOTHING
+            TetGenCaller Tetgen;
+            Tetgen.Mesh = Mesh;
+            Tetgen.TestMesh();
+#endif
+
 }
 }
