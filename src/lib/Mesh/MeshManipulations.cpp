@@ -839,6 +839,7 @@ std :: vector< VertexType * >MeshManipulations :: FindIndependentSet()
 
 int MeshManipulations :: FlipAll()
 {
+    this->UpdateLongestEdgeLength();
     int flipcount = 0;
     int i = 0;
     bool edgeflipped = true;
