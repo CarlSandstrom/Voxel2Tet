@@ -488,6 +488,15 @@ FC_MESH MeshData :: CheckTrianglePenetration(std :: array< VertexType *, 3 >t1, 
                 if ( ( alpha >= 0.0 ) & ( alpha <= 1.0 ) ) {
                     return FC_TRIANGLESINTERSECT;
                 }
+            } else {
+                // Check if points are located inside triangle (ray could lie in the same plane as triangle)
+                for (VertexType *v: FreeEdge) {
+                    double P[3] = {v->get_c(0), v->get_c(1), v->get_c(2)};
+                    if (point_in_tri(V0, V1, V2, P)) {
+                        return FC_TRIANGLESINTERSECT;
+                    }
+                }
+                LOG("alpha = %f\n", alpha);
             }
         }
     } else if ( sharedvertices == 2 ) {
