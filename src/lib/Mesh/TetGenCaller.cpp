@@ -142,6 +142,19 @@ void TetGenCaller :: TestMesh()
 
     tetrahedralize( ( char * ) "pd", & in, & out );
 
+    if (out.numberoftrifaces>0) {
+        STATUS("Check failed\n", 0);
+
+        for ( int i = 0; i < out.numberoftrifaces; i++ ) {
+            int *triface;
+            int marker = out.trifacemarkerlist [ i ];
+            triface = & out.trifacelist [ 3 * i ];
+            STATUS ("\t%u\n", marker);
+        }
+
+        throw(0);
+    }
+
     STATUS("==================================================================\n\n", 0);
 }
 }
