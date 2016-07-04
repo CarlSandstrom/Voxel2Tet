@@ -139,6 +139,10 @@ void MeshData :: ExportSurface(std :: string FileName, Exporter_FileTypes FileTy
         exporter = new VTKExporter(& this->Triangles, & this->Vertices, & this->Edges, & this->Tets);
         break;
     }
+    case FT_SIMPLE: {
+        exporter = new SimpleExporter(& this->Triangles, & this->Vertices, & this->Edges, & this->Tets);
+        break;
+    }
     default: {
         LOG("File type not supported!\n", 0);
         throw( 0 );
@@ -496,7 +500,6 @@ FC_MESH MeshData :: CheckTrianglePenetration(std :: array< VertexType *, 3 >t1, 
                         return FC_TRIANGLESINTERSECT;
                     }
                 }
-                LOG("alpha = %f\n", alpha);
             }
         }
     } else if ( sharedvertices == 2 ) {

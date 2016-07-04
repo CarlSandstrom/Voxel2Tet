@@ -8,6 +8,7 @@
 #include "MeshComponents.h"
 #include "VertexOctreeNode.h"
 #include "VTKExporter.h"
+#include "SimpleExporter.h"
 #include "TriTriIntersect.h"
 
 namespace voxel2tet
