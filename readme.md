@@ -15,12 +15,12 @@ Ubuntu
 
 Requirements:
 
-	* 	CMake makefile generator
-	*	Tetgen library 
-	*	Armadillo
-	*	VTK development library (for VTK import and export)
-	* 	hdf5-dev (for importing Dream3D files)
-	* 	libproj-dev (required by VTK)
+ - CMake makefile generator
+ - Tetgen library 
+ - Armadillo
+ - VTK development library (for VTK import and export)
+ - hdf5-dev (for importing Dream3D files)
+ - libproj-dev (required by VTK)
 
 To install all dependencies, simply run
 
@@ -30,15 +30,15 @@ from the command line.
 
 To compile Voxel2Tet, first download Voxel2Tet source code. Using git, this is done by
 
-$ git clone git@github.com:CarlSandstrom/Voxel2Tet.git
+	$ git clone git@github.com:CarlSandstrom/Voxel2Tet.git
 
 Then create a build directory, e.g.
 
-$ mkdir -p ~/bin/build/Voxel2Tet
+	$ mkdir -p ~/bin/build/Voxel2Tet
 
 Run CMake
 
-$ cmake ~/dev/Voxel2Tet
+	$ cmake ~/dev/Voxel2Tet
 
 For the standard "release" compilation, no extra flags are needed. The executable files are located in the Examples subdirectory.
 
@@ -58,11 +58,11 @@ Coding conventions
 
 In order to maintain consistency in terms of coding convention, the tool "Uncrustify" (https://github.com/uncrustify/uncrustify) is used. If code is added or modified, run the tool using the file "uncrustify.cfg" in the project root directory as a configuration file. To run uncrustify on only one file, go to the root folder of Voxel2Tet and run the command (Linux):
 
-$ uncrustify -c ./uncrustify.cfg --replace [source file]
+	$ uncrustify -c ./uncrustify.cfg --replace [source file]
 
 where [source file] is replaced by the source file (either .cpp or .h). In order to run uncrustify on the whole project, go to the project root folder and run
 
-$ find ./ -iname "*.cpp" -or -iname "*.h" | xargs -n 1 -I @ uncrustify -c ~/uncrustify.cfg --replace @
+	$ find ./ -iname "*.cpp" -or -iname "*.h" | xargs -n 1 -I @ uncrustify -c ~/uncrustify.cfg --replace @
 
 Thanks
 ======
