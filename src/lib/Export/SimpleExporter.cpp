@@ -37,7 +37,7 @@ void  SimpleExporter::WriteSurfaceData(std :: string Filename)
     }
 
     // Write header
-    SimpleFile << "# Simple mesh file\n # Vertices" << UsedVertices.size() << "\n";
+    SimpleFile << "# Simple mesh file\n# Vertices\n" << UsedVertices.size() << "\n";
 
     // Write vertices
     for ( auto v : UsedVertices ) {
