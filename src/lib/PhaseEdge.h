@@ -45,11 +45,15 @@ private:
 
 public:
 
+    /**
+     * @brief Pointer to smoother object for this phase edge.
+     */
     SmootherClass *EdgeSmoother;
 
     /**
      * @brief Constructor
      * @param Opt Input. An Options object for communicating the command line parameters.
+     * @param EdgeSmoother Input. Smoother object to the phase edge.
      */
     PhaseEdge(Options *Opt, SmootherClass *EdgeSmoother);
 
@@ -102,6 +106,9 @@ public:
      */
     std :: vector< VertexType * >GetFlatListOfVertices();
 
+    /**
+     * @brief List of all phase IDs ni contact with this phase edge
+     */
     std :: vector< int >Phases;
 };
 }

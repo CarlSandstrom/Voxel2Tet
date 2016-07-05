@@ -27,13 +27,17 @@ private:
     Options *Opt;
 public:
 
+    /**
+     * @brief SurfaceSmooth is the smoothing object for this surface
+     */
     SmootherClass *SurfaceSmooth;
 
     /**
      * @brief Constructor for the Surface class
      * @param Phase1 Phase index on one side of the surface
      * @param Phase2 Phase index on the other side of the surface
-     * @param Opt Options object for command line arguments and other settings
+     * @param Opt *Options Pointer to Options object for command line arguments and other settings
+     * @param Smoother *Smoother Pointer to smoother object
      */
     Surface(int Phase1, int Phase2, Options *Opt, SmootherClass *Smoother);
 
@@ -72,7 +76,6 @@ public:
     /**
      * @brief Perform smoothing on this Surface object
      * @param Mesh Mesh to be smoothed
-     * @param c Non-linear spring constant
      */
     void Smooth(MeshData *Mesh);
 

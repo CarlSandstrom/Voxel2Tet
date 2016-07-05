@@ -64,11 +64,22 @@ private:
     SmootherClass *EdgeSmoother;
 
 public:
+
+    /**
+     * @brief Constructor
+     * @param Opt Input. Pointer to Options object.
+     */
     Voxel2TetClass(Options *Opt);
     ~Voxel2TetClass();
 
+    /**
+     * @brief MeshManipulations object for accessing and modifying the mesh.
+     */
     MeshManipulations *Mesh;
 
+    /**
+     * @brief Prints help message for switch usages
+     */
     void PrintHelp();
 
     /**
@@ -79,12 +90,38 @@ public:
      */
     double GetListOfVolumes(std :: vector< double > &VolumeList, std :: vector< int > &PhaseList);
 
+    /**
+     * @brief Exports all surfaces to file
+     * @param FileName File name of output file
+     * @param FileType File type
+     */
     void ExportSurface(std :: string FileName, Exporter_FileTypes FileType);
 
+    /**
+     * @brief Perform tetrahedralization.
+     */
     void Tetrahedralize();
+
+    /**
+     * @brief Exports volumes to file
+     * @param FileName File name of output file
+     * @param FileType File type
+     */
     void ExportVolume(std :: string FileName, Exporter_FileTypes FileType);
 
+    /**
+     * @brief Loads a file
+     * @param FileName File name of file to load
+     */
     void LoadFile(std :: string FileName);
+
+    /**
+     * @brief Loads data using a callback function.
+     * @param MaterialIDByCoordinate Pointer to function wich returns the material ID at a given point
+     * @param origin Origin of data
+     * @param spacing Side length of voxels
+     * @param dimensions Number of voxels in each dimension
+     */
     void LoadCallback(cbMaterialIDByCoordinate MaterialIDByCoordinate, std :: array< double, 3 >origin, std :: array< double, 3 >spacing, std :: array< int, 3 >dimensions);
 
     /**
@@ -94,7 +131,10 @@ public:
      */
     Volume *FindVolumeContainingPoint(std :: array< double, 3 >P);
 
-    void LoadData();
+
+    /**
+     * @brief Performs smoothing process for loaded data. The process includes both smoothing and coarsening of the mesh.
+     */
     void Process();
 
     /**
