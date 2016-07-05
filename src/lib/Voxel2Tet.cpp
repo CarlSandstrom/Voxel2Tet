@@ -612,27 +612,6 @@ void Voxel2TetClass :: FindEdges()
         }
     }
 
-    // Split edges at SharedVertices
-    for ( auto v : SharedVertices ) {
-        unsigned int i = 0;
-
-        //for (auto p: this->PhaseEdges) {
-        while ( i < this->PhaseEdges.size() ) {
-            PhaseEdge *p = PhaseEdges.at(i);
-
-            std :: vector< PhaseEdge * >SplitEdges;
-            if ( p->SplitAtVertex(v, & SplitEdges) ) {
-                this->PhaseEdges.insert( this->PhaseEdges.end(), SplitEdges.begin(), SplitEdges.end() );
-                this->PhaseEdges.erase(this->PhaseEdges.begin() + i);
-
-                // Free memory from old PhaseEdge
-                delete p;
-            }
-            i++;
-        }
-    }
-
-
     // Add PhaseEdges to surfaces
     // TODO: Performance can be increased by making sure that the vertices in Surfaces and PhaseEdges are sorted. Also, save the sorted list in PhaseEdges
     int x = 0;

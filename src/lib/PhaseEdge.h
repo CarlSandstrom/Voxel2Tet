@@ -59,8 +59,6 @@ public:
      */
     void SortAndFixBrokenEdge(std :: vector< PhaseEdge * > *FixedEdges);
 
-    bool SplitAtVertex(VertexType *Vertex, std :: vector< PhaseEdge * > *SplitEdges); // TODO: I think this can be removed
-
     /**
      * @brief Creates a list of connected vertices for each vertex in the object as well as an array describing
      * in which directions a vertex is allowed to move.

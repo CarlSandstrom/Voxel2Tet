@@ -23,28 +23,6 @@ std :: vector< VertexType * >PhaseEdge :: GetFlatListOfVertices()
     return FlatList;
 }
 
-bool PhaseEdge :: SplitAtVertex(VertexType *Vertex, std :: vector< PhaseEdge * > *SplitEdges)
-{
-    if ( this->EdgeSegments.size() == 1 ) {
-        return false;                               // Don't even bother if size is 1
-    }
-    for ( unsigned int i = 0; i < this->EdgeSegments.size() - 2; i++ ) {
-        std :: array< VertexType *, 2 >ThisES = this->EdgeSegments.at(i);
-        std :: array< VertexType *, 2 >NextES = this->EdgeSegments.at(i);
-
-        if ( ( ThisES.at(1) == Vertex ) & ( NextES.at(0) == Vertex ) ) {
-            throw std :: out_of_range("This is code that is not complete yet.");
-            LOG("Split!\n", 0);
-        }
-    }
-
-    if ( SplitEdges->size() == 0 ) {
-        return false;
-    } else {
-        return true;
-    }
-}
-
 std :: vector< VertexType * >PhaseEdge :: GiveVerticesConnectedToVertex(VertexType *v)
 {
     std :: vector< VertexType * >ResultsList;
