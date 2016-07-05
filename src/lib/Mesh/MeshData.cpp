@@ -38,6 +38,99 @@ MeshData :: ~MeshData()
 
 void MeshData :: DoSanityCheck()
 {
+    // Check edge for duplicates and make sure that each edge conatins two unique vertices
+    for (size_t i=0; i<this->Edges.size(); i++) {
+        EdgeType *e1 = this->Edges[i];
+        if (e1->Vertices[0]==e1->Vertices[1]) {
+            LOG ("Edge is a point\n", 0);
+            throw(0);
+        }
+        for (size_t j=i+1; j<this->Edges.size(); j++) {
+            EdgeType *e2 = this->Edges[j];
+            if ( ( (e1->Vertices[0]==e2->Vertices[0]) & (e1->Vertices[1]==e2->Vertices[1]) ) |
+                 ( (e1->Vertices[0]==e2->Vertices[1]) & (e1->Vertices[1]==e2->Vertices[0]) ) ) {
+                LOG("Duplicate edge! %u and %u\n", e1->ID, e2->ID);
+                throw(0);
+            }
+        }
+    }
+
+    // Check list of edges and triangles and ensure that each edge at least holds two triangles
+/*    bool EdgeMissing = false;
+    for (TriangleType *t: this->Triangles) {
+        for (int i=0; i<3; i++) {
+            EdgeType te;
+            te.Vertices[0] = t->Vertices[i];
+            te.Vertices[1] = ( i<2 ? t->Vertices[i+1] : t->Vertices[0]);
+
+            bool EdgeFound = false;
+            for (EdgeType *e: this->Edges) {
+                if ( ((e->Vertices[0]==te.Vertices[0]) & (e->Vertices[1]==te.Vertices[1])) | ((e->Vertices[0]==te.Vertices[1]) & (e->Vertices[1]==te.Vertices[0]))) {
+
+                    std :: vector< TriangleType * > ConnectedTriangles = e->GiveTriangles();
+                    if (ConnectedTriangles.size()<2) {
+                        LOG("To few triangles\n", 0);
+                        throw (0);
+                    }
+
+                    EdgeFound = true;
+                    break;
+                }
+            }
+
+            if (!EdgeFound) {
+                EdgeMissing = true;
+                LOG("\tTriangle %u, edge %u\n", t->ID, i);
+            }
+
+        }
+
+    }
+
+    if (EdgeMissing) {
+        throw (0);
+    }*/
+
+    /*
+    // Check if vertices in triangles are the same as vertices in edges
+    std::vector<VertexType *> VerticesTriangles;
+    std::vector<VertexType *> VerticesEdges;
+
+    for (TriangleType *t: this->Triangles) {
+        for (int i=0; i<3; i++) {
+            VerticesTriangles.push_back( t->Vertices[i] );
+        }
+    }
+
+    for (EdgeType *e: this->Edges) {
+        for (int i=0; i<2; i++) {
+            VerticesEdges.push_back(e->Vertices[i]);
+        }
+    }
+
+    std :: sort( VerticesTriangles.begin(), VerticesTriangles.end() );
+    VerticesTriangles.erase( std :: unique( VerticesTriangles.begin(), VerticesTriangles.end() ), VerticesTriangles.end() );
+
+    std :: sort( VerticesEdges.begin(), VerticesEdges.end() );
+    VerticesEdges.erase( std :: unique( VerticesEdges.begin(), VerticesEdges.end() ), VerticesEdges.end() );
+
+    if (VerticesEdges.size() != VerticesTriangles.size()) {
+        STATUS("Set of vertices in edges and set of vertices in triangles differ\n", 0);
+
+        std::vector<VertexType *> InTriNotEdges;
+        std::set_difference(VerticesTriangles.begin(), VerticesTriangles.end(), VerticesEdges.begin(), VerticesEdges.end(), std::inserter(InTriNotEdges, InTriNotEdges.end()));
+        LOG("Vertices in triangles not on any edge:\n", 0);
+        for (VertexType *v: InTriNotEdges) {LOG("\t%u\n", v->ID);}
+
+        std::vector<VertexType *> OnEdgesNotTri;
+        std::set_difference(VerticesEdges.begin(), VerticesEdges.end(), VerticesTriangles.begin(), VerticesTriangles.end(), std::inserter(OnEdgesNotTri, OnEdgesNotTri.end()));
+        LOG("Vertices on edge not in any triangle:\n", 0);
+        for (VertexType *v: OnEdgesNotTri) {LOG("\t%u\n", v->ID);}
+
+        throw(0);
+    } */
+
+/*
     // Does the list of triangles vertices correspond to the list of vertices triangles?
     for ( TriangleType *t : this->Triangles ) {
         bool TriangleFound = false;
@@ -119,7 +212,10 @@ void MeshData :: DoSanityCheck()
                 }
             }
         }
-    }
+    }*/
+
+    LOG("DoSanityCheck finished\n", 0);
+
 }
 
 void MeshData :: ExportSurface(std :: string FileName, Exporter_FileTypes FileType)
