@@ -144,7 +144,10 @@ FC_MESH MeshManipulations :: GetFlippedEdgeData(EdgeType *EdgeToFlip, EdgeType *
 
 FC_MESH MeshManipulations :: FlipEdge(EdgeType *Edge)
 {
+
     LOG("Flip edge %u@%p (%u, %u)\n", Edge->ID, Edge, Edge->Vertices [ 0 ]->ID, Edge->Vertices [ 1 ]->ID);
+
+    // this->DoSanityCheck();
 
     std :: vector< TriangleType * >EdgeTriangles = Edge->GiveTriangles();
 
@@ -295,13 +298,15 @@ FC_MESH MeshManipulations :: FlipEdge(EdgeType *Edge)
     }
 
     // Remove edge from list
-    this->RemoveEdge(Edge);
+    //this->RemoveEdge(Edge);
     //this->Edges.erase(std::remove(this->Edges.begin(), this->Edges.end(), Edge), this->Edges.end());
 
     // 5. Free old triangles
     for ( TriangleType *t : EdgeTriangles ) {
         this->RemoveTriangle(t);
     }
+
+    // DoSanityCheck();
 
     return FC_OK;
 }
@@ -452,6 +457,8 @@ FC_MESH MeshManipulations :: CollapseEdge(EdgeType *EdgeToCollapse, int RemoveVe
     LOG("Collapse edge %u@%p (%u, %u) by removing vertex %u\n", EdgeToCollapse->ID, EdgeToCollapse, EdgeToCollapse->Vertices [ 0 ]->ID,
         EdgeToCollapse->Vertices [ 1 ]->ID, EdgeToCollapse->Vertices [ RemoveVertexIndex ]->ID);
 
+    //DoSanityCheck();
+
     // Cannot remove a fixed vertex
     if ( EdgeToCollapse->Vertices [ RemoveVertexIndex ]->IsFixedVertex() ) {
         return FC_FIXEDVERTEX;
@@ -546,7 +553,34 @@ FC_MESH MeshManipulations :: CollapseEdge(EdgeType *EdgeToCollapse, int RemoveVe
                              TriangleToRemoveEdges.begin(), TriangleToRemoveEdges.end(), std :: back_inserter(EdgesToRemove) );
 
     // Update edges
-    std :: vector< EdgeType * >ConnectedEdges = EdgeToCollapse->Vertices.at(RemoveVertexIndex)->Edges;
+    std :: vector< EdgeType * > ConnectedEdges;
+    std::set_difference(RemoveVertexEdges.begin(), RemoveVertexEdges.end(), EdgesToRemove.begin(), EdgesToRemove.end(), std::back_inserter(ConnectedEdges));
+
+    // Ensure that we don't end up with copies edges, i.e. moves one edge onto another. This means that we "snap of" a volume
+    std::vector<EdgeType *> SaveVertexEdges = EdgeToCollapse->Vertices[SaveVertexIndex]->Edges;
+
+    for (EdgeType *se: SaveVertexEdges) {
+        if (se!=EdgeToCollapse) {
+            for (EdgeType *ce: ConnectedEdges) {
+
+                // Construct updated edge
+                EdgeType UpdatedConnectedEdge = *ce;
+                for (int i=0; i<2; i++) {
+                    if (UpdatedConnectedEdge.Vertices[i] == EdgeToCollapse->Vertices[RemoveVertexIndex]) {
+                        UpdatedConnectedEdge.Vertices[i] = EdgeToCollapse->Vertices[SaveVertexIndex];
+                    }
+                }
+
+                //Compare
+                if ( ( (se->Vertices[0] == UpdatedConnectedEdge.Vertices[0]) & (se->Vertices[1] == UpdatedConnectedEdge.Vertices[1]) ) |
+                     ( (se->Vertices[0] == UpdatedConnectedEdge.Vertices[1]) & (se->Vertices[1] == UpdatedConnectedEdge.Vertices[0]) ) ) {
+                    return FC_INVALIDEDGE;
+                }
+
+            }
+        }
+    }
+
     for ( EdgeType *e : ConnectedEdges ) {
         if ( e != EdgeToCollapse ) {
             for ( int i : { 0, 1 } ) {
@@ -574,6 +608,8 @@ FC_MESH MeshManipulations :: CollapseEdge(EdgeType *EdgeToCollapse, int RemoveVe
     for ( TriangleType *t : NewTriangles ) {
         this->AddTriangle(t);
     }
+
+    //DoSanityCheck();
 
     ConnectedEdges = SaveVertex->Edges;
     bool edgeflipped = true;
@@ -840,6 +876,9 @@ std :: vector< VertexType * >MeshManipulations :: FindIndependentSet()
 int MeshManipulations :: FlipAll()
 {
     this->UpdateLongestEdgeLength();
+
+//    this->DoSanityCheck();
+
     int flipcount = 0;
     int i = 0;
     bool edgeflipped = true;
@@ -850,6 +889,7 @@ int MeshManipulations :: FlipAll()
             EdgeType *e = this->Edges [ j ];
             LOG("Flip edge iteration %u: edge @%p (%u, %u)\n", i, e, e->Vertices [ 0 ]->ID, e->Vertices [ 1 ]->ID);
             if ( this->FlipEdge(e) == FC_OK ) {
+//                this->DoSanityCheck();
                 flipcount++;
                 edgeflipped = true;
             } else {
@@ -917,16 +957,18 @@ bool MeshManipulations :: CoarsenMeshImproved()
                     // If vertex v is not in the set of independent vertices, try to collapse
                     if ( std :: find(IndepSet.begin(), IndepSet.end(), v) == IndepSet.end() ) {
                         if ( this->CollapseEdge(e, vi) == FC_OK ) {
+                            //DoSanityCheck();
                             this->UpdateLongestEdgeLength();
                             CoarseningOccurs = true;
 #if EXPORT_MESH_COARSENING
+                            this->ExportSurface(strfmt("/tmp/Coarseningp_%u.simple", MeshIndex), FT_SIMPLE);
                             dooutputlogmesh(* this, "/tmp/Coarsening_%u.vtp", MeshIndex++);
 #endif
 
 #if TEST_MESH_FOR_EACH_COARSENING_ITERATION
                             Generator.TestMesh();
 #endif
-                            //if (i==1736) throw(0);
+                            //this->DoSanityCheck();
                             break;
                         }
                     }

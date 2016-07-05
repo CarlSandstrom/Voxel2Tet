@@ -1012,7 +1012,9 @@ void Voxel2TetClass :: Process()
         this->Mesh->ExportSurface(strfmt("%s_step_%u.vtp", this->Opt->GiveStringValue("output").c_str(), outputindex++), FT_VTK);
     }
 
+    //this->Mesh->DoSanityCheck();
     this->Mesh->FlipAll();
+    //this->Mesh->DoSanityCheck();
 
     this->UpdateSurfaces();
 
