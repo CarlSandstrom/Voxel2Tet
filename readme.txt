@@ -7,7 +7,6 @@ The code is in C++ and is written in a modular way such that new featers, such a
 
 The original intent was to allow for voxel representations of microstructures to be performed, but the software is general and in no way bound to microstructures.
 
-
 Installation
 ============
 
@@ -31,7 +30,7 @@ from the command line.
 
 To compile Voxel2Tet, first download Voxel2Tet source code. Using git, this is done by
 
-$ git clone ....
+$ git clone git@github.com:CarlSandstrom/Voxel2Tet.git
 
 Then create a build directory, e.g.
 
@@ -64,3 +63,9 @@ $ uncrustify -c ./uncrustify.cfg --replace [source file]
 where [source file] is replaced by the source file (either .cpp or .h). In order to run uncrustify on the whole project, go to the project root folder and run
 
 $ find ./ -iname "*.cpp" -or -iname "*.h" | xargs -n 1 -I @ uncrustify -c ~/uncrustify.cfg --replace @
+
+Thanks
+======
+
+Thanks to Tomas Akenine Möller for letting me use his code (http://fileadmin.cs.lth.se/cs/Personal/Tomas_Akenine-Moller/code/).
+
