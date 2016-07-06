@@ -53,9 +53,9 @@ public:
 
     /**
      * @brief Add a phase edge to PhaseEdges
-     * @param PhaseEdge Input. Pointer to phase edge object to add.
+     * @param pe Input. Pointer to phase edge object to add.
      */
-    void AddPhaseEdge(PhaseEdge *);
+    void AddPhaseEdge(PhaseEdge *pe);
 
     /**
      * @brief IsFixedVertex tells if the vertex is (always) fixed. A vertex that is the end of a phase edge is always fixed.
