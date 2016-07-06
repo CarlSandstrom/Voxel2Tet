@@ -19,6 +19,13 @@ class SmootherConfiguration
 
 };
 
+/**
+ * @brief Provides functionality for smoothing a set of connected vertices given their relation and connectivity.
+ *
+ * This particular smoothing class uses spring attached between all connected vertices. For each vertex, an additional
+ * (non-linear) spring is also connected to its original location. This limits the decrease in volume of the objects.
+ *
+ */
 class SmootherClass
 {
     friend std::ostream &operator<<(std::ostream &stream, const SmootherClass &Smoother);
