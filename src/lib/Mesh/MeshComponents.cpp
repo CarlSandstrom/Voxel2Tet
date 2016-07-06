@@ -285,6 +285,7 @@ std :: array< EdgeType *, 3 >TriangleType :: GiveEdges()
         EdgeCollection.insert( EdgeCollection.end(), this->Vertices [ i ]->Edges.begin(), this->Vertices [ i ]->Edges.end() );
     }
 
+    // TODO: It seems that this can be done in a nicer way..
     std :: sort( EdgeCollection.begin(), EdgeCollection.end() );
     EdgeCollection.erase( std :: unique( EdgeCollection.begin(), EdgeCollection.end() ), EdgeCollection.end() );
 

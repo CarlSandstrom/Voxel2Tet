@@ -13,6 +13,8 @@
 
 namespace voxel2tet
 {
+
+
 enum FC_MESH {
     FC_OK, FC_FIXEDVERTEX, FC_NORMAL, FC_CHORD, FC_SMALLAREA, FC_AREACHANGETOOLARGE, FC_TOOMANYTRIANGLES,
     FC_WORSEMINANGLE, FC_VERTICESONDIFFERENTSHAPES, FC_TRIANGLESINTERSECT, FC_DUPLICATETRIANGLE, FC_INVALIDEDGE,
@@ -21,7 +23,7 @@ enum FC_MESH {
 
 
 /**
- * @brief The MeshData class supplies information and methods for adding vertices and triangles.
+ * @brief The MeshData class supplies information and methods for handling mesh data.
  */
 class MeshData
 {
@@ -30,22 +32,55 @@ private:
     int EdgeCounter;
 
 public:
+
+    /**
+     * @brief Perform sanity check. Mostly for debugging purposes to make sure that the connectivity of the mesh is kept in order.
+     */
     void DoSanityCheck();
+
+    /**
+     * @brief Bounding box of mesh
+     */
     BoundingBoxType BoundingBox;
+
+    /**
+     * @brief List of all triangles in the mesh
+     */
     std :: vector< TriangleType * >Triangles;
+
+    /**
+     * @brief List of all vertices in the mesh
+     */
     std :: vector< VertexType * >Vertices;
+
+    /**
+     * @brief List of all edges in the mesh
+     */
     std :: vector< EdgeType * >Edges;
+
+    /**
+     * @brief List of all tetrahedrons in the mesh
+     */
     std :: vector< TetType * >Tets;
 
-    // TODO: Add a AddVertex function
+    /**
+     * @brief VertexOctreeNode root object for all vertices. Uses octree algorithm for performance.
+     */
     VertexOctreeNode *VertexOctreeRoot;
 
-    // Either with all vertices or with a bounding box
+    /**
+     * @brief Constructor
+     * @param BoundingBox Bounding box of mesh
+     */
     MeshData(BoundingBoxType BoundingBox);
 
     ~MeshData();
 
-    // Export surface mesh
+    /**
+     * @brief Exports all Surface objects to file of preferred format
+     * @param FileName Name of file
+     * @param FileType Type of file
+     */
     void ExportSurface(std :: string FileName, Exporter_FileTypes FileType);
 
     // Export volume mesh

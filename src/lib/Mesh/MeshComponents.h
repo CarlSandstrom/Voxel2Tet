@@ -12,6 +12,14 @@ class TriangleType;
 class EdgeType;
 class PhaseEdge;
 
+/**
+ * @brief The VertexType class provides information relevant to one vertex in the mesh.
+ *
+ * The VertexType object knows which triangles and edges it is connected to. The TriangleType
+ * and EdgeType objects however, does only know which vertices they are connected to. In order
+ * for a triangle to access the connected edges, it har to ask its vertices. The same goes for
+ * the edges looking for connected triangles.
+ */
 class VertexType
 {
 private:
@@ -23,14 +31,30 @@ public:
      */
     double c_constant;
 
+    /**
+     * @brief The error accumulated due to mesh coarsening on this vertex
+     */
     double error;
 
+    /**
+     * @brief ID of current vertex. Mainly for debugging purposes.
+     */
     int ID;
 
+    /**
+     * @brief Arbitrary tag on vertex.
+     */
     int tag;
 
+    /**
+     * @brief List of Phase edges the vertex is connected to.
+     */
     std :: vector< PhaseEdge * >PhaseEdges;
 
+    /**
+     * @brief Add a phase edge to PhaseEdges
+     * @param PhaseEdge Input. Pointer to phase edge object to add.
+     */
     void AddPhaseEdge(PhaseEdge *);
 
     /**
@@ -39,50 +63,155 @@ public:
      */
     bool IsFixedVertex() { return PhaseEdges.size() > 1; }
 
+    /**
+     * @brief Determines in which directions this vertex is fixed during smoothing.
+     */
     std :: array< bool, 3 >Fixed;
+
+    /**
+     * @brief Determines if this vertex belongs to an phase edge.
+     * @return True or false depending on if the vertex belongs to a phase edge.
+     */
     bool IsPhaseEdgeVertex() { return PhaseEdges.size() > 0; }
 
+    /**
+     * @brief Constructor
+     * @param x X coordinate
+     * @param y Y coodrinate
+     * @param z Z coordinate
+     */
     VertexType(double x, double y, double z);
+
+    /**
+     * @brief Contains the original coordinates before smoothing.
+     */
     double originalcoordinates [ 3 ];
 
+    /**
+     * @brief Update coordinates of this vertex
+     * @param newc Array containing new coordinate information
+     */
     void set_c(std :: array< double, 3 >newc);
+
+    /**
+     * @brief Update coordinates of this vertex
+     * @param c Coordinate value
+     * @param index Index of coordinate, 0 is X, 1 is Y and 2 is Z.
+     */
     void set_c(double c, int index);
+
+    /**
+     * @brief Retrieve coordinates of current vertex
+     * @return Coordinates
+     */
     std :: array< double, 3 >get_c();
+
+    /**
+     * @brief Retrieve coordina
+     * @param index Index of coordinate. 0 is X, 1 is Y and 2 is Z.
+     * @return Coordinate value
+     */
     double get_c(int index);
 
+    /**
+     * @brief List of triangles connected to this vertex
+     */
     std :: vector< TriangleType * >Triangles;
+
+    /**
+     * @brief List of edges connected to this vertex
+     */
     std :: vector< EdgeType * >Edges;
 
-    // Adds a triangle to vertex triangle list and ensures uniqueness on list
+    /**
+     * @brief Adds a triangle to vertex triangle list and ensures uniqueness on list
+     * @param Triangle Pointer to triangle to add
+     */
     void AddTriangle(TriangleType *Triangle);
 
-    // Removes a triangle from triangle list
+    /**
+     * @brief Removes triangle from list. Note, no memory is freed.
+     * @param Triangle Pointer to triangle to remove
+     */
     void RemoveTriangle(TriangleType *Triangle);
 
-    // Adds an edge to vertex edge list and ensures uniqueness on list
+    /**
+     * @brief Adds an edge to vertex edge list and ensures uniqueness on list
+     * @param Edge Pointer to edge to add
+     */
     void AddEdge(EdgeType *Edge);
 
-    // Removes an edge from edge list
+    /**
+     * @brief Removes an edge from edge list
+     * @param Edge Edge to be removed. Note, no memory is freed
+     */
     void RemoveEdge(EdgeType *Edge);
 
-    // Finds all neighbouring vertices
+    /**
+     * @brief Produce a list of all neighbouring vertices
+     * @return List of neighbouring vertices
+     */
     std :: vector< VertexType * >FetchNeighbouringVertices();
 };
 
-
+/**
+ * @brief Provides information of one edge.
+ *
+ * Here, an edge referres to an edge of a triangle which can be shared among several triangles. An edge is
+ * defined by it's two end points.
+ *
+ * The Edge object knows which two vertices it is defined by. It does not, however, know which triangles are
+ * connected. For that information it relies on the vertices, which in turn, knows.
+ *
+ */
 class EdgeType
 {
 public:
+    /**
+     * @brief ID of edge. Mainly for debugging purposes.
+     */
     int ID;
+
+    /**
+     * @brief Array of two vertices describing the edge.
+     */
     std :: array< VertexType *, 2 >Vertices;
 
+    /**
+     * @brief Produces a list of triangles connected to this edge.
+     *
+     * The triangles connected to this edge is computed as
+     *
+     * \f$ T(V_1) \cap T(V_2) \f$
+     *
+     * where \f$ T(V_\alpha) \f$ is the set of all triangles connected to vertex \f$V_\alpha\f$.
+     *
+     * @return List of triangles
+     */
     std :: vector< TriangleType * >GiveTriangles();
 
+    /**
+     * @brief Computes the length of this edge.
+     * @return Length of edge
+     */
     double GiveLength();
+
+    /**
+     * @brief Compute center point of edge.
+     * @return Center point of edge
+     */
     std :: array< double, 3 >GiveCenterPoint();
 };
 
-
+/**
+ * @brief The TriangleType class provides information for a triangle.
+ *
+ * The Triangle objects is defined by three coordinates. Although it's orientation is determined by the order in which
+ * the coordinates are given, we can determine if the normal is pointing inwards or outwards of the surface volume it is
+ * part of, by comparing the PosNormalMatID and NegNormalMatID members to the material ID of the volume.
+ *
+ * The Triangle object does not know which Edge objects it is connected to but relies on its vertices to find out.
+ */
 class TriangleType
 {
 private:
@@ -92,47 +221,146 @@ private:
     // Normal of element
     std :: array< double, 3 >Normal;
 public:
+
+    /**
+     * @brief Constructor
+     */
     TriangleType() {}
+
+    /**
+     * @brief Constructor
+     * @param Vertices VertexType objects determining the corners of the triangle
+     */
     TriangleType(std :: array< VertexType *, 3 >Vertices);
+
+    /**
+     * @brief ID of Triangle object. Mostly for debugging purposes.
+     */
     int ID;
+
+    /**
+     * @brief ID of the interface the triangle is part of.
+     */
     int InterfaceID;
+
+    /**
+     * @brief Material ID of the material in the positive normal direction
+     */
     int PosNormalMatID;
+
+    /**
+     * @brief Material ID of the material in the negative normal direction
+     */
     int NegNormalMatID;
 
+    /**
+     * @brief Array of vertices defining the triangle
+     */
     std :: array< VertexType *, 3 >Vertices;
 
+    /**
+     * @brief Returns the Edge object located at edge index
+     * @param Index Index of edge to be retrieved
+     * @return Pointer to Edge object
+     */
     EdgeType *GiveEdge(int Index);
+
+    /**
+     * @brief Returns array of pointer to Edge objects defining the triangle
+     * @return Array of pointers to Edge objects
+     */
     std :: array< EdgeType *, 3 >GiveEdges();
+
+    /**
+     * @brief Computes the longest edge length of the triangle.
+     * @return Length of longest edge
+     */
     double GiveLongestEdgeLength();
 
-    // Compute area of triangle
+    /**
+     * @brief Computes the (positive) area of the triangle
+     * @return Area
+     */
     double GiveArea();
 
-    // Compute signed area of triangle
+    /**
+     * @brief Computes the (signed) area of the triangle
+     * @return Area
+     */
     double GiveSignedArea();
 
+    /**
+     * @brief Computes center of mass for triangle
+     * @return Coordinate
+     */
     std :: array< double, 3 >GiveCenterOfMass();
 
+    /**
+     * @brief Computes the largest inner angle of the triangle.
+     * @param index Output. Pointer to integer. If set, contains the index of the corner of the largest angle.
+     * @return Largest inner angle
+     */
     double GiveLargestAngle(int *index = NULL);
+
+    /**
+     * @brief Computes smallest inner angle of the triangle.
+     * @param index Output. Pointer to integer. If set, contains the index of the corner of the smallest angle.
+     * @return Smallest inner angle.
+     */
     double GiveSmallestAngle(int *index = NULL);
 
+    /**
+     * @brief Gives normal of triangle.
+     *
+     * For performance, the normal is not computed every time and requires updating as coordinates or orientation change.
+     *
+     * @return Array of doubles describing the normal
+     */
     std :: array< double, 3 >GiveNormal() { return Normal; }
+
+    /**
+     * @brief Gives normalized normal. See GiveNormal().
+     * @return Normalized normal
+     */
     std :: array< double, 3 >GiveUnitNormal();
 
+    /**
+     * @brief Updates normal
+     */
     void UpdateNormal();
 
-    // Reverse the order of the vertices to flip the normal
+    /**
+     * @brief Change orientation of triangle by reordering the vertizes. Also updates PosNormalMatID and NegNormalMatID.
+     */
     void FlipNormal();
 };
 
-
+/**
+ * @brief The TetType class contains information on tetrahedral elements
+ */
 class TetType
 {
 private:
 public:
+    /**
+     * @brief ID of element. Mostly for debugging purposes.
+     */
     int ID;
+
+    /**
+     * @brief Material ID
+     */
     int MaterialID;
+
+    /**
+     * @brief Vertices determininmg the tetrahedral element.
+     */
     std :: array< VertexType *, 4 >Vertices;
+
+    /**
+     * @brief Returns center of mass
+     * @return Coordinate
+     */
     std :: array< double, 3 >GiveCenterOfMass();
 };
 }
