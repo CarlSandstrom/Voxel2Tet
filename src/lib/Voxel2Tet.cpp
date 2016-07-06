@@ -14,7 +14,7 @@
 #include "Dream3DDataReader.h"
 #include "CallbackImporter.h"
 #include "TetGenCaller.h"
-#include "Smoother.h"
+#include "SpringSmoother.h"
 
 namespace voxel2tet
 {
@@ -137,15 +137,15 @@ void Voxel2TetClass :: FinalizeLoad()
     // Setup smoothing classes
 
     if ( this->Opt->has_key("spring_c") ) {
-        this->SurfaceSmoother = new SmootherClass(cellspace[0], Opt->GiveDoubleValue("spring_c"), Opt->GiveDoubleValue("spring_alpha"), Opt->GiveDoubleValue("spring_c_factor"), false );
+        this->SurfaceSmoother = new SpringSmoother(cellspace[0], Opt->GiveDoubleValue("spring_c"), Opt->GiveDoubleValue("spring_alpha"), Opt->GiveDoubleValue("spring_c_factor"), false );
     } else {
-        this->SurfaceSmoother = new SmootherClass(cellspace[0], Opt->GiveDoubleValue("spring_c"), Opt->GiveDoubleValue("spring_alpha"), Opt->GiveDoubleValue("spring_c_factor"), true );
+        this->SurfaceSmoother = new SpringSmoother(cellspace[0], Opt->GiveDoubleValue("spring_c"), Opt->GiveDoubleValue("spring_alpha"), Opt->GiveDoubleValue("spring_c_factor"), true );
     }
 
     if ( this->Opt->has_key("edge_spring_c") ) {
-        this->EdgeSmoother = new SmootherClass(cellspace[0], Opt->GiveDoubleValue("edge_spring_c"), Opt->GiveDoubleValue("edge_spring_alpha"), Opt->GiveDoubleValue("edge_spring_c_factor"), false );
+        this->EdgeSmoother = new SpringSmoother(cellspace[0], Opt->GiveDoubleValue("edge_spring_c"), Opt->GiveDoubleValue("edge_spring_alpha"), Opt->GiveDoubleValue("edge_spring_c_factor"), false );
     } else {
-        this->EdgeSmoother = new SmootherClass(cellspace[0], Opt->GiveDoubleValue("edge_spring_c"), Opt->GiveDoubleValue("edge_spring_alpha"), Opt->GiveDoubleValue("edge_spring_c_factor"), true );
+        this->EdgeSmoother = new SpringSmoother(cellspace[0], Opt->GiveDoubleValue("edge_spring_c"), Opt->GiveDoubleValue("edge_spring_alpha"), Opt->GiveDoubleValue("edge_spring_c_factor"), true );
     }
 
     // Setup bounding box
@@ -724,7 +724,7 @@ void Voxel2TetClass :: SmoothEdgesSimultaneously()
         delete v;
     }
 
-    this->EdgeSmoother->SpringSmooth(VertexList, FixedDirectionsList, Connections, this->Mesh);
+    this->EdgeSmoother->Smooth(VertexList, FixedDirectionsList, Connections, this->Mesh);
 }
 
 void Voxel2TetClass :: SmoothSurfaces()
@@ -775,7 +775,7 @@ void Voxel2TetClass :: SmoothAllAtOnce()
         FixedDirectionsList.push_back(false);
     }
 
-    this->SurfaceSmoother->SpringSmooth(this->Mesh->Vertices, FixedDirectionsList, Connections);
+    this->SurfaceSmoother->Smooth(this->Mesh->Vertices, FixedDirectionsList, Connections);
 }
 
 PhaseEdge *Voxel2TetClass :: AddPhaseEdge(std :: vector< VertexType * >EdgeSegment, std :: vector< int >Phases)

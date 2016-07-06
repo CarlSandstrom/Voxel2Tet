@@ -2,7 +2,7 @@
 
 namespace voxel2tet
 {
-Surface :: Surface(int Phase1, int Phase2, Options *Opt, SmootherClass *Smoother)
+Surface :: Surface(int Phase1, int Phase2, Options *Opt, SpringSmoother *Smoother)
 {
     this->Phases [ 0 ] = Phase1;
     this->Phases [ 1 ] = Phase2;
@@ -57,7 +57,7 @@ void Surface :: Smooth(MeshData *Mesh)
         }
     }
 
-    this->SurfaceSmooth->SpringSmooth(this->Vertices, FixedList, Connections, Mesh);
+    this->SurfaceSmooth->Smooth(this->Vertices, FixedList, Connections, Mesh);
 }
 
 double Surface :: ComputeArea()

@@ -20,6 +20,7 @@
 #include "PhaseEdge.h"
 #include "MeshGenerator3D.h"
 #include "TimeStamp.h"
+#include "Smoother.h"
 
 namespace voxel2tet
 {
@@ -60,8 +61,8 @@ private:
     std :: vector< double >CurrentVolumes;
     std :: vector< int >PhaseList;
 
-    SmootherClass *SurfaceSmoother;
-    SmootherClass *EdgeSmoother;
+    SpringSmoother *SurfaceSmoother;
+    SpringSmoother *EdgeSmoother;
 
 public:
 

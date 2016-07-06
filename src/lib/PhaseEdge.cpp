@@ -2,7 +2,7 @@
 
 namespace voxel2tet
 {
-PhaseEdge :: PhaseEdge(Options *Opt, SmootherClass *EdgeSmoother)
+PhaseEdge :: PhaseEdge(Options *Opt, SpringSmoother *EdgeSmoother)
 {
     this->Opt = Opt;
     this->EdgeSmoother = EdgeSmoother;
@@ -199,7 +199,7 @@ void PhaseEdge :: Smooth(MeshData *Mesh)
         FixedList.push_back(false);
     }
 
-    this->EdgeSmoother->SpringSmooth(FlatList, FixedList, Connections, Mesh);
+    this->EdgeSmoother->Smooth(FlatList, FixedList, Connections, Mesh);
 }
 
 void PhaseEdge :: AddPhaseEdgeSegment(VertexType *v1, VertexType *v2)

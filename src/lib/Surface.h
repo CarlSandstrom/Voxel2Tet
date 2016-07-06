@@ -6,7 +6,7 @@
 #include "MeshComponents.h"
 #include "PhaseEdge.h"
 #include "MiscFunctions.h"
-#include "Smoother.h"
+#include "SpringSmoother.h"
 #include "armadillo"
 
 namespace voxel2tet
@@ -30,7 +30,7 @@ public:
     /**
      * @brief SurfaceSmooth is the smoothing object for this surface
      */
-    SmootherClass *SurfaceSmooth;
+    SpringSmoother *SurfaceSmooth;
 
     /**
      * @brief Constructor for the Surface class
@@ -39,7 +39,7 @@ public:
      * @param Opt *Options Pointer to Options object for command line arguments and other settings
      * @param Smoother *Smoother Pointer to smoother object
      */
-    Surface(int Phase1, int Phase2, Options *Opt, SmootherClass *Smoother);
+    Surface(int Phase1, int Phase2, Options *Opt, SpringSmoother *Smoother);
 
     /**
      * @brief Holds phase indices for phases on either side of the surface
