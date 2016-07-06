@@ -341,19 +341,19 @@ void MeshData :: RemoveTriangle(TriangleType *t)
     t = NULL;
 }
 
-TriangleType *MeshData :: AddTriangle(std :: vector< double >n0, std :: vector< double >n1, std :: vector< double >n2)
+TriangleType *MeshData :: AddTriangle(std :: array< double, 3 >v0, std :: array< double, 3 >v1, std :: array< double, 3 >v2)
 {
     // Insert vertices and create a triangle using the indices returned
     int VertexIDs [ 3 ];
 
-    VertexIDs [ 0 ] = this->VertexOctreeRoot->AddVertex(n0 [ 0 ], n0 [ 1 ], n0 [ 2 ]);
-    VertexIDs [ 1 ] = this->VertexOctreeRoot->AddVertex(n1 [ 0 ], n1 [ 1 ], n1 [ 2 ]);
-    VertexIDs [ 2 ] = this->VertexOctreeRoot->AddVertex(n2 [ 0 ], n2 [ 1 ], n2 [ 2 ]);
+    VertexIDs [ 0 ] = this->VertexOctreeRoot->AddVertex(v0 [ 0 ], v0 [ 1 ], v0 [ 2 ]);
+    VertexIDs [ 1 ] = this->VertexOctreeRoot->AddVertex(v1 [ 0 ], v1 [ 1 ], v1 [ 2 ]);
+    VertexIDs [ 2 ] = this->VertexOctreeRoot->AddVertex(v2 [ 0 ], v2 [ 1 ], v2 [ 2 ]);
 
     return this->AddTriangle({ VertexIDs [ 0 ], VertexIDs [ 1 ], VertexIDs [ 2 ] });
 }
 
-TriangleType *MeshData :: AddTriangle(std :: vector< int >VertexIDs)
+TriangleType *MeshData :: AddTriangle(std :: array< int, 3 >VertexIDs)
 {
     TriangleType *NewTriangle = new TriangleType;
     LOG( "Create triangle %p from vertices (%u, %u, %u)@(%p, %p, %p)\n", NewTriangle, VertexIDs.at(0), VertexIDs.at(1), VertexIDs.at(2),
@@ -408,7 +408,7 @@ TriangleType *MeshData :: AddTriangle(TriangleType *NewTriangle)
     return NewTriangle;
 }
 
-TetType *MeshData :: AddTetrahedron(std :: vector< int >VertexIDs)
+TetType *MeshData :: AddTetrahedron(std::array<int, 4> VertexIDs)
 {
     TetType *NewTet = new TetType;
     NewTet->Vertices = { { this->Vertices.at(VertexIDs [ 0 ]), this->Vertices.at(VertexIDs [ 1 ]), this->Vertices.at(VertexIDs [ 2 ]), this->Vertices.at(VertexIDs [ 3 ]) } };
@@ -417,6 +417,7 @@ TetType *MeshData :: AddTetrahedron(std :: vector< int >VertexIDs)
 
 TetType *MeshData :: AddTetrahedron(TetType *NewTet)
 {
+    // TODO: Ensure that all elements in Tets are unique
     NewTet->ID = this->Tets.size();
     this->Tets.push_back(NewTet);
     return NewTet;
@@ -424,7 +425,7 @@ TetType *MeshData :: AddTetrahedron(TetType *NewTet)
 
 void MeshData :: RemoveTetragedron(TetType *t)
 {
-    throw( 0 ); // To be done...
+    throw( 0 ); // TODO: Complete this
 }
 
 std :: vector< TriangleType * >MeshData :: GetTrianglesAround(std :: array< double, 3 >c, double r)

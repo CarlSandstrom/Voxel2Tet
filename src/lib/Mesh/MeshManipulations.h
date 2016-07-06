@@ -17,6 +17,10 @@
 
 namespace voxel2tet
 {
+
+/**
+ * @brief The MeshManipulations class supplies methods for manipulating the mesh.
+ */
 class MeshManipulations : public MeshData
 {
 private:
@@ -39,50 +43,54 @@ private:
 public:
 
     /**
-     * @brief TOL_MAXAREACHANGE determines the maximum change in area of triangles associated with the collapse of n edge
+     * @brief Determines the maximum change in area of triangles associated with the collapse of n edge
      */
     double TOL_MAXAREACHANGE;
 
     /**
-     * @brief TOL_COL_SMALLESTAREA Smallest allowed area for triangles in edge collapsing
+     * @brief Smallest allowed area for triangles in edge collapsing
      */
     double TOL_COL_SMALLESTAREA;
 
     /**
-     * @brief TOL_COL_MAXNORMALCHANGE Maximum allowed change in normal angle during collapse (rad)
+     * @brief Maximum allowed change in normal angle during collapse (rad)
      */
     double TOL_COL_MAXNORMALCHANGE;
 
     /**
-     * @brief TOL_COL_CHORD_MAXNORMALCHANGE Maximum change in normal for elements connected to a chord during collapsing
+     * @brief Maximum change in normal for elements connected to a chord during collapsing
      */
     double TOL_COL_CHORD_MAXNORMALCHANGE;
 
     /**
-     * @brief TOL_SMALLESTAREA determines the smallest allowed area of a triangle in edge flipping
+     * @brief Determines the smallest allowed area of a triangle in edge flipping
      */
     double TOL_FLIP_SMALLESTAREA;
 
     /**
-     * @brief TOL_FLIP_MAXNORMALCHANGE Maximum change in angle for formal in flipping (rad)
+     * @brief Maximum change in angle for formal in flipping (rad)
      */
     double TOL_FLIP_MAXNORMALCHANGE;
 
     /**
-     * @brief TOL_FLIP_MAXNORMALDIFFERENCE Maximum difference in normal angle of original triangles for allowing flipping (rad)
+     * @brief Maximum difference in normal angle of original triangles for allowing flipping (rad)
      */
     double TOL_FLIP_MAXNORMALDIFFERENCE;
 
     /**
-     * @brief TOL_COL_MAXVOLUMECHANGE Maximum change in volume for one edge collapse
+     * @brief Maximum change in volume for one edge collapse
      */
     double TOL_COL_MAXVOLUMECHANGE;
 
     /**
-     * @brief TOL_COL_MAXERROR Largest accumulated error in nodes for collapsing
+     * @brief Largest accumulated error in nodes for collapsing
      */
     double TOL_COL_MAXERROR;
 
+    /**
+     * @brief Constructor
+     * @param BoundingBox Bounding box of mesh
+     */
     MeshManipulations(BoundingBoxType BoundingBox);
 
     void RemoveDegenerateTriangles();
