@@ -277,7 +277,7 @@ void MeshData :: ExportVolume(std :: string FileName, Exporter_FileTypes FileTyp
     free(exporter);
 }
 
-EdgeType *MeshData :: AddEdge(std :: vector< int >VertexIDs)
+EdgeType *MeshData :: AddEdge(std::array<int, 2> VertexIDs)
 {
     EdgeType *NewEdge = new EdgeType;
     for ( unsigned int i : { 0, 1 } ) {

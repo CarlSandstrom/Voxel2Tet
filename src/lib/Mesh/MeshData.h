@@ -101,7 +101,7 @@ public:
      * @param VertexIDs Vertex indices
      * @return Reference to EdgeType object
      */
-    EdgeType *AddEdge(std :: vector< int >VertexIDs);
+    EdgeType *AddEdge(std :: array< int, 2 >VertexIDs);
 
     // Adds and edge object to list and update vertices
     EdgeType *AddEdge(EdgeType *e);
