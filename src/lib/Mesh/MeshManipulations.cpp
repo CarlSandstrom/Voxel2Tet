@@ -243,7 +243,7 @@ FC_MESH MeshManipulations :: FlipEdge(EdgeType *Edge)
     for ( unsigned int i = 0; i < ConnectedTriangles.size() - 1; i++ ) {
         if ( ConnectedTriangles.at(i) == ConnectedTriangles.at(i + 1) ) {
             LOG("Edge already exists!\n", 0);
-            //throw 0;
+            return FC_INVALIDEDGE;
         }
     }
 
@@ -270,7 +270,7 @@ FC_MESH MeshManipulations :: FlipEdge(EdgeType *Edge)
     }
 
 
-    LOG("Flip edge!\n", 0);
+    LOG("Ok to flip edge\n", 0);
 
     // Update mesh data
 
@@ -306,7 +306,7 @@ FC_MESH MeshManipulations :: FlipEdge(EdgeType *Edge)
         this->RemoveTriangle(t);
     }
 
-    // DoSanityCheck();
+    LOG("Edge %u@%p (%u, %u) is now flipped\n", Edge->ID, Edge, Edge->Vertices[0]->ID, Edge->Vertices[1]->ID);
 
     return FC_OK;
 }
@@ -457,7 +457,7 @@ FC_MESH MeshManipulations :: CollapseEdge(EdgeType *EdgeToCollapse, int RemoveVe
     LOG("Collapse edge %u@%p (%u, %u) by removing vertex %u\n", EdgeToCollapse->ID, EdgeToCollapse, EdgeToCollapse->Vertices [ 0 ]->ID,
         EdgeToCollapse->Vertices [ 1 ]->ID, EdgeToCollapse->Vertices [ RemoveVertexIndex ]->ID);
 
-    //DoSanityCheck();
+//    DoSanityCheck();
 
     // Cannot remove a fixed vertex
     if ( EdgeToCollapse->Vertices [ RemoveVertexIndex ]->IsFixedVertex() ) {
@@ -609,7 +609,7 @@ FC_MESH MeshManipulations :: CollapseEdge(EdgeType *EdgeToCollapse, int RemoveVe
         this->AddTriangle(t);
     }
 
-    //DoSanityCheck();
+   // DoSanityCheck();
 
     ConnectedEdges = SaveVertex->Edges;
     bool edgeflipped = true;
@@ -632,6 +632,8 @@ FC_MESH MeshManipulations :: CollapseEdge(EdgeType *EdgeToCollapse, int RemoveVe
 #if SANITYCHECK == 1
     //this->DoSanityCheck();
 #endif
+
+    //DoSanityCheck();
 
     return FC_OK;
 }

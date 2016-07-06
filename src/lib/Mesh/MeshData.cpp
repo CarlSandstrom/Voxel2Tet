@@ -49,7 +49,7 @@ void MeshData :: DoSanityCheck()
             EdgeType *e2 = this->Edges[j];
             if ( ( (e1->Vertices[0]==e2->Vertices[0]) & (e1->Vertices[1]==e2->Vertices[1]) ) |
                  ( (e1->Vertices[0]==e2->Vertices[1]) & (e1->Vertices[1]==e2->Vertices[0]) ) ) {
-                LOG("Duplicate edge! %u and %u\n", e1->ID, e2->ID);
+                LOG("Duplicate edge! %u@%p (%u, %u) and %u@%p (%u, %u)\n", e1->ID, e1, e1->Vertices[0]->ID, e1->Vertices[1]->ID, e2->ID, e2, e2->Vertices[0]->ID, e2->Vertices[1]->ID );
                 throw(0);
             }
         }
