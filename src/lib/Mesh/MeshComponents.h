@@ -267,6 +267,13 @@ public:
 
     /**
      * @brief Returns array of pointer to Edge objects defining the triangle
+     *
+     * The edges are found as
+     *
+     * \f$ \cap_{i=1}^3 E(V_i) \f$
+     *
+     * where \f$ E(V_i) \f$ are all edges connected to vertex \f$ i \f$ of the triangle.
+     *
      * @return Array of pointers to Edge objects
      */
     std :: array< EdgeType *, 3 >GiveEdges();

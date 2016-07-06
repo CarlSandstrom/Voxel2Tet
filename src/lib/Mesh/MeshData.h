@@ -83,10 +83,24 @@ public:
      */
     void ExportSurface(std :: string FileName, Exporter_FileTypes FileType);
 
-    // Export volume mesh
+
+    /**
+     * @brief Exports all Volume objects to a file of preferred format
+     * @param FileName Name of file
+     * @param FileType Type of file
+     */
     void ExportVolume(std :: string FileName, Exporter_FileTypes FileType);
 
-    // Adds an edge using vertex indices
+    /**
+     * @brief Adds an Edge object to EdgeList given vertex IDs
+     *
+     * AddEdge(std::vector<int>) creates a new Edge object and calls AddEdge(EdgeType *) which in turn checks
+     * if the new edge already exists. If so, a reference to the existing EdgeType object is returned, otherwise
+     * a reference to the new object is returned.
+     *
+     * @param VertexIDs Vertex indices
+     * @return Reference to EdgeType object
+     */
     EdgeType *AddEdge(std :: vector< int >VertexIDs);
 
     // Adds and edge object to list and update vertices
