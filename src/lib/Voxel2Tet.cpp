@@ -981,7 +981,7 @@ void Voxel2TetClass :: Process()
     }
 
     Timer.StartTimer("Coarsen mesh");
-    this->Mesh->CoarsenMeshImproved();
+    this->Mesh->CoarsenMesh();
     Timer.StopTimer();
 
     this->UpdateSurfaces();

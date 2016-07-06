@@ -910,7 +910,7 @@ void MeshManipulations :: UpdateLongestEdgeLength()
     }
 }
 
-bool MeshManipulations :: CoarsenMeshImproved()
+void MeshManipulations :: CoarsenMesh()
 {
     STATUS("Coarsen mesh\n", 0);
 
@@ -996,51 +996,6 @@ bool MeshManipulations :: CoarsenMeshImproved()
     }
     STATUS("\n", 0);
 
-    return true;
 }
 
-bool MeshManipulations :: CoarsenMesh()
-{
-    this->ExportSurface("/tmp/TestCoarsen_0.vtp", FT_VTK);
-    int iter = 1;
-    bool EdgeCollapsed = true;
-    while ( EdgeCollapsed ) {
-        EdgeCollapsed = false;
-        int failcount = 0;
-
-        LOG("Start iteration %u ===================== \n", iter);
-
-        //        int i=0;
-        //        for (EdgeType* e: this->Edges) {
-        //            if ( (e->Vertices.at(0)->ID==8) & (e->Vertices.at(1)->ID==1)) {
-        //                LOG("Edge found at index %u! ***********\n ", i);
-        //                break;
-        //            }
-        //            i++;
-        //        }
-
-        for ( EdgeType *e : this->Edges ) {
-            LOG("Collapse iteration %u (%u, %u), failcount=%u\n", iter, e->Vertices.at(0)->ID, e->Vertices.at(1)->ID, failcount);
-
-            if ( !this->CollapseEdge(e, 0) ) {
-                EdgeCollapsed = this->CollapseEdge(e, 1);
-            } else {
-                EdgeCollapsed = true;
-            }
-
-            if ( EdgeCollapsed ) {
-                LOG("Collapse success!\n", iter, failcount);
-                std :: ostringstream FileName;
-                FileName << "/tmp/TestCoarsen_" << iter << ".vtp";
-                //this->ExportVTK( FileName.str() );
-                iter++;
-                break;
-            } else {
-                LOG("Collapse failed...\n", 0);
-                failcount++;
-            }
-        }
-    }
-    return true;
-}
 }

@@ -93,8 +93,6 @@ public:
      */
     MeshManipulations(BoundingBoxType BoundingBox);
 
-    void RemoveDegenerateTriangles();
-
     /**
      * @brief Flips edge if permitted
      * @param Edge [in] Edge to be flipped
@@ -127,25 +125,55 @@ public:
 
     /**
      * @brief Check if the change in normals of existing triangles are small enough to allow edge collapse
+     *
+     * The method compares the normals of triangles in OldTriangles and NewTriangles and computes the angle between then.
+     *
+     * @param OldTriangles Vector of pointers to TriangleTypes
+     * @param NewTriangles Vector of pointers to TriangleTypes
+     * @return FC_MESH type stating if collapsing is ok or not
      */
     FC_MESH CheckCoarsenNormal(std :: vector< TriangleType * > *OldTriangles, std :: vector< TriangleType * > *NewTriangles);
 
     /**
-     * @brief Check if edge collapse results in a too large loss of volume.
+     * @brief Check if edge collapse results in a too large loss of volume or a too large change in normal.
+     *
+     * The method compares the normals of the triangle in OldTriangles and NewTriangles and computes the angle between them. If
+     * the angle is too large, collapsing is prohibited.
+     *
+     * It also computes the change in volume the collapse would imply and stops the collapse if the error or the accumulated error is to large.
+     *
      * @param OldTriangles
      * @param TrianglesToRemove
      * @param NewTriangles
      * @param error [out] Accumulated error
-     * @return
+     * @return FC_MESH type stating if collapsing is ok or not
      */
     FC_MESH CheckCoarsenNormalImproved(std :: vector< TriangleType * > *OldTriangles, std :: vector< TriangleType * > *TrianglesToRemove, std :: vector< TriangleType * > *NewTriangles, double &error);
 
+    /**
+     * @brief Check if change in chord is small enough to allow collapsing
+     * @param EdgeToCollapse
+     * @param RemoveVertex
+     * @param SaveVertex
+     * @return FC_MESH type stating if collapsing is ok or not
+     */
     FC_MESH CheckCoarsenChord(EdgeType *EdgeToCollapse, VertexType *RemoveVertex, VertexType *SaveVertex);
 
-    bool CoarsenMesh();
-    bool CoarsenMeshImproved();
+    /**
+     * @brief Coarsen surface mesh
+     */
+    void CoarsenMesh();
+
+    /**
+     * @brief Find the set of independet vertices.
+     * @return Vector of pointers to VertexType objects
+     */
     std :: vector< VertexType * >FindIndependentSet();
 
+    /**
+     * @brief Perform flipping of edges until no more edges can be flipped. This implies better quality of the mesh.
+     * @return Number of flips performed
+     */
     int FlipAll();
 };
 }

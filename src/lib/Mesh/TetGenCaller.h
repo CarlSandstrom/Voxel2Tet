@@ -10,7 +10,9 @@
 
 namespace voxel2tet
 {
-// Class for calling TetGen 3D mesh generator
+/**
+ * @brief The TetGenCaller class implement functionality to call the TetGen library for producing tetrahedral meshes.
+ */
 class TetGenCaller : public MeshGenerator3D
 {
 private:
@@ -23,8 +25,21 @@ private:
     MeshData *CopyTetMesh(tetgenio *io);
 
 public:
+
+    /**
+     * @brief Constructor
+     */
     TetGenCaller();
+
+    /**
+     * @brief Create mesh and return pointer to MeshData object containing the new mesh
+     * @return Pointer to MeshData object
+     */
     virtual MeshData *Execute();
+
+    /**
+     * @brief Check if mesh is valid
+     */
     virtual void TestMesh();
 };
 }
