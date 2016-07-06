@@ -285,32 +285,25 @@ std :: array< EdgeType *, 3 >TriangleType :: GiveEdges()
         EdgeCollection.insert( EdgeCollection.end(), this->Vertices [ i ]->Edges.begin(), this->Vertices [ i ]->Edges.end() );
     }
 
-    // TODO: It seems that this can be done in a nicer way..
+    // Sort and check if neighbours in vector are copies. If so, we have found an edge of the triangle.
     std :: sort( EdgeCollection.begin(), EdgeCollection.end() );
-    EdgeCollection.erase( std :: unique( EdgeCollection.begin(), EdgeCollection.end() ), EdgeCollection.end() );
-
-    unsigned int item = 0;
-    while ( item < EdgeCollection.size() ) {
-        // Check if current item contains two of my vertices
-        int vcount = 0;
-        for ( int i = 0; i < 3; i++ ) {
-            if ( ( EdgeCollection.at(item)->Vertices [ 0 ] == this->Vertices [ i ] ) | ( ( EdgeCollection.at(item)->Vertices [ 1 ] == this->Vertices [ i ] ) ) ) {
-                vcount++;
-            }
+    std :: array< EdgeType *, 3 > DupEdges;
+    int i=0;
+    size_t j=0;
+    while (j<EdgeCollection.size()) {
+        if ( (j+1)==EdgeCollection.size() ) {
+            break;
         }
-
-        // If not, remove from EdgeCollection
-        if ( vcount < 2 ) {
-            EdgeCollection.erase(EdgeCollection.begin() + item);
-        } else {
-            item++;
+        if (EdgeCollection.at(j+1)==EdgeCollection.at(j)) {
+            DupEdges.at(i) = EdgeCollection.at(j);
+            i++;
+            j++;
         }
+        j++;
     }
 
-    std :: array< EdgeType *, 3 >Edges;
-    std :: copy_n( EdgeCollection.begin(), 3, Edges.begin() );
+    return DupEdges;
 
-    return Edges;
 }
 
 double TriangleType :: GiveLongestEdgeLength()
