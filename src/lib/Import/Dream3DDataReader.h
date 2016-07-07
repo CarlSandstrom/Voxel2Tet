@@ -15,6 +15,16 @@ private:
     std :: string MaterialGroup;
 public:
     Dream3DDataReader();
+
+    /**
+     * @brief Constructor with special parameters.
+     *
+     * Since the Dream 3D format differs some between versions, options for giving the names of the DataContainer
+     * and the DataGroup locations are provided.
+     *
+     * @param DataContainer Name of DataContainer
+     * @param MaterialGroup Name of Group
+     */
     Dream3DDataReader(std :: string DataContainer, std :: string MaterialGroup);
     void LoadFile(std :: string FileName);
 };
