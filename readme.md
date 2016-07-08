@@ -38,7 +38,7 @@ Then create a build directory, e.g.
 
 Run CMake
 
-	$ cmake ~/dev/Voxel2Tet
+	$ cmake ~/dev/Voxel2Tet/src/
 
 For the standard "release" compilation, no extra flags are needed. The executable files are located in the Examples subdirectory.
 
@@ -51,6 +51,28 @@ Mac OS
 ------
 
 To do...
+
+Files
+=====
+
+./uncrustify.cfg 	Configuration file for uncrustify
+
+./src/	Root location for all source files
+./src/lib 	Runtime library
+./src/bin	Source code for executables. 
+
+./src/bin/Voxel2Tet.cpp 	Source code for main executable
+
+./src/bin/Examples/SingleSphere.cpp
+./src/bin/Examples/RandomSpheres.cpp
+
+./ExampleInput/	Example files containing voxel data. Test main executable with these files.
+
+Code documentation
+=================
+The code is documented using Doxygen. In order to generate the documentation, make sure that Doxygen is installed on you system. Then run doxygen using the configuration file ./src/doxygen.conf. On linux, this is simply done using
+
+	$ doxygen doxygen.conf
 
 
 Coding conventions

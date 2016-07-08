@@ -8,6 +8,8 @@
 #include "TetGenExporter.h"
 #include "OFFExporter.h"
 
+int x;
+
 int GiveMaterialIDByCoordinateSphere(double x, double y, double z)
 {
     double r = .25;
