@@ -96,6 +96,6 @@ add_subdirectory(lib)
 get_property(inc_dirs DIRECTORY PROPERTY INCLUDE_DIRECTORIES)
 message("inc_dirs = ${inc_dirs}")
 
-include_directories(Examples)
-add_subdirectory(Examples)
+include_directories(bin)
+add_subdirectory(bin)
 

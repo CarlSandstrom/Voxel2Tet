@@ -1,4 +1,4 @@
-set(files TestOctree TestMeshData Voxel2Tet TestCallbackImporter TestCube TestTriangleIntersectionOneShared)
+set(files Cube MultiSphere SingleSphere Voxel2Tet)
 
 foreach(file ${files})
   add_executable(${file} ${file}.cpp)
