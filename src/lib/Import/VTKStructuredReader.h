@@ -10,6 +10,10 @@
 
 namespace voxel2tet
 {
+
+/**
+ * @brief The VTKStructuredReader class read data from a structure VTK ASCII file.
+ */
 class VTKStructuredReader : public Importer
 {
 private:

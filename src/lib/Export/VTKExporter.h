@@ -22,6 +22,11 @@
 
 namespace voxel2tet
 {
+
+/**
+ * @brief The VTKExporter class provides functionality to export to ParaViews binary .vtu format for volumes and .vtp format for surfaces.This is used
+ * mainly for visualization.
+ */
 class VTKExporter : public Exporter
 {
 private:
@@ -37,7 +42,9 @@ private:
     vtkSmartPointer< vtkIntArray >SetupTetField(std :: string Name, int TetType :: *FieldPtr);
 
 public:
-    VTKExporter();
+    /**
+     * @copydoc Exporter::Exporter
+     */
     VTKExporter(std :: vector< TriangleType * > *Triangles, std :: vector< VertexType * > *Vertices, std :: vector< EdgeType * > *Edges, std :: vector< TetType * > *Tets);
     void WriteSurfaceData(std :: string Filename);
     void WriteVolumeData(std :: string Filename);

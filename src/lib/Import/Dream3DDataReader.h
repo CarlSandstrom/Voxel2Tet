@@ -7,6 +7,10 @@
 #include "Importer.h"
 
 namespace voxel2tet {
+
+/**
+ * @brief The Dream3DDataReader class reads data from a Dream3D file.
+ */
 class Dream3DDataReader : public Importer
 {
 private:

@@ -8,10 +8,6 @@
 
 namespace voxel2tet
 {
-OOFEMExporter :: OOFEMExporter()
-{
-    LOG("Create TetGenExporter object\n", 0);
-}
 
 OOFEMExporter :: OOFEMExporter(std :: vector< TriangleType * > *Triangles, std :: vector< VertexType * > *Vertices, std :: vector< EdgeType * > *Edges, std :: vector< TetType * > *Tets) :
     Exporter(Triangles, Vertices, Edges, Tets)

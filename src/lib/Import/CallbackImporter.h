@@ -14,6 +14,10 @@ namespace voxel2tet
  */
 typedef int ( * cbMaterialIDByCoordinate )(double, double, double);
 
+/**
+ * @brief The CallbackImporter class provides functionality to describe a genometry using a callback function. The callbackfunction
+ * is given a coordinate and replies with a material ID.
+ */
 class CallbackImporter : public Importer
 {
 private:

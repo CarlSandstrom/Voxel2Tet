@@ -10,11 +10,16 @@
 
 namespace voxel2tet
 {
-// TODO: Do we need this class?
+
+/**
+ * @brief The TetGenExporter class provides functionality to export to TetGens .poly format
+ */
 class TetGenExporter : public Exporter
 {
 public:
-    TetGenExporter();
+    /**
+     * @copydoc Exporter::Exporter
+     */
     TetGenExporter(std :: vector< TriangleType * > *Triangles, std :: vector< VertexType * > *Vertices, std :: vector< EdgeType * > *Edges, std :: vector< TetType * > *Tets);
     virtual void WriteSurfaceData(std :: string Filename);
     virtual void WriteVolumeData(std :: string Filename) {}

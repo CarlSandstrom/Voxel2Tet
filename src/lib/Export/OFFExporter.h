@@ -11,10 +11,16 @@
 
 namespace voxel2tet
 {
+
+/**
+ * @brief The OFFExporter class provides functionality to export to the .OFF file format used by e.g. TetGen.
+ */
 class OFFExporter : public Exporter
 {
 public:
-    OFFExporter();
+    /**
+     * @copydoc Exporter::Exporter
+     */
     OFFExporter(std :: vector< TriangleType * > *Triangles, std :: vector< VertexType * > *Vertices, std :: vector< EdgeType * > *Edges, std :: vector< TetType * > *Tets);
     virtual void WriteSurfaceData(std :: string Filename);
     virtual void WriteVolumeData(std :: string Filename) {}

@@ -2,8 +2,6 @@
 
 namespace voxel2tet
 {
-Exporter :: Exporter()
-{}
 
 Exporter :: Exporter(std :: vector< TriangleType * > *Triangles, std :: vector< VertexType * > *Vertices, std :: vector< EdgeType * > *Edges, std :: vector< TetType * > *Tets)
 {
