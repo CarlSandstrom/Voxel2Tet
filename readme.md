@@ -38,7 +38,11 @@ Then create a build directory, e.g.
 
 Run CMake
 
+<<<<<<< HEAD
 	$ cmake ~/dev/Voxel2Tet/src/
+=======
+	$ cmake ~/dev/Voxel2Tet
+>>>>>>> e7b59dc4472a094ec17cb05b15dcb4943f033b0b
 
 For the standard "release" compilation, no extra flags are needed. The executable files are located in the Examples subdirectory.
 
@@ -52,6 +56,7 @@ Mac OS
 
 To do...
 
+<<<<<<< HEAD
 Files
 =====
 
@@ -74,6 +79,8 @@ The code is documented using Doxygen. In order to generate the documentation, ma
 
 	$ doxygen doxygen.conf
 
+=======
+>>>>>>> e7b59dc4472a094ec17cb05b15dcb4943f033b0b
 
 Coding conventions
 ==================
