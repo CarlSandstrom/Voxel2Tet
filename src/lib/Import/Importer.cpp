@@ -35,7 +35,7 @@ BoundingBoxType Importer :: GiveBoundingBox()
         IntTriplet PsuedoDimensions;
         this->GiveDimensions(PsuedoDimensions);
         BoundingBoxType bb;
-        for (int i=0; i<3; i++) bb.minvalues[i] = (this->CutOut.minvalues[i]-1)*spacing_data[i];
+        for (int i=0; i<3; i++) bb.minvalues[i] = (this->CutOut.minvalues[i])*spacing_data[i];
         for (int i=0; i<3; i++) bb.maxvalues[i] = (this->CutOut.maxvalues[i]+1)*spacing_data[i];
         return bb;
     } else {
@@ -77,13 +77,31 @@ int Importer :: GiveMaterialIDByIndex(int xi, int yi, int zi)
 
 int Importer :: GiveMaterialIDByCoordinate(double x, double y, double z)
 {
+
+    BoundingBoxType bb = this->GiveBoundingBox();
+    double eps=1e-8;
+
+    if ( (x+eps) < bb.minvalues[0] ) {
+        return -1;
+    } else if ( (x-eps) > bb.maxvalues[0] ) {
+        return -2;
+    } if ( (y+eps) < bb.minvalues[1] ) {
+        return -3;
+    } else if ( (y-eps) > bb.maxvalues[1] ) {
+        return -4;
+    } if ( (z+eps) < bb.minvalues[2] ) {
+        return -5;
+    } else if ( (z-eps) > bb.maxvalues[2] ) {
+        return -6;
+    }
+
     double coords [ 3 ] = {
         x, y, z
     };
     int indices [ 3 ];
     for ( int i = 0; i < 3; i++ ) {
         double intcoord = ( coords [ i ] - this->origin_data [ i ] ) / this->spacing_data [ i ];
-        indices [ i ] = floor(intcoord);
+        indices [ i ] = floor(intcoord)-this->CutOut.minvalues[i];
     }
     return this->GiveMaterialIDByIndex(indices [ 0 ], indices [ 1 ], indices [ 2 ]);
 }
