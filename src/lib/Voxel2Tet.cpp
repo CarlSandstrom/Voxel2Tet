@@ -120,6 +120,19 @@ void Voxel2TetClass :: LoadFile(std :: string Filename)
     }
 
     this->Imp = Import;
+
+    // If specified, use cut-out argument
+    if (this->Opt->has_key("voxelcutout")) {
+        std::vector<int> VoxelCutOut = this->Opt->GiveIntegerList("voxelcutout");
+        this->Imp->UseCutOut = true;
+        this->Imp->CutOut.minvalues[0] = VoxelCutOut[0];
+        this->Imp->CutOut.minvalues[1] = VoxelCutOut[1];
+        this->Imp->CutOut.minvalues[2] = VoxelCutOut[2];
+        this->Imp->CutOut.maxvalues[0] = VoxelCutOut[3];
+        this->Imp->CutOut.maxvalues[1] = VoxelCutOut[4];
+        this->Imp->CutOut.maxvalues[2] = VoxelCutOut[5];
+    }
+
     FinalizeLoad();
 }
 
@@ -132,10 +145,9 @@ void Voxel2TetClass :: FinalizeLoad()
     this->Imp->GiveDimensions(dim);
 
     STATUS("\tVoxel dimensions are %f * %f * %f\n", cellspace [ 0 ], cellspace [ 1 ], cellspace [ 2 ]);
-    STATUS("\tNumber of voxels:%u\n", dim [ 0 ] * dim [ 1 ] * dim [ 2 ]);
+    STATUS("\tNumber of voxels are %u * %u * %u = %u\n", dim [ 0 ], dim [ 1 ], dim [ 2 ], dim [ 0 ] * dim [ 1 ] * dim [ 2 ]);
 
     // Setup smoothing classes
-
     if ( this->Opt->has_key("spring_c") ) {
         this->SurfaceSmoother = new SpringSmoother(cellspace[0], Opt->GiveDoubleValue("spring_c"), Opt->GiveDoubleValue("spring_alpha"), Opt->GiveDoubleValue("spring_c_factor"), false );
     } else {

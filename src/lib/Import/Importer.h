@@ -36,6 +36,20 @@ typedef struct {
 } BoundingBoxType;
 
 /**
+  * Holds the number of voxels for the maximum (x, y, z) and the minimum (x, y, z)
+  */
+typedef struct {
+    /**
+     * @brief Max number of voxels for (x, y, z)
+     */
+    std :: array< int, 3 >maxvalues;
+    /**
+     * @brief Min number of voxels for (x, y, z)
+     */
+    std :: array< int, 3 >minvalues;
+} VoxelBoundingBoxType;
+
+/**
  * @brief Abstract class for all Importer objects.
  */
 class Importer
@@ -73,6 +87,12 @@ protected:
     int *GrainIdsData;
 
 public:
+
+    Importer() {UseCutOut = false; }
+
+    bool UseCutOut;
+
+    VoxelBoundingBoxType CutOut;
 
     /**
      * @brief Loads data from a file containing a voxel representation.
@@ -128,6 +148,8 @@ public:
      * @param Coordinate Output. Coordinate
      */
     virtual void GiveCoordinateByIndices(int xi, int yi, int zi, DoubleTriplet Coordinate);
+
+    virtual void GiveIndicesByCoordinate(double x, double y, double z, IntTriplet Indices);
 
     /**
      * @brief Returns origin of voxel data
