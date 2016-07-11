@@ -1,4 +1,5 @@
 #include <cstdlib>
+#include <sstream>
 
 #include "Options.h"
 #include "MiscFunctions.h"
@@ -37,7 +38,7 @@ Options :: Options(int argc, char *argv[], ValueMap DefaultValues, std :: vector
             }
             this->OptionMap [ FlagName ] = Value;
 
-            // std :: cout << "FlagName: " << FlagName << ", Value:" << Value <<"\n";
+            std :: cout << "FlagName: " << FlagName << ", Value:" << Value <<"\n";
         }
     }
     this->DefaultMap = DefaultValues;
@@ -116,9 +117,22 @@ bool Options :: GiveBooleanValue(std :: string keyname)
     return bool( iValue );
 }
 
-int Options :: GiveIntegerList(std :: string keyname)
+std::vector<int> Options :: GiveIntegerList(std :: string keyname)
 {
     // Not implemented
-    return 0;
+    std::string List = this->GiveStringValue(keyname);
+    std::vector<int> IntList;
+    if ( ( List[0]=='[') & (List[List.size()-1]==']') ) {
+
+        std::stringstream SubStringStream(List.substr(1, List.size()-1));
+        std::string StrItem;
+
+        while (std::getline(SubStringStream, StrItem, ' ')) {
+            IntList.push_back(std::atoi( StrItem.c_str()));
+        }
+    } else {
+        STATUS("Argument for switch '%s' must be of type list (list enclosed in brackets [])\n", keyname);
+    }
+    return IntList;
 }
 }

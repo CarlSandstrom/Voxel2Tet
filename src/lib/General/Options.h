@@ -93,11 +93,11 @@ public:
     bool GiveBooleanValue(std :: string keyname);
 
     /**
-     * @brief Give list of integer corresponding to key - NOT YET IMPLEMENTED
+     * @brief Give list of integer corresponding to key
      * @param keyname Name of key
      * @return List of integers
      */
-    int GiveIntegerList(std :: string keyname);
+    std::vector<int> GiveIntegerList(std :: string keyname);
 };
 }
 
