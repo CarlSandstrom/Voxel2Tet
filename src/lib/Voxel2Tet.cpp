@@ -124,6 +124,10 @@ void Voxel2TetClass :: LoadFile(std :: string Filename)
     // If specified, use cut-out argument
     if (this->Opt->has_key("voxelcutout")) {
         std::vector<int> VoxelCutOut = this->Opt->GiveIntegerList("voxelcutout");
+        if (VoxelCutOut.size()!=6) {
+            STATUS("VoxelCutOut should be specified as a bounding box consisting of integers for the indices", 0);
+            exit(-1);
+        }
         this->Imp->UseCutOut = true;
         this->Imp->CutOut.minvalues[0] = VoxelCutOut[0];
         this->Imp->CutOut.minvalues[1] = VoxelCutOut[1];
