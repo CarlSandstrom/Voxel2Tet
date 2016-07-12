@@ -38,7 +38,7 @@ Options :: Options(int argc, char *argv[], ValueMap DefaultValues, std :: vector
             }
             this->OptionMap [ FlagName ] = Value;
 
-            std :: cout << "FlagName: " << FlagName << ", Value:" << Value <<"\n";
+            //std :: cout << "FlagName: " << FlagName << ", Value:" << Value <<"\n";
         }
     }
     this->DefaultMap = DefaultValues;
