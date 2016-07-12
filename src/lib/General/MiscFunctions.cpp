@@ -95,6 +95,16 @@ std :: array< double, 3 >ComputeNormalizedVector(VertexType *v1, VertexType *v2)
     return Normal;
 }
 
+bool CompareTriangleAngles(TriangleType *t1, TriangleType *t2)
+{
+    return t1->GiveSmallestAngle()<t2->GiveSmallestAngle();
+}
+
+bool CompareEdgeLength(EdgeType *e1, EdgeType *e2)
+{
+    return e1->GiveLength()<e2->GiveLength();
+}
+
 double ComputeAngleBetweenVectors(std :: array< double, 3 >v1, std :: array< double, 3 >v2)
 {
     return std :: acos(v1 [ 0 ] * v2 [ 0 ] + v1 [ 1 ] * v2 [ 1 ] + v1 [ 2 ] * v2 [ 2 ]);

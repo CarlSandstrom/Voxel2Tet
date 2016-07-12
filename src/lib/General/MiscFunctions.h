@@ -51,6 +51,10 @@ std :: array< double, 3 >ComputeNormalizedVector(VertexType *v1, VertexType *v2)
 
 double ComputeAngleBetweenVectors(std :: array< double, 3 >v1, std :: array< double, 3 >v2);
 
+bool CompareTriangleAngles(TriangleType *t1, TriangleType *t2);
+
+bool CompareEdgeLength(EdgeType *e1, EdgeType *e2);
+
 template< typename T >std :: vector< int >FindSubsetIndices(std :: vector< T >Container, std :: vector< T >Subset);
 }
 
