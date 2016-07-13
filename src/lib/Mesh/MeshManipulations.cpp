@@ -351,8 +351,6 @@ FC_MESH MeshManipulations :: CollapseEdgeTest(std :: vector< TriangleType * > *T
     LOG("Check validity of new normals...\n", 0);
     FC_MESH FC;
 
-    //FC = this->CheckCoarsenNormal(TrianglesToSave, NewTriangles);
-
     double error;
     FC = this->CheckCoarsenNormalImproved(TrianglesToSave, TrianglesToRemove, NewTriangles, error);
     if ( FC != FC_OK ) {
@@ -385,8 +383,9 @@ FC_MESH MeshManipulations :: CollapseEdgeTest(std :: vector< TriangleType * > *T
     }
 
     LOG("Check area of new triangles...\n", 0);
+    // A too small area should be ok as long as it is smaller than the previous one
     for ( TriangleType *t : *NewTriangles ) {
-        if ( t->GiveArea() < 1e-7 ) { // TODO: Use variable
+        if ( t->GiveArea() < 1e-7 ) {
             LOG(" - Check failed\n", 0);
             return FC_SMALLAREA;
         }
@@ -452,12 +451,9 @@ FC_MESH MeshManipulations :: CollapseEdgeTest(std :: vector< TriangleType * > *T
 
 FC_MESH MeshManipulations :: CollapseEdge(EdgeType *EdgeToCollapse, int RemoveVertexIndex, bool PerformTesting)
 {
-    // TODO: In its current setting, this procedure only checks if collapsing is ok from the current topology. It should compare to the original topology, otherwise degeneration can occur gradually
 
     LOG("Collapse edge %u@%p (%u, %u) by removing vertex %u\n", EdgeToCollapse->ID, EdgeToCollapse, EdgeToCollapse->Vertices [ 0 ]->ID,
-        EdgeToCollapse->Vertices [ 1 ]->ID, EdgeToCollapse->Vertices [ RemoveVertexIndex ]->ID);
-
-//    DoSanityCheck();
+            EdgeToCollapse->Vertices [ 1 ]->ID, EdgeToCollapse->Vertices [ RemoveVertexIndex ]->ID);
 
     // Cannot remove a fixed vertex
     if ( EdgeToCollapse->Vertices [ RemoveVertexIndex ]->IsFixedVertex() ) {
@@ -565,7 +561,7 @@ FC_MESH MeshManipulations :: CollapseEdge(EdgeType *EdgeToCollapse, int RemoveVe
 
                 // Construct updated edge
                 EdgeType UpdatedConnectedEdge = *ce;
-                for (int i=0; i<2; i++) {
+                for (size_t i=0; i<2; i++) {
                     if (UpdatedConnectedEdge.Vertices[i] == EdgeToCollapse->Vertices[RemoveVertexIndex]) {
                         UpdatedConnectedEdge.Vertices[i] = EdgeToCollapse->Vertices[SaveVertexIndex];
                     }
@@ -609,7 +605,7 @@ FC_MESH MeshManipulations :: CollapseEdge(EdgeType *EdgeToCollapse, int RemoveVe
         this->AddTriangle(t);
     }
 
-   // DoSanityCheck();
+    // DoSanityCheck();
 
     ConnectedEdges = SaveVertex->Edges;
     bool edgeflipped = true;
@@ -628,12 +624,6 @@ FC_MESH MeshManipulations :: CollapseEdge(EdgeType *EdgeToCollapse, int RemoveVe
             }
         }
     }
-
-#if SANITYCHECK == 1
-    //this->DoSanityCheck();
-#endif
-
-    //DoSanityCheck();
 
     return FC_OK;
 }
@@ -707,7 +697,7 @@ FC_MESH MeshManipulations :: CheckCoarsenNormalImproved(std :: vector< TriangleT
         }
     }
 
-    if ( MaxAngle > 45 * 2 * 3.141593 / 360 ) {
+    if ( MaxAngle > 90 * 2 * 3.141593 / 360 ) {
         return FC_NORMAL;
     }
 
@@ -797,7 +787,11 @@ FC_MESH MeshManipulations :: CheckCoarsenChord(EdgeType *EdgeToCollapse, VertexT
     if ( ConnectedVertices.size() == 1 ) {
         // This should be ok if the edge is small. This simply removes the (very small) chord.
         // Note that this can imply duplicate triangles and it is quite cumbersome to solve this. Thus, we push this feature forward
-        return FC_CHORD;
+        double EdgeLength = EdgeToCollapse->GiveLength();
+        LOG("EdgeLength = %f\n", EdgeLength);
+        if (EdgeLength>.25) {
+            return FC_CHORD;
+        }
     }
     VertexType *OtherVertex = ( ConnectedVertices [ 0 ] == SaveVertex ) ? ConnectedVertices [ 1 ] : ConnectedVertices [ 0 ];
     NewEdge = { { SaveVertex, OtherVertex } };
@@ -879,8 +873,6 @@ int MeshManipulations :: FlipAll()
 {
     this->UpdateLongestEdgeLength();
 
-//    this->DoSanityCheck();
-
     int flipcount = 0;
     int i = 0;
     bool edgeflipped = true;
@@ -891,13 +883,11 @@ int MeshManipulations :: FlipAll()
             EdgeType *e = this->Edges [ j ];
             LOG("Flip edge iteration %u: edge @%p (%u, %u)\n", i, e, e->Vertices [ 0 ]->ID, e->Vertices [ 1 ]->ID);
             if ( this->FlipEdge(e) == FC_OK ) {
-//                this->DoSanityCheck();
                 flipcount++;
                 edgeflipped = true;
             } else {
                 j++;
             }
-            //this->ExportSurface(strfmt("/tmp/Flip%u.vtp", outputindex++), FT_VTK);
             i++;
         }
     }
@@ -951,31 +941,27 @@ void MeshManipulations :: CoarsenMesh()
             fflush(stdout);
 
             EdgeType *e = this->Edges.at(i);
-            if ( e->GiveLength() < 1e10 ) { // TODO: Use argument here
-                // Try to collapse vertices on current edge
-                std :: array< VertexType *, 2 >EdgeVertices = { { e->Vertices [ 0 ], e->Vertices [ 1 ] } };
-                int vi = 0;
-                for ( VertexType *v : EdgeVertices ) {
-                    // If vertex v is not in the set of independent vertices, try to collapse
-                    if ( std :: find(IndepSet.begin(), IndepSet.end(), v) == IndepSet.end() ) {
-                        if ( this->CollapseEdge(e, vi) == FC_OK ) {
-                            //DoSanityCheck();
-                            this->UpdateLongestEdgeLength();
-                            CoarseningOccurs = true;
+            // Try to collapse vertices on current edge
+            std :: array< VertexType *, 2 >EdgeVertices = { { e->Vertices [ 0 ], e->Vertices [ 1 ] } };
+            int vi = 0;
+            for ( VertexType *v : EdgeVertices ) {
+                // If vertex v is not in the set of independent vertices, try to collapse
+                if ( std :: find(IndepSet.begin(), IndepSet.end(), v) == IndepSet.end() ) {
+                    if ( this->CollapseEdge(e, vi) == FC_OK ) {
+                        this->UpdateLongestEdgeLength();
+                        CoarseningOccurs = true;
 #if EXPORT_MESH_COARSENING
-                            this->ExportSurface(strfmt("/tmp/Coarseningp_%u.simple", MeshIndex), FT_SIMPLE);
-                            dooutputlogmesh(* this, "/tmp/Coarsening_%u.vtp", MeshIndex++);
+                        this->ExportSurface(strfmt("/tmp/Coarseningp_%u.simple", MeshIndex), FT_SIMPLE);
+                        dooutputlogmesh(* this, "/tmp/Coarsening_%u.vtp", MeshIndex++);
 #endif
 
 #if TEST_MESH_FOR_EACH_COARSENING_ITERATION
-                            Generator.TestMesh();
+                        Generator.TestMesh();
 #endif
-                            //this->DoSanityCheck();
-                            break;
-                        }
+                        break;
                     }
-                    vi++;
                 }
+                vi++;
             }
             i++;
         }
@@ -997,6 +983,59 @@ void MeshManipulations :: CoarsenMesh()
 #endif
     }
     STATUS("\n", 0);
+
+    bool DoesCollapse = true;
+    int CleanupIteration = 0;
+    int CleanupCount=0;
+
+    std::vector<FC_MESH> Reasons;
+
+/*    TOL_COL_CHORD_MAXNORMALCHANGE = TOL_COL_CHORD_MAXNORMALCHANGE*2;
+    TOL_COL_MAXERROR = TOL_COL_MAXERROR*2;
+    TOL_COL_MAXVOLUMECHANGE = TOL_COL_MAXVOLUMECHANGE*2; */
+
+    STATUS("Clean up triangles with very small angles\n", 0);
+    while (DoesCollapse) {
+        DoesCollapse = false;
+        Reasons.clear();
+
+        size_t i=0;
+
+        while (i<this->Triangles.size()) {
+            STATUS( "%c[2K\rCleanup iteration %u, edge %u (%u)", 27, iter, i, this->Edges.size() );
+            fflush(stdout);
+
+            TriangleType *t=this->Triangles.at(i);
+
+            int VertexIndex;
+            double Angle = t->GiveSmallestAngle(&VertexIndex);
+            if (Angle < 0.2) {
+                // If angle is small, try to collapse the shortest edge
+                std::array <EdgeType *, 3> tEdges = t->GiveEdges();
+                std::sort(tEdges.begin(), tEdges.end(), CompareEdgeLength);
+
+                EdgeType *e=tEdges[0];
+
+                FC_MESH r = this->CollapseEdge(e, 0);
+                if (!(r==FC_OK)) {
+                    r = this->CollapseEdge(e, 1);
+                }
+                Reasons.push_back(r);
+                if (r==FC_OK) {
+                    DoesCollapse = true;
+                    CleanupCount++;
+                }
+                LOG("Collapse result:%u\n", r);
+
+            }
+
+            i++;
+        }
+        CleanupIteration++;
+        std::sort(Reasons.begin(), Reasons.end());
+        this->FlipAll();
+    }
+    STATUS("\nCleanup removed %u triangles\n", CleanupCount);
 
 }
 

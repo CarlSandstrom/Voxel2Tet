@@ -108,18 +108,21 @@ public:
 
     /**
      * @brief Collapses an edge if possible. Returns FC_MESH value
+     * @param EdgeToCollapse Pointer to the edge to collapse
+     * @param RemoveVertexIndex Index of the vertex to remove. This is the index wrt the edge, i.e. the index is either 0 or 1.
+     * @param PerformTesting
      * @return Returns wether collapsing was successfull or not
      */
     FC_MESH CollapseEdge(EdgeType *EdgeToCollapse, int RemoveVertexIndex, bool PerformTesting = true);
 
     /**
      * @brief Determines wether collapsing an edge is permitted
-     * @param TrianglesToSave [in] Triangles to keep
+     * @param TrianglesToSave [in] Triangles containing the vertex to be removed, but will still have an area after collapsing
      * @param TrianglesToRemove [in] Triangles to remove from existing triangulation
-     * @param NewTriangles [in] New triangles
+     * @param NewTriangles [in] New triangles. Basically same triangles as in TrianglesToSave but where the vertex to be removed has been exchanged to the vertex to keep.
      * @param EdgeToCollapse [in] Edge to collapse
      * @param RemoveVertexIndex [in] Index in EdgeToCollapse to the vertex about to be collapsed
-     * @return
+     * @return FC_MESH type stating if the collapse was a success
      */
     FC_MESH CollapseEdgeTest(std :: vector< TriangleType * > *TrianglesToSave, std :: vector< TriangleType * > *TrianglesToRemove, std :: vector< TriangleType * > *NewTriangles, EdgeType *EdgeToCollapse, int RemoveVertexIndex);
 

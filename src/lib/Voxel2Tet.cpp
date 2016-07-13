@@ -216,7 +216,7 @@ void Voxel2TetClass :: FinalizeLoad()
 
 
     this->Mesh->TOL_COL_MAXVOLUMECHANGE = cellspace [ 0 ] * cellspace [ 1 ] * cellspace [ 2 ] * 2;
-    this->Mesh->TOL_COL_MAXERROR = cellspace [ 0 ] * cellspace [ 1 ] * cellspace [ 2 ] * 10;
+    this->Mesh->TOL_COL_MAXERROR = cellspace [ 0 ] * cellspace [ 1 ] * cellspace [ 2 ] * 2;
 }
 
 void Voxel2TetClass :: UpdateSurfaces()
@@ -542,7 +542,7 @@ void Voxel2TetClass :: FindEdges()
                 Phases.erase( std :: unique( Phases.begin(), Phases.end() ), Phases.end() );
 
                 if ( Phases.size() >= 3 ) {
-                    LOG("PhaseEdge found. Add it to the list and edd PhaseEdge to Vertex\n", 0);
+                    LOG("PhaseEdge found. Add it to the list and add PhaseEdge to Vertex\n", 0);
                     AddPhaseEdge({ v, Neighbour }, Phases);
                 }
             }
@@ -1054,7 +1054,8 @@ void Voxel2TetClass :: ExportAllVolumes()
 {
     // Volumes
     if ( this->Opt->GiveBooleanValue("exportvtkvolume") ) {
-        this->Mesh->ExportVolume(strfmt( "%s.volume.vtu", this->Opt->GiveStringValue("output").c_str() ), FT_VTK);
+        this->Mesh->ExportVolume(strfmt( "%s.volume_0.vtu", this->Opt->GiveStringValue("output").c_str() ), FT_VTK);
+        this->Mesh->ExportVolume(strfmt( "%s.volume_1.vtu", this->Opt->GiveStringValue("output").c_str() ), FT_VTK);
     }
 
     if ( this->Opt->GiveBooleanValue("exportoofem") ) {
