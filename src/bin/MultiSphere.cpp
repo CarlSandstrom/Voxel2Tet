@@ -1,6 +1,8 @@
 #include <iostream>
 #include <string>
 #include <stdio.h>
+#include <stdlib.h>
+#include <time.h>
 
 #include "Options.h"
 #include "Voxel2Tet.h"
@@ -8,48 +10,29 @@
 #include "TetGenExporter.h"
 #include "OFFExporter.h"
 
-int x;
+std::vector<std::array<double, 3>> Coordinates;
 
-int GiveMaterialIDByCoordinateSphere(double x, double y, double z)
+/**
+ * @brief Callback function being called from Voxel2Tet. Describes the geometry implicitly by returning
+ * the ID of the material in the given coordinate.
+ * @param x X coordinate
+ * @param y Y coordinate
+ * @param z Z coordinate
+ * @return Material ID
+ */
+int GiveMaterialIDByCoordinateMultiSphere(double x, double y, double z)
 {
-    double r = .25;
+    double r = .3;
 
-    if ( sqrt( pow(x - .5, 2) + pow(y - .5, 2) + pow(z - .5, 2) ) < r ) {
-        return 1;
-    } else {
-        return 2;
+    for (std::array<double, 3> C: Coordinates) {
+        if ( sqrt( pow(x - C[0], 2) + pow(y - C[1], 2) + pow(z - C[2], 2) ) < r ) {
+            return 1;
+        }
     }
+
+    return 2;
+
 }
-
-int GiveMaterialIDByCoordinateTwoSpheres(double x, double y, double z)
-{
-    double r = .25;
-    double xc1 = 0.3, yc1 = 0.3, zc1 = 0.3;
-    double xc2 = 0.3, yc2 = 0.3, zc2 = 0.7;
-
-    bool InSphere1 = ( sqrt( pow(x - xc1, 2) + pow(y - yc1, 2) + pow(z - zc1, 2) ) < r );
-    bool InSphere2 = ( sqrt( pow(x - xc2, 2) + pow(y - yc2, 2) + pow(z - zc2, 2) ) < r );
-
-    if ( InSphere1 & InSphere2 ) {
-        return 0;
-    } else if ( InSphere1 ) {
-        return 2;
-    } else if ( InSphere2 ) {
-        return 3;
-    } else {
-        return 0;
-    }
-}
-
-int GiveMaterialIDByCoordinateBox(double x, double y, double z)
-{
-    if ( ( x > 0.0 ) & ( x < 1.0 ) & ( y > 0.0 ) & ( y < 1.0 ) & ( z > 0.0 ) & ( z < 1.0 ) ) {
-        return 1;
-    } else {
-        return 0;
-    }
-}
-
 
 int main(int argc, char *argv[])
 {
@@ -58,11 +41,31 @@ int main(int argc, char *argv[])
 
     voxel2tet :: Voxel2TetClass v2t(Options);
 
-    double spacing = 1.0;
-    double length = 1.0;
-    int dimensions = std :: ceil(length / spacing);
+    double spacing = 0.05;
+    std::array<double, 3> length = {3.0, 2.0, 1.0};
+    std::array<int, 3> dimensions;
+    for (int i=0; i<3; i++) {
+        dimensions[i] = std::ceil(length[i] / spacing);
+    }
 
-    v2t.LoadCallback(& GiveMaterialIDByCoordinateBox, { { 0, 0, 0 } }, { { spacing, spacing, spacing } }, { { dimensions, dimensions, dimensions } });
+    // Generate random spheres
+    int NumberOfSpheres = 20;
+
+    srand(time(NULL));
+
+    for (int i=0; i<NumberOfSpheres; i++) {
+        std::array<double, 3> cp;
+        for (int j=0; j<3; j++) {
+            cp[j] = (double (std::rand()) / RAND_MAX) * length[j];
+        }
+        Coordinates.push_back(cp);
+    }
+
+    v2t.LoadCallback(& GiveMaterialIDByCoordinateMultiSphere, { { 0, 0, 0 } }, { { spacing, spacing, spacing } }, dimensions);
     v2t.Process();
     v2t.Tetrahedralize();
+
+    v2t.ExportSurface("/tmp/MultiSphere.vtp", voxel2tet :: FT_VTK);
+    v2t.ExportVolume("/tmp/MultiSphere.vtu", voxel2tet :: FT_VTK);
+
 }
