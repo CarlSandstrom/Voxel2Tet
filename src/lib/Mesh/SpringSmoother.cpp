@@ -450,7 +450,7 @@ std::ostream &operator<<(std::ostream &stream, const SpringSmoother &Smoother)
     return stream;
 }
 
-void SpringSmoother::Smooth(std :: vector< VertexType * >Vertices, std :: vector< bool >Fixed, voxel2tet :: MeshData *Mesh)
+void SpringSmoother::Smooth(std :: vector< VertexType * >Vertices, voxel2tet :: MeshData *Mesh)
 {
 
     int MAX_ITER_COUNT = 100000;

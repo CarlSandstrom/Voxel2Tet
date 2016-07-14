@@ -742,7 +742,7 @@ void Voxel2TetClass :: SmoothEdgesSimultaneously()
         delete v;
     }
 
-    this->EdgeSmoother->Smooth(VertexList, FixedDirectionsList, this->Mesh);
+    this->EdgeSmoother->Smooth(VertexList, this->Mesh);
 }
 
 void Voxel2TetClass :: SmoothSurfaces()
@@ -761,9 +761,7 @@ void Voxel2TetClass :: SmoothAllAtOnce()
 {
     STATUS("Smooth complete structure\n", 0);
 
-    std :: vector< bool >FixedDirectionsList;
-
-    this->SurfaceSmoother->Smooth(this->Mesh->Vertices, FixedDirectionsList);
+    this->SurfaceSmoother->Smooth(this->Mesh->Vertices);
 }
 
 PhaseEdge *Voxel2TetClass :: AddPhaseEdge(std :: vector< VertexType * >EdgeSegment, std :: vector< int >Phases)

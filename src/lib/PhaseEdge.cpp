@@ -188,13 +188,8 @@ void PhaseEdge :: Smooth(MeshData *Mesh)
     }
 
     std :: vector< VertexType * >FlatList = this->GetFlatListOfVertices();
-    std :: vector< bool >FixedList;
 
-    for ( size_t i = 0; i < FlatList.size(); i++ ) {
-        FixedList.push_back(false);
-    }
-
-    this->EdgeSmoother->Smooth(FlatList, FixedList, Mesh);
+    this->EdgeSmoother->Smooth(FlatList, Mesh);
 }
 
 void PhaseEdge :: AddPhaseEdgeSegment(VertexType *v1, VertexType *v2)

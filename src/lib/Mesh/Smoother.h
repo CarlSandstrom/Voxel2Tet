@@ -32,8 +32,7 @@ public:
      * @param Connections Gives the connections of each vertex. Should be the same length as Vertices
      * @param Mesh For exporting (debugging purposes)
      */
-    virtual void Smooth(std :: vector< VertexType * >Vertices, std :: vector< bool >Fixed,
-                      MeshData *Mesh = NULL) = 0;
+    virtual void Smooth(std :: vector< VertexType * >Vertices, MeshData *Mesh = NULL) = 0;
 
 };
 

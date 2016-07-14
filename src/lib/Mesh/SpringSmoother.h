@@ -63,8 +63,7 @@ public:
     SpringSmoother(double VoxelCharLength, double c, double alpha, double c_factor, bool compute_c=false);
     ~SpringSmoother() {}
 
-    void Smooth(std :: vector< VertexType * >Vertices, std :: vector< bool >Fixed,
-                      MeshData *Mesh = NULL);
+    void Smooth(std :: vector< VertexType * >Vertices, MeshData *Mesh = NULL);
 };
 
 }

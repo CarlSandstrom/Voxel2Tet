@@ -32,9 +32,7 @@ void Surface :: AddTriangle(TriangleType *Triangle)
 
 void Surface :: Smooth(MeshData *Mesh)
 {
-    std :: vector< bool >FixedList;
-
-    this->SurfaceSmooth->Smooth(this->Vertices, FixedList, Mesh);
+    this->SurfaceSmooth->Smooth(this->Vertices, Mesh);
 }
 
 double Surface :: ComputeArea()
