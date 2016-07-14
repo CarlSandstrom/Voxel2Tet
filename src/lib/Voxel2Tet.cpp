@@ -648,6 +648,8 @@ void Voxel2TetClass :: SmoothEdgesIndividually()
 
 void Voxel2TetClass :: SmoothEdgesSimultaneously()
 {
+
+    //TODO: This does far too much stuff. A lot of thing has moved to the Smoother class. Clean this up.
     STATUS("Smooth edges (simultaneously)\n", 0);
 
     // We want to sort several lists according to one list. (http://stackoverflow.com/questions/1723066/c-stl-custom-sorting-one-vector-based-on-contents-of-another)
@@ -740,7 +742,7 @@ void Voxel2TetClass :: SmoothEdgesSimultaneously()
         delete v;
     }
 
-    this->EdgeSmoother->Smooth(VertexList, FixedDirectionsList, Connections, this->Mesh);
+    this->EdgeSmoother->Smooth(VertexList, FixedDirectionsList, this->Mesh);
 }
 
 void Voxel2TetClass :: SmoothSurfaces()
@@ -759,39 +761,9 @@ void Voxel2TetClass :: SmoothAllAtOnce()
 {
     STATUS("Smooth complete structure\n", 0);
 
-    std :: vector< std :: vector< VertexType * > >Connections;
     std :: vector< bool >FixedDirectionsList;
 
-    // Create connections matrix
-    for ( unsigned int i = 0; i < this->Mesh->Vertices.size(); i++ ) {
-        VertexType *ThisVertex = this->Mesh->Vertices.at(i);
-
-        // Find connected vertices
-        std :: vector< VertexType * >NeighbouringVertices = ThisVertex->FetchNeighbouringVertices();
-        std :: sort( NeighbouringVertices.begin(), NeighbouringVertices.end() );
-        std :: vector< VertexType * >ConnectedVertices;
-
-        // Create list of indices of connected vertices
-        std :: set_intersection( NeighbouringVertices.begin(), NeighbouringVertices.end(),
-                                 this->Mesh->Vertices.begin(), this->Mesh->Vertices.end(), back_inserter(ConnectedVertices) );
-        Connections.push_back(NeighbouringVertices);
-
-        std :: array< bool, 3 >FixedDirections;
-        // Lock vertices on boundary surfaces such that they only move in the plane
-        FixedDirections = { { false, false, false } };
-        for ( int j = 0; j < 3; j++ ) {
-            if ( ThisVertex->get_c(j) >= ( this->Imp->GiveBoundingBox().maxvalues [ j ] ) - eps ) {
-                FixedDirections [ j ] = true;
-            }
-            if ( ThisVertex->get_c(j) <= ( this->Imp->GiveBoundingBox().minvalues [ j ] ) + eps ) {
-                FixedDirections [ j ] = true;
-            }
-        }
-
-        FixedDirectionsList.push_back(false);
-    }
-
-    this->SurfaceSmoother->Smooth(this->Mesh->Vertices, FixedDirectionsList, Connections);
+    this->SurfaceSmoother->Smooth(this->Mesh->Vertices, FixedDirectionsList);
 }
 
 PhaseEdge *Voxel2TetClass :: AddPhaseEdge(std :: vector< VertexType * >EdgeSegment, std :: vector< int >Phases)

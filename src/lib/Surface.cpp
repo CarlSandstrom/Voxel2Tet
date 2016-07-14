@@ -32,32 +32,9 @@ void Surface :: AddTriangle(TriangleType *Triangle)
 
 void Surface :: Smooth(MeshData *Mesh)
 {
-    std :: vector< VertexType * >SmoothVertices;
-    std :: vector< std :: vector< VertexType * > >Connections;
     std :: vector< bool >FixedList;
 
-    // Create connections matrix
-    for ( VertexType *v : this->Vertices ) {
-        std :: vector< VertexType * >NeighbouringVertices = v->FetchNeighbouringVertices();
-        std :: sort( NeighbouringVertices.begin(), NeighbouringVertices.end() );
-        std :: vector< VertexType * >ConnectedVertices;
-
-        // Create list of indices of connected vertices
-        std :: set_intersection( NeighbouringVertices.begin(), NeighbouringVertices.end(),
-                                 this->Vertices.begin(), this->Vertices.end(), back_inserter(ConnectedVertices) );
-
-        Connections.push_back(ConnectedVertices);
-        SmoothVertices.push_back(v);
-
-        // Lock phase edges since they are already smoothed
-        if ( v->IsPhaseEdgeVertex() ) {
-            FixedList.push_back(true);
-        } else {
-            FixedList.push_back(false);
-        }
-    }
-
-    this->SurfaceSmooth->Smooth(this->Vertices, FixedList, Connections, Mesh);
+    this->SurfaceSmooth->Smooth(this->Vertices, FixedList, Mesh);
 }
 
 double Surface :: ComputeArea()

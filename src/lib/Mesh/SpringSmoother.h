@@ -64,7 +64,6 @@ public:
     ~SpringSmoother() {}
 
     void Smooth(std :: vector< VertexType * >Vertices, std :: vector< bool >Fixed,
-                      std :: vector< std :: vector< VertexType * > >Connections,
                       MeshData *Mesh = NULL);
 };
 

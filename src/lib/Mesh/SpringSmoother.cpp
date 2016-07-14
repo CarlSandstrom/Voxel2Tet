@@ -1,5 +1,5 @@
 #ifdef OPENMP
- #include <omp.h>
+#include <omp.h>
 #endif
 #include "SpringSmoother.h"
 
@@ -450,7 +450,7 @@ std::ostream &operator<<(std::ostream &stream, const SpringSmoother &Smoother)
     return stream;
 }
 
-void SpringSmoother::Smooth(std :: vector< VertexType * >Vertices, std :: vector< bool >Fixed, std :: vector< std :: vector< VertexType * > >ConnectionsX, voxel2tet :: MeshData *Mesh)
+void SpringSmoother::Smooth(std :: vector< VertexType * >Vertices, std :: vector< bool >Fixed, voxel2tet :: MeshData *Mesh)
 {
 
     int MAX_ITER_COUNT = 100000;
@@ -480,7 +480,11 @@ void SpringSmoother::Smooth(std :: vector< VertexType * >Vertices, std :: vector
         ConnectionVertexIndex.push_back({});
         for ( VertexType *v : n ) {
             int VertexIndex = std :: distance( Vertices.begin(), std :: find(Vertices.begin(), Vertices.end(), v) );
-            ConnectionVertexIndex.at(ConnectionVertexIndex.size() - 1).push_back(VertexIndex);
+            if (VertexIndex == Vertices.size()) {
+                LOG("Vertex out of range (Vertex %u@%p not found in list).", v->ID, v);
+            } else {
+                ConnectionVertexIndex.at(ConnectionVertexIndex.size() - 1).push_back(VertexIndex);
+            }
         }
     }
 
@@ -534,59 +538,61 @@ void SpringSmoother::Smooth(std :: vector< VertexType * >Vertices, std :: vector
 
                 //#pragma omp for schedule(static, 100)
                 for ( size_t i = 0; i < Vertices.size(); i++ ) {
-                    if ( !Fixed [ i ] ) {
-                        std :: vector< std :: array< double, 3 > >ConnectionCoords;
-                        std :: vector< VertexType * >MyConnections = NewConnections.at(i);
 
-                        for ( unsigned k = 0; k < MyConnections.size(); k++ ) {
-                            ConnectionCoords.push_back({ { PreviousPositions.at( ConnectionVertexIndex.at(i).at(k) ) [ 0 ],
-                                                           PreviousPositions.at( ConnectionVertexIndex.at(i).at(k) ) [ 1 ],
-                                                           PreviousPositions.at( ConnectionVertexIndex.at(i).at(k) ) [ 2 ] } });
-                        }
+                    VertexType *v=Vertices[i];
 
-                        arma :: vec xc = {
-                            PreviousPositions.at(i) [ 0 ], PreviousPositions.at(i) [ 1 ], PreviousPositions.at(i) [ 2 ]
-                        };
-                        arma :: vec x0 = {
-                            OriginalPositions.at(i) [ 0 ], OriginalPositions.at(i) [ 1 ], OriginalPositions.at(i) [ 2 ]
-                        };
+                    std :: vector< std :: array< double, 3 > >ConnectionCoords;
+                    std :: vector< VertexType * >MyConnections = NewConnections.at(i);
 
-                        // Compute out-of-balance vector
-                        arma :: vec R = ComputeOutOfBalance(ConnectionCoords, xc, x0, alpha, Vertices.at(i)->c_constant);
-                        double err = arma :: norm(R);
-                        int iter = 0;
+                    for ( unsigned k = 0; k < MyConnections.size(); k++ ) {
+                        ConnectionCoords.push_back({ { PreviousPositions.at( ConnectionVertexIndex.at(i).at(k) ) [ 0 ],
+                                                       PreviousPositions.at( ConnectionVertexIndex.at(i).at(k) ) [ 1 ],
+                                                       PreviousPositions.at( ConnectionVertexIndex.at(i).at(k) ) [ 2 ] } });
+                    }
 
-                        // Find equilibrium
-                        while ( ( err > 1e-5 ) & ( iter < 100000 ) ) {
-                            arma :: mat T = ComputeAnalyticalTangent(ConnectionCoords, xc, x0, alpha, Vertices.at(i)->c_constant);
-                            arma :: vec delta = -arma :: solve(T, R);
-                            xc = xc + 1. * delta;
-                            R = ComputeOutOfBalance(ConnectionCoords, xc, x0, alpha, Vertices.at(i)->c_constant);
-                            err = arma :: norm(R);
-                            iter++;
-                        }
+                    arma :: vec xc = {
+                        PreviousPositions.at(i) [ 0 ], PreviousPositions.at(i) [ 1 ], PreviousPositions.at(i) [ 2 ]
+                    };
+                    arma :: vec x0 = {
+                        OriginalPositions.at(i) [ 0 ], OriginalPositions.at(i) [ 1 ], OriginalPositions.at(i) [ 2 ]
+                    };
 
-                        // If too many iterations, throw an exception and investigate...
-                        if ( iter > 99999 ) {
-                            throw( 0 );
-                        }
+                    // Compute out-of-balance vector
+                    arma :: vec R = ComputeOutOfBalance(ConnectionCoords, xc, x0, alpha, Vertices.at(i)->c_constant);
+                    double err = arma :: norm(R);
+                    int iter = 0;
 
-                        // Update current position
-                        for ( int j = 0; j < 3; j++ ) {
-                            if ( !Vertices.at(i)->Fixed [ j ] ) {
-                                CurrentPositions.at(i) [ j ] = xc [ j ];
-                            }
-                        }
+                    // Find equilibrium
+                    while ( ( err > 1e-5 ) & ( iter < 100000 ) ) {
+                        arma :: mat T = ComputeAnalyticalTangent(ConnectionCoords, xc, x0, alpha, Vertices.at(i)->c_constant);
+                        arma :: vec delta = -arma :: solve(T, R);
+                        xc = xc + 1. * delta;
+                        R = ComputeOutOfBalance(ConnectionCoords, xc, x0, alpha, Vertices.at(i)->c_constant);
+                        err = arma :: norm(R);
+                        iter++;
+                    }
 
-                        // Update maximum delta
-                        arma :: vec d = {
-                            PreviousPositions.at(i) [ 0 ] - CurrentPositions.at(i) [ 0 ], PreviousPositions.at(i) [ 1 ] - CurrentPositions.at(i) [ 1 ], PreviousPositions.at(i) [ 2 ] - CurrentPositions.at(i) [ 2 ]
-                        };
-                        if ( arma :: norm(d) > deltamaxvalues [ threadid ] ) {
-                            deltamaxvalues [ threadid ] = arma :: norm(d);
-                            deltamaxnodes [ threadid ] = i;
+                    // If too many iterations, throw an exception and investigate...
+                    if ( iter > 99999 ) {
+                        throw( 0 );
+                    }
+
+                    // Update current position
+                    for ( int j = 0; j < 3; j++ ) {
+                        if ( !Vertices.at(i)->Fixed [ j ] ) {
+                            CurrentPositions.at(i) [ j ] = xc [ j ];
                         }
                     }
+
+                    // Update maximum delta
+                    arma :: vec d = {
+                        PreviousPositions.at(i) [ 0 ] - CurrentPositions.at(i) [ 0 ], PreviousPositions.at(i) [ 1 ] - CurrentPositions.at(i) [ 1 ], PreviousPositions.at(i) [ 2 ] - CurrentPositions.at(i) [ 2 ]
+                    };
+                    if ( arma :: norm(d) > deltamaxvalues [ threadid ] ) {
+                        deltamaxvalues [ threadid ] = arma :: norm(d);
+                        deltamaxnodes [ threadid ] = i;
+                    }
+
                 }
 
                 for ( unsigned int i = 0; i < Vertices.size(); i++ ) {
@@ -720,9 +726,9 @@ void SpringSmoother::Smooth(std :: vector< VertexType * >Vertices, std :: vector
     }
 
 #if TEST_MESH_FOR_EACH_SMOOTHING
-            TetGenCaller Tetgen;
-            Tetgen.Mesh = Mesh;
-            Tetgen.TestMesh();
+    TetGenCaller Tetgen;
+    Tetgen.Mesh = Mesh;
+    Tetgen.TestMesh();
 #endif
 
 }

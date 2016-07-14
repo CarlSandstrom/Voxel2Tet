@@ -33,7 +33,6 @@ public:
      * @param Mesh For exporting (debugging purposes)
      */
     virtual void Smooth(std :: vector< VertexType * >Vertices, std :: vector< bool >Fixed,
-                      std :: vector< std :: vector< VertexType * > >Connections,
                       MeshData *Mesh = NULL) = 0;
 
 };
