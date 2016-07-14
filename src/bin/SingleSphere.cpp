@@ -35,14 +35,17 @@ int main(int argc, char *argv[])
 
     voxel2tet :: Voxel2TetClass v2t(Options);
 
-    double spacing = 0.025;
+    double spacing = 0.2;
     double length = 1.0;
     int dimensions = std :: ceil(length / spacing);
 
     v2t.LoadCallback(& GiveMaterialIDByCoordinateSphere, { { 0, 0, 0 } }, { { spacing, spacing, spacing } }, { { dimensions, dimensions, dimensions } });
     v2t.Process();
     v2t.Tetrahedralize();
-    v2t.ExportSurface("/tmp/SingleSphere.vtp", voxel2tet :: FT_VTK);
+    v2t.ExportSurface("/tmp/SingleSphere0.vtp", voxel2tet :: FT_VTK);
+    v2t.ExportSurface("/tmp/SingleSphere1.vtp", voxel2tet :: FT_VTK);
     v2t.ExportVolume("/tmp/SingleSphere.vtu", voxel2tet :: FT_VTK);
+    int i=0;
+    i++;
 
 }

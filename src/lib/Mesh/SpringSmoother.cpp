@@ -78,7 +78,7 @@ arma :: vec SpringSmoother::ComputeOutOfBalance(std :: vector< std :: array< dou
                 0., 0., 0.,
             };
         } else {
-            nj = ( xi - xc ) / dj;
+            nj = ( xi - xc ) / dj / ConnectionCoords.size();
         }
         F = F + dj * nj;
     }
@@ -450,7 +450,7 @@ std::ostream &operator<<(std::ostream &stream, const SpringSmoother &Smoother)
     return stream;
 }
 
-void SpringSmoother::Smooth(std :: vector< VertexType * >Vertices, std :: vector< bool >Fixed, std :: vector< std :: vector< VertexType * > >Connections, voxel2tet :: MeshData *Mesh)
+void SpringSmoother::Smooth(std :: vector< VertexType * >Vertices, std :: vector< bool >Fixed, std :: vector< std :: vector< VertexType * > >ConnectionsX, voxel2tet :: MeshData *Mesh)
 {
 
     int MAX_ITER_COUNT = 100000;
@@ -472,15 +472,19 @@ void SpringSmoother::Smooth(std :: vector< VertexType * >Vertices, std :: vector
         PreviousPositions.push_back(cp);
     }
 
+    std::vector<std::vector<VertexType *>> NewConnections = this->GetConnectivityVector(Vertices);
+
     // Create vector-vector for accessing neightbours
     std :: vector< std :: vector< int > >ConnectionVertexIndex;
-    for ( std :: vector< VertexType * >n : Connections ) {
+    for ( std :: vector< VertexType * >n : NewConnections ) {
         ConnectionVertexIndex.push_back({});
         for ( VertexType *v : n ) {
             int VertexIndex = std :: distance( Vertices.begin(), std :: find(Vertices.begin(), Vertices.end(), v) );
             ConnectionVertexIndex.at(ConnectionVertexIndex.size() - 1).push_back(VertexIndex);
         }
     }
+
+
 
     // Reset 'c' constant for all vertices
     for ( VertexType *v : Vertices ) {
@@ -532,7 +536,7 @@ void SpringSmoother::Smooth(std :: vector< VertexType * >Vertices, std :: vector
                 for ( size_t i = 0; i < Vertices.size(); i++ ) {
                     if ( !Fixed [ i ] ) {
                         std :: vector< std :: array< double, 3 > >ConnectionCoords;
-                        std :: vector< VertexType * >MyConnections = Connections.at(i);
+                        std :: vector< VertexType * >MyConnections = NewConnections.at(i);
 
                         for ( unsigned k = 0; k < MyConnections.size(); k++ ) {
                             ConnectionCoords.push_back({ { PreviousPositions.at( ConnectionVertexIndex.at(i).at(k) ) [ 0 ],

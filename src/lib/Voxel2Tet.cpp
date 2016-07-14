@@ -1092,11 +1092,6 @@ void Voxel2TetClass :: ExportStatistics()
     StatFile << "Edge smoother:\n";
     StatFile << *this->EdgeSmoother;
 
-/*    StatFile << "edge_spring_alpha = " << edgespring_alpha << "\n";
-    StatFile << "edge_spring_c = " << edgespring_c << "\n";
-    StatFile << "spring_alpha = " << spring_alpha << "\n";
-    StatFile << "spring_c = " << spring_c << "\n";*/
-
     StatFile << "\nMesh coarsening:\n";
     StatFile << "TOL_MAXAREACHANGE = " << this->Opt->GiveStringValue("TOL_MAXAREACHANGE") << "\n";
     StatFile << "TOL_COL_SMALLESTAREA = " << this->Opt->GiveStringValue("TOL_COL_SMALLESTAREA") << "\n";

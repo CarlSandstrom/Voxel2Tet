@@ -20,6 +20,8 @@ public:
      */
     Smoother();
 
+    std::vector<std::vector<VertexType *>> GetConnectivityVector(std::vector<VertexType *> Vertices);
+
     /**
      * @brief Smooth all given vertices.
      *
