@@ -11,6 +11,7 @@ MeshManipulations :: MeshManipulations(BoundingBoxType BoundingBox) : MeshData(B
     TOL_COL_SMALLESTAREA = 1e-8;
     TOL_COL_MAXNORMALCHANGE = 10 * 2 * 3.1415 / 360;
     TOL_COL_CHORD_MAXNORMALCHANGE = 10 * 2 * 3.141593 / 360;
+    TOL_COL_MINANGLE = 20*2*3.1415/360;
 
     TOL_FLIP_SMALLESTAREA = 1e-8;
     TOL_FLIP_MAXNORMALCHANGE = 10 * 2 * 3.141593 / 360;
@@ -388,6 +389,10 @@ FC_MESH MeshManipulations :: CollapseEdgeTest(std :: vector< TriangleType * > *T
         if ( t->GiveArea() < 1e-7 ) {
             LOG(" - Check failed\n", 0);
             return FC_SMALLAREA;
+        }
+        if (t->GiveSmallestAngle() < TOL_COL_MINANGLE ) {
+            LOG(" - Check failed. To small angle on new triangle.", 0);
+            return FC_SMALLANGLE;
         }
     }
 

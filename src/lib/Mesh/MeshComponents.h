@@ -167,6 +167,8 @@ public:
 class EdgeType
 {
 public:
+    bool IsTransverse;
+
     /**
      * @brief ID of edge. Mainly for debugging purposes.
      */

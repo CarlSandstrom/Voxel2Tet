@@ -14,8 +14,10 @@ std::vector<std::vector<VertexType *>> Smoother::GetConnectivityVector(std::vect
             // This will contain all connected vertices. Depending on type of v, some other vertices will be removed
 
             for (EdgeType *e: v->Edges) {
-                for (VertexType *ve: e->Vertices) {
-                    ConnectedVertices.push_back(ve);
+                if (!e->IsTransverse) {
+                    for (VertexType *ve: e->Vertices) {
+                        ConnectedVertices.push_back(ve);
+                    }
                 }
             }
 
@@ -52,6 +54,7 @@ std::vector<std::vector<VertexType *>> Smoother::GetConnectivityVector(std::vect
                     }
                 }
             }
+
 
             // Finally, ensure that the referenced vertices exists in the list
             size_t i=0;

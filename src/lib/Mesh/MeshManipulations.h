@@ -87,6 +87,8 @@ public:
      */
     double TOL_COL_MAXERROR;
 
+    double TOL_COL_MINANGLE;
+
     /**
      * @brief Constructor
      * @param BoundingBox Bounding box of mesh

@@ -181,6 +181,11 @@ void Voxel2TetClass :: FinalizeLoad()
     if ( !this->Opt->has_key("TOL_COL_SMALLESTAREA") ) {
         this->Opt->AddDefaultMap("TOL_COL_SMALLESTAREA", 1e-8);
     }
+    if ( !this->Opt->has_key("TOL_COL_MINANGLE") ) {
+        this->Opt->AddDefaultMap("TOL_COL_MINANGLE", 20*2*3.1415/360);
+    }
+
+
     if ( !this->Opt->has_key("TOL_COL_MAXNORMALCHANGE") ) {
         this->Opt->AddDefaultMap("TOL_COL_MAXNORMALCHANGE", 10 * 2 * 3.1415 / 360);
     }
@@ -824,6 +829,23 @@ void Voxel2TetClass   :: AddSurfaceSquare(std :: vector< int >VertexIDs, std :: 
     TriangleType *triangle0, *triangle1;
     triangle0 = Mesh->AddTriangle({ VertexIDs.at(0), VertexIDs.at(1), VertexIDs.at(2) });
     triangle1 = Mesh->AddTriangle({ VertexIDs.at(2), VertexIDs.at(1), VertexIDs.at(3) });
+
+    // Find the transverse edge and mark it. This edge should not have any stiffness since some vertices will be connected to more vertices than others, thus creating an unbalanced smoothing.
+
+    std::array<EdgeType *, 3> e0 = triangle0->GiveEdges();
+    std::array<EdgeType *, 3> e1 = triangle1->GiveEdges();
+
+    std::vector<EdgeType *> SharedEdge;
+    std :: set_intersection( e0.begin(), e0.end(),e1.begin(), e1.end(), back_inserter(SharedEdge) );
+
+    std::vector<EdgeType *> NotSharedEdges;
+    std :: set_symmetric_difference( e0.begin(), e0.end(),e1.begin(), e1.end(), back_inserter(NotSharedEdges) );
+
+    SharedEdge[0]->IsTransverse = true;
+
+    for (EdgeType *e: NotSharedEdges) {
+        e->IsTransverse = false;
+    }
 
     triangle0->InterfaceID = triangle1->InterfaceID = SurfaceID;
 

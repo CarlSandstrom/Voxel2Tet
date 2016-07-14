@@ -35,7 +35,7 @@ int main(int argc, char *argv[])
 
     voxel2tet :: Voxel2TetClass v2t(Options);
 
-    double spacing = 0.2;
+    double spacing = 0.025;
     double length = 1.0;
     int dimensions = std :: ceil(length / spacing);
 
