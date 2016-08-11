@@ -1,7 +1,7 @@
 Introduction
 ============
 
-Voxel2Tet converts voxel representations to tetrahedral mesh with smooth interfaces. The Algorithm first generates a smooth surface using and then coarsens the fine mesh until no more coarsening is permitted. The coarse surface mesh is the used to create a tetrahedral mesh by calling the TetGen library. 
+Voxel2Tet converts voxel representations to tetrahedral mesh with smooth interfaces. The Algorithm first generates a smooth surface using and then coarsens the fine mesh until no more coarsening is permitted. The coarse surface mesh is the used to create a tetrahedral mesh by calling the TetGen library. The purpose of the software is two-fold. First, smooth surfaces are desirable in many context, such as during investigations of interfaces between grains in micromechanics. Second, a reduction of degrees of freedom (i.e. vertices for describing the geometry) for decresing the computational effort used in computational analysis. That being said, a decrease in degrees of freedom is not guaranteed and depends on the original voxel data and the geometry of the object. Typically a very coarse input yields more degrees of freedom. Then again, a coarse voxel description is ill-suited for computations anyway.
 
 The code is in C++ and is written in a modular way such that new featers, such as new import and export filters, are easy to implement. It is text-based and should thus work on all common platforms.
 
@@ -38,11 +38,7 @@ Then create a build directory, e.g.
 
 Run CMake
 
-<<<<<<< HEAD
 	$ cmake ~/dev/Voxel2Tet/src/
-=======
-	$ cmake ~/dev/Voxel2Tet
->>>>>>> e7b59dc4472a094ec17cb05b15dcb4943f033b0b
 
 For the standard "release" compilation, no extra flags are needed. The executable files are located in the Examples subdirectory.
 
@@ -56,7 +52,11 @@ Mac OS
 
 To do...
 
-<<<<<<< HEAD
+Usage
+=====
+
+
+
 Files
 =====
 
@@ -66,10 +66,10 @@ Files
 ./src/lib 	Runtime library
 ./src/bin	Source code for executables. 
 
-./src/bin/Voxel2Tet.cpp 	Source code for main executable
-
-./src/bin/Examples/SingleSphere.cpp
-./src/bin/Examples/RandomSpheres.cpp
+./src/bin/Voxel2Tet.cpp 	Source code for main executable file.
+./src/bin/SingleSphere.cpp 	Example of a single sphere contained in a cube.
+./src/bin/MultiSphere.cpp 	Example of several, randomly places spheres in a block.
+./src/bin/FiberousMaterial.cpp 	Example of a fiberous material.
 
 ./ExampleInput/	Example files containing voxel data. Test main executable with these files.
 
@@ -78,9 +78,6 @@ Code documentation
 The code is documented using Doxygen. In order to generate the documentation, make sure that Doxygen is installed on you system. Then run doxygen using the configuration file ./src/doxygen.conf. On linux, this is simply done using
 
 	$ doxygen doxygen.conf
-
-=======
->>>>>>> e7b59dc4472a094ec17cb05b15dcb4943f033b0b
 
 Coding conventions
 ==================
@@ -96,5 +93,5 @@ where [source file] is replaced by the source file (either .cpp or .h). In order
 Thanks
 ======
 
-Thanks to Tomas Akenine Möller for letting me use his code (http://fileadmin.cs.lth.se/cs/Personal/Tomas_Akenine-Moller/code/).
+Thanks to Tomas Akenine Möller for letting me use his code for triangle intersections (http://fileadmin.cs.lth.se/cs/Personal/Tomas_Akenine-Moller/code/).
 
