@@ -11,7 +11,7 @@ void VTKStructuredReader :: LoadFile(std :: string FileName)
     Input.open(FileName, std :: ios :: in);
 
     if ( !Input.is_open() ) {
-        LOG("Cound not open input file %s\n", FileName);
+        LOG("Cound not open input file %s\n", FileName.c_str());
         exit(-1);
     }
 
@@ -76,7 +76,7 @@ void VTKStructuredReader :: LoadFile(std :: string FileName)
                             }
                         }
                     } else {
-                        STATUS("Token %s not recognized\n", Strings [ 0 ]);
+                        STATUS("Token %s not recognized\n", Strings [ 0 ].c_str());
                     }
                 }
             }

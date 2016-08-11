@@ -131,7 +131,7 @@ std::vector<int> Options :: GiveIntegerList(std :: string keyname)
             IntList.push_back(std::atoi( StrItem.c_str()));
         }
     } else {
-        STATUS("Argument for switch '%s' must be of type list (list enclosed in brackets [])\n", keyname);
+        STATUS("Argument for switch '%s' must be of type list (list enclosed in brackets [])\n", keyname.c_str());
     }
     return IntList;
 }

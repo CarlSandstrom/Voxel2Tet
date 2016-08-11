@@ -78,7 +78,7 @@ arma :: vec SpringSmoother::ComputeOutOfBalance(std :: vector< std :: array< dou
                 0., 0., 0.,
             };
         } else {
-            nj = ( xi - xc ) / dj / ConnectionCoords.size();
+            nj = ( xi - xc ) / dj;
         }
         F = F + dj * nj;
     }
@@ -455,39 +455,27 @@ void SpringSmoother::Smooth(std :: vector< VertexType * >Vertices, voxel2tet :: 
 
     int MAX_ITER_COUNT = 100000;
 
-    // Create vectors for current and previous positions
-    std :: vector< std :: array< double, 3 > >OriginalPositions;
-    std :: vector< std :: array< double, 3 > >CurrentPositions;
-    std :: vector< std :: array< double, 3 > >PreviousPositions;
-
-    for ( unsigned int i = 0; i < Vertices.size(); i++ ) {
-        std :: array< double, 3 >cp;
-
-        for ( int j = 0; j < 3; j++ ) {
-            cp.at(j) = Vertices.at(i)->get_c(j);
-        }
-
-        OriginalPositions.push_back(cp);
-        CurrentPositions.push_back(cp);
-        PreviousPositions.push_back(cp);
-    }
-
+    // Create connectivity vector/"matrix"
     std::vector<std::vector<VertexType *>> NewConnections = this->GetConnectivityVector(Vertices);
 
-    // Create vector-vector for accessing neightbours
-    std :: vector< std :: vector< int > >ConnectionVertexIndex;
-    for ( std :: vector< VertexType * >n : NewConnections ) {
-        ConnectionVertexIndex.push_back({});
-        for ( VertexType *v : n ) {
-            int VertexIndex = std :: distance( Vertices.begin(), std :: find(Vertices.begin(), Vertices.end(), v) );
-            if (VertexIndex == Vertices.size()) {
-                LOG("Vertex out of range (Vertex %u@%p not found in list).", v->ID, v);
-            } else {
-                ConnectionVertexIndex.at(ConnectionVertexIndex.size() - 1).push_back(VertexIndex);
-            }
+    // Create vectors for current and previous positions for all involved vertices (even those vertices connected to a vertex in Vertices vector)
+    std :: map<VertexType *, std :: array< double, 3 > >OriginalPositions;
+    std :: map<VertexType *, std :: array< double, 3 > >CurrentPositions;
+    std :: map<VertexType *, std :: array< double, 3 > >PreviousPositions;
+
+    for (std::vector<VertexType *> VertexList: NewConnections) {
+        for (VertexType *v: VertexList) {
+            OriginalPositions[v] = v->get_c();
+            CurrentPositions[v] = v->get_c();
+            PreviousPositions[v] = v->get_c();
         }
     }
 
+    for (VertexType *v: Vertices) {
+        OriginalPositions[v] = v->get_c();
+        CurrentPositions[v] = v->get_c();
+        PreviousPositions[v] = v->get_c();
+    }
 
 
     // Reset 'c' constant for all vertices
@@ -540,21 +528,27 @@ void SpringSmoother::Smooth(std :: vector< VertexType * >Vertices, voxel2tet :: 
                 for ( size_t i = 0; i < Vertices.size(); i++ ) {
 
                     VertexType *v=Vertices[i];
+                    if (OriginalPositions.find(v)==OriginalPositions.end()) {
+                        LOG("Stuff\n",0);
+                    }
 
                     std :: vector< std :: array< double, 3 > >ConnectionCoords;
                     std :: vector< VertexType * >MyConnections = NewConnections.at(i);
 
-                    for ( unsigned k = 0; k < MyConnections.size(); k++ ) {
-                        ConnectionCoords.push_back({ { PreviousPositions.at( ConnectionVertexIndex.at(i).at(k) ) [ 0 ],
-                                                       PreviousPositions.at( ConnectionVertexIndex.at(i).at(k) ) [ 1 ],
-                                                       PreviousPositions.at( ConnectionVertexIndex.at(i).at(k) ) [ 2 ] } });
+                    for ( VertexType *Connection: MyConnections ) {
+                        ConnectionCoords.push_back({ { PreviousPositions[Connection][ 0 ],
+                                                       PreviousPositions[Connection][ 1 ],
+                                                       PreviousPositions[Connection][ 2 ] } });
                     }
 
+                    // Current vertex's position
                     arma :: vec xc = {
-                        PreviousPositions.at(i) [ 0 ], PreviousPositions.at(i) [ 1 ], PreviousPositions.at(i) [ 2 ]
+                        PreviousPositions[v] [ 0 ], PreviousPositions[v] [ 1 ], PreviousPositions[v] [ 2 ]
                     };
+
+                    // Current vertex's original position
                     arma :: vec x0 = {
-                        OriginalPositions.at(i) [ 0 ], OriginalPositions.at(i) [ 1 ], OriginalPositions.at(i) [ 2 ]
+                        OriginalPositions[v] [ 0 ], OriginalPositions[v] [ 1 ], OriginalPositions[v] [ 2 ]
                     };
 
                     // Compute out-of-balance vector
@@ -580,13 +574,13 @@ void SpringSmoother::Smooth(std :: vector< VertexType * >Vertices, voxel2tet :: 
                     // Update current position
                     for ( int j = 0; j < 3; j++ ) {
                         if ( !Vertices.at(i)->Fixed [ j ] ) {
-                            CurrentPositions.at(i) [ j ] = xc [ j ];
+                            CurrentPositions[Vertices.at(i)] [ j ] = xc [ j ];
                         }
                     }
 
                     // Update maximum delta
                     arma :: vec d = {
-                        PreviousPositions.at(i) [ 0 ] - CurrentPositions.at(i) [ 0 ], PreviousPositions.at(i) [ 1 ] - CurrentPositions.at(i) [ 1 ], PreviousPositions.at(i) [ 2 ] - CurrentPositions.at(i) [ 2 ]
+                        PreviousPositions[v] [ 0 ] - CurrentPositions[v] [ 0 ], PreviousPositions[v] [ 1 ] - CurrentPositions[v] [ 1 ], PreviousPositions[v] [ 2 ] - CurrentPositions[v] [ 2 ]
                     };
                     if ( arma :: norm(d) > deltamaxvalues [ threadid ] ) {
                         deltamaxvalues [ threadid ] = arma :: norm(d);
@@ -595,17 +589,18 @@ void SpringSmoother::Smooth(std :: vector< VertexType * >Vertices, voxel2tet :: 
 
                 }
 
-                for ( unsigned int i = 0; i < Vertices.size(); i++ ) {
+                // Update vertices
+                for ( VertexType *v: Vertices ) {
                     for ( int j = 0; j < 3; j++ ) {
-                        Vertices.at(i)->set_c(CurrentPositions.at(i) [ j ], j); // TODO: Use array to improve performance
+                        v->set_c(CurrentPositions[v] [ j ], j);
                     }
                 }
 
                 // Update previous positions
-                for ( size_t i = 0; i < Vertices.size(); i++ ) {
+                for ( VertexType *v: Vertices ) {
                     for ( int j = 0; j < 3; j++ ) {
-                        if ( !Vertices.at(i)->Fixed [ j ] ) {
-                            PreviousPositions.at(i) [ j ] = CurrentPositions.at(i) [ j ];
+                        if ( !v->Fixed [ j ] ) {
+                            PreviousPositions[v] [ j ] = CurrentPositions[v] [ j ];
                         }
                     }
                 }
@@ -631,7 +626,7 @@ void SpringSmoother::Smooth(std :: vector< VertexType * >Vertices, voxel2tet :: 
                 VertexType *v = Vertices.at(i);
                 for ( int j = 0; j < 3; j++ ) {
                     if ( !v->Fixed [ j ] ) {
-                        v->set_c(CurrentPositions.at(i) [ j ], j);
+                        v->set_c(CurrentPositions[v] [ j ], j);
                     }
                 }
             }
@@ -683,28 +678,6 @@ void SpringSmoother::Smooth(std :: vector< VertexType * >Vertices, voxel2tet :: 
                 IntersectingTriangles = CheckPenetration(& Vertices, Mesh);
                 intersecting_count++;
             }
-            /*
-             *          intersecting = true;
-             *          STATUS("Stiffen and re-smooth surface/edge due to %u intersecting triangles, iteration %u\n", IntersectingTriangles.size(), intersecting_count);
-             *
-             *
-             *          if (intersecting_count>50) {
-             *              STATUS("Too many intersection iterations. Just let it be and it might turn out ok anyway due to the mesh coarsening.\n", 0);
-             *              return;
-             *          }
-             *
-             *          for (VertexType *v: StiffenVertices) v->c_constant = v->c_constant * .95;
-             *
-             *          // Revert to original coordinates
-             *          for (size_t i=0; i<Vertices.size(); i++) {
-             *              for (int j=0; j<3; j++) {
-             *                  Vertices.at(i)->set_c(OriginalPositions.at(i)[j], j);
-             *              }
-             *              PreviousPositions.at(i) = OriginalPositions.at(i);
-             *              CurrentPositions.at(i) = OriginalPositions.at(i);
-             *          }
-             *
-             *          intersecting_count++;*/
 
 #if EXPORT_SMOOTHING_ANIMATION == 1
             std :: ostringstream FileName;
@@ -716,9 +689,9 @@ void SpringSmoother::Smooth(std :: vector< VertexType * >Vertices, voxel2tet :: 
         } else {
             intersecting = false;
             // Update vertices
-            for ( unsigned int i = 0; i < Vertices.size(); i++ ) {
+            for ( VertexType *v: Vertices ) {
                 for ( int j = 0; j < 3; j++ ) {
-                    Vertices.at(i)->set_c(CurrentPositions.at(i) [ j ], j); // TODO: Use array to improve performance
+                    v->set_c(CurrentPositions[v] [ j ], j); // TODO: Use array to improve performance
                 }
             }
         }
