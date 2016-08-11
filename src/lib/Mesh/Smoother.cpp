@@ -57,7 +57,7 @@ std::vector<std::vector<VertexType *>> Smoother::GetConnectivityVector(std::vect
 
 
             // Finally, ensure that the referenced vertices exists in the list
-            size_t i=0;
+/*            size_t i=0;
             while (i<ConnectedVertices.size()) {
                 if (std::find(Vertices.begin(), Vertices.end(), ConnectedVertices[i]) == Vertices.end()) {
                     // Connected vertex does not exists in list. Remove.
@@ -65,7 +65,7 @@ std::vector<std::vector<VertexType *>> Smoother::GetConnectivityVector(std::vect
                 } else {
                     i++;
                 }
-            }
+            }*/
         }
         Connectivity.push_back(ConnectedVertices);
     }
