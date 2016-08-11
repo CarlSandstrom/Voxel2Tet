@@ -32,7 +32,18 @@ void Surface :: AddTriangle(TriangleType *Triangle)
 
 void Surface :: Smooth(MeshData *Mesh)
 {
-    this->SurfaceSmooth->Smooth(this->Vertices, Mesh);
+    // Collect all of the surface vertices and then remove all vertices that belongs tho an EdgePhase
+    std::vector<VertexType *> VerticesToSmooth = this->Vertices;
+
+    size_t i=0;
+    while(i<VerticesToSmooth.size()) {
+        if (VerticesToSmooth[i]->PhaseEdges.size()>0) {
+            VerticesToSmooth.erase(std::remove(VerticesToSmooth.begin(), VerticesToSmooth.end(), VerticesToSmooth[i]), VerticesToSmooth.end());
+        } else {
+            i++;
+        }
+    }
+    this->SurfaceSmooth->Smooth(VerticesToSmooth, Mesh);
 }
 
 double Surface :: ComputeArea()
