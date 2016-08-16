@@ -10,7 +10,7 @@
 
 namespace voxel2tet
 {
-enum Exporter_FileTypes { FT_VTK, FT_Poly, FT_OFF, FT_OOFEM, FT_SIMPLE };
+enum Exporter_FileTypes { FT_VTK, FT_Poly, FT_OFF, FT_OOFEM, FT_SIMPLE, FT_ABAQUS };
 
 /**
  * @brief Abstract class for all classes exporting meshes.

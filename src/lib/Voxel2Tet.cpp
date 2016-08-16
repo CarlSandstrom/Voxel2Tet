@@ -1053,6 +1053,10 @@ void Voxel2TetClass :: ExportAllVolumes()
     if ( this->Opt->GiveBooleanValue("exportoofem") ) {
         this->Mesh->ExportVolume(strfmt( "%s.in", this->Opt->GiveStringValue("output").c_str() ), FT_OOFEM);
     }
+
+    if ( this->Opt->GiveBooleanValue("exportabaqus") ) {
+        this->Mesh->ExportVolume(strfmt( "%s.inp", this->Opt->GiveStringValue("output").c_str() ), FT_ABAQUS);
+    }
 }
 
 void Voxel2TetClass :: ExportStatistics()

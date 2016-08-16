@@ -33,6 +33,11 @@ void Exporter::UpdateUsedVertices()
     UsedVertices.erase( std :: unique( UsedVertices.begin(), UsedVertices.end() ), UsedVertices.end() );
 
 
+    int i = 0;
+    for ( VertexType *v : UsedVertices ) {
+        v->tag = i;
+        i++;
+    }
 }
 
 void Exporter::UpdateMaterialsMapping()
@@ -81,7 +86,49 @@ void Exporter::UpdateMinMaxNodes()
 
 void Exporter::UpdateMinMaxElements()
 {
+    // Find element boundaries
 
+    for ( TetType *t : *this->Tets ) {
+        for ( int k = 0; k < 2; k++ ) {   // Test max/min
+            std :: array< std :: vector< TetType * >, 3 > *XElements = ( k == 0 ) ? & MaxElements : & MinElements;
+            std :: array< std :: vector< int >, 3 > *XSide = ( k == 0 ) ? & MaxSide : & MinSide;
+            for ( int i = 0; i < 3; i++ ) {   // Test direction
+                std :: vector< int >TheNodes;
+
+                for ( int j = 0; j < 4; j++ ) {   // Test node
+                    VertexType *v = t->Vertices [ j ];
+                    double cvalue = v->get_c(i);
+                    if (k==0) {
+                        if ( fabs(cvalue - MaxCoords [ i ]) < 1e-8 ) {
+                            TheNodes.push_back(j + 1);                                 // +1 to match the numbering in the elemenent manual
+                        }
+                    } else {
+                        if ( fabs(cvalue - MinCoords [ i ]) < 1e-8 ) {
+                            TheNodes.push_back(j + 1);                                 // +1 to match the numbering in the elemenent manual
+                        }
+                    }
+                }
+
+                if ( TheNodes.size() == 3 ) {
+                    int Side = -1;
+                    if ( ( TheNodes [ 0 ] == 1 ) & ( TheNodes [ 1 ] == 2 ) & ( TheNodes [ 2 ] == 3 ) ) {
+                        Side = 1;
+                    }
+                    if ( ( TheNodes [ 0 ] == 1 ) & ( TheNodes [ 1 ] == 2 ) & ( TheNodes [ 2 ] == 4 ) ) {
+                        Side = 2;
+                    }
+                    if ( ( TheNodes [ 0 ] == 2 ) & ( TheNodes [ 1 ] == 3 ) & ( TheNodes [ 2 ] == 4 ) ) {
+                        Side = 3;
+                    }
+                    if ( ( TheNodes [ 0 ] == 1 ) & ( TheNodes [ 1 ] == 3 ) & ( TheNodes [ 2 ] == 4 ) ) {
+                        Side = 4;
+                    }
+                    XSide->at(i).push_back(Side);
+                    XElements->at(i).push_back(t);
+                }
+            }
+        }
+    }
 }
 
 }

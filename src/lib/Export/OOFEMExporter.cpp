@@ -27,15 +27,8 @@ void OOFEMExporter :: WriteVolumeData(std :: string Filename)
     // Used vertices
     this->UpdateUsedVertices();
 
-    int i = 0;
-    for ( VertexType *v : UsedVertices ) {
-        v->tag = i;
-        i++;
-    }
-
     // Materials
     this->UpdateMaterialsMapping();
-
 
     // Find node sets
     this->UpdateMinMaxCoordinates();
@@ -77,7 +70,7 @@ void OOFEMExporter :: WriteVolumeData(std :: string Filename)
     OOFEMFile << "SimpleCS 1 thick 0.1 width 1.0\n";
 
     // Write Materials
-    i = 1;
+    int i = 1;
     for ( auto test : Self2OofemMaterials ) {
         OOFEMFile << "# Material " << test.first << " in source file\n";
         //OOFEMFile << "hyperelmat " << i++ << " d 1 k " << 100 + i*10 << " g " << 100 + i*10 << "\n";

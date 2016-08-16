@@ -4,6 +4,7 @@
 #include "TetGenExporter.h"
 #include "OFFExporter.h"
 #include "OOFEMExporter.h"
+#include "AbaqusExporter.h"
 
 namespace voxel2tet
 {
@@ -269,6 +270,10 @@ void MeshData :: ExportVolume(std :: string FileName, Exporter_FileTypes FileTyp
         exporter = new OOFEMExporter(& this->Triangles, & this->Vertices, & this->Edges, & this->Tets);
         break;
     }
+    case FT_ABAQUS: {
+        exporter = new AbaqusExporter(& this->Triangles, & this->Vertices, & this->Edges, & this->Tets);
+        break;
+    }
     default:
         STATUS("No export filter found for %s\n", FileName);
         return;
@@ -361,9 +366,9 @@ TriangleType *MeshData :: AddTriangle(std :: array< int, 3 >VertexIDs)
 
     for ( int i = 0; i < 3; i++ ) {
         if ( i < 2 ) {
-            this->AddEdge({ VertexIDs.at(i), VertexIDs.at(i + 1) });
+            this->AddEdge({ {VertexIDs.at(i), VertexIDs.at(i + 1)} });
         } else {
-            this->AddEdge({ VertexIDs.at(i), VertexIDs.at(0) });
+            this->AddEdge({ {VertexIDs.at(i), VertexIDs.at(0)} });
         }
     }
 
