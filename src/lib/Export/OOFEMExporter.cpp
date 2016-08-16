@@ -12,7 +12,7 @@ namespace voxel2tet
 OOFEMExporter :: OOFEMExporter(std :: vector< TriangleType * > *Triangles, std :: vector< VertexType * > *Vertices, std :: vector< EdgeType * > *Edges, std :: vector< TetType * > *Tets) :
     Exporter(Triangles, Vertices, Edges, Tets)
 {
-    LOG("Create TetGenExporter object\n", 0);
+    LOG("Create OOFEMExporter object\n", 0);
 }
 
 
@@ -23,15 +23,9 @@ void OOFEMExporter :: WriteVolumeData(std :: string Filename)
     OOFEMFile.open(Filename);
 
     // Prepare information
-    std :: vector< VertexType * >UsedVertices;
-    for ( TetType *t : *this->Tets ) {
-        for ( VertexType *v : t->Vertices ) {
-            UsedVertices.push_back(v);
-        }
-    }
 
-    std :: sort( UsedVertices.begin(), UsedVertices.end() );
-    UsedVertices.erase( std :: unique( UsedVertices.begin(), UsedVertices.end() ), UsedVertices.end() );
+    // Used vertices
+    this->UpdateUsedVertices();
 
     int i = 0;
     for ( VertexType *v : UsedVertices ) {
@@ -39,88 +33,18 @@ void OOFEMExporter :: WriteVolumeData(std :: string Filename)
         i++;
     }
 
-    std :: map< int, int >Self2OofemMaterials;
+    // Materials
+    this->UpdateMaterialsMapping();
 
-    for ( TetType *t : *this->Tets ) {
-        if ( Self2OofemMaterials.find(t->MaterialID) == Self2OofemMaterials.end() ) {
-            Self2OofemMaterials [ t->MaterialID ] = Self2OofemMaterials.size();
-        }
-    }
 
     // Find node sets
-    std :: array< double, 3 >MaxCoords = { { UsedVertices [ 0 ]->get_c(0), UsedVertices [ 0 ]->get_c(1), UsedVertices [ 0 ]->get_c(2) } };
-    std :: array< double, 3 >MinCoords = { { UsedVertices [ 0 ]->get_c(0), UsedVertices [ 0 ]->get_c(1), UsedVertices [ 0 ]->get_c(2) } };
-
-    for ( VertexType *v : UsedVertices ) {
-        for ( int i = 0; i < 3; i++ ) {
-            if ( v->get_c(i) > MaxCoords [ i ] ) {
-                MaxCoords [ i ] = v->get_c(i);
-            }
-            if ( v->get_c(i) < MinCoords [ i ] ) {
-                MinCoords [ i ] = v->get_c(i);
-            }
-        }
-    }
+    this->UpdateMinMaxCoordinates();
 
     // Max and min nodes are arrays of lists of vertices where the index of the array tells in which direction the vertex is located
-    std :: array< std :: vector< VertexType * >, 3 >MaxNodes;
-    std :: array< std :: vector< VertexType * >, 3 >MinNodes;
-
-    double eps = 1e-8;
-
-    for ( VertexType *v : UsedVertices ) {
-        for ( int i = 0; i < 3; i++ ) {
-            double cvalue = v->get_c(i);
-            if ( fabs(cvalue - MaxCoords [ i ]) < eps ) {
-                MaxNodes [ i ].push_back(v);
-            }
-            if ( fabs(cvalue - MinCoords [ i ]) < eps ) {
-                MinNodes [ i ].push_back(v);
-            }
-        }
-    }
+    this->UpdateMinMaxNodes();
 
     // Find element boundaries
-    std :: array< std :: vector< TetType * >, 3 >MaxElements;
-    std :: array< std :: vector< int >, 3 >MaxSide;
-    std :: array< std :: vector< TetType * >, 3 >MinElements;
-    std :: array< std :: vector< int >, 3 >MinSide;
-
-    for ( TetType *t : *this->Tets ) {
-        for ( int k = 0; k < 2; k++ ) {   // Test max/min
-            std :: array< std :: vector< TetType * >, 3 > *XElements = ( k == 0 ) ? & MaxElements : & MinElements;
-            std :: array< std :: vector< int >, 3 > *XSide = ( k == 0 ) ? & MaxSide : & MinSide;
-            for ( int i = 0; i < 3; i++ ) {   // Test direction
-                std :: vector< int >TheNodes;
-
-                for ( int j = 0; j < 4; j++ ) {   // Test node
-                    VertexType *v = t->Vertices [ j ];
-                    double cvalue = v->get_c(i);
-                    if ( fabs(cvalue - MaxCoords [ i ]) < eps ) {
-                        TheNodes.push_back(j + 1);                                 // +1 to match the numbering in the elemenent manual
-                    }
-                }
-
-                if ( TheNodes.size() == 3 ) {
-                    int Side = -1;
-                    if ( ( TheNodes [ 0 ] == 1 ) & ( TheNodes [ 1 ] == 2 ) & ( TheNodes [ 2 ] == 3 ) ) {
-                        Side = 1;
-                    }
-                    if ( ( TheNodes [ 0 ] == 1 ) & ( TheNodes [ 1 ] == 2 ) & ( TheNodes [ 2 ] == 4 ) ) {
-                        Side = 2;
-                    }
-                    if ( ( TheNodes [ 0 ] == 2 ) & ( TheNodes [ 1 ] == 3 ) & ( TheNodes [ 2 ] == 4 ) ) {
-                        Side = 3;
-                    }
-                    if ( ( TheNodes [ 0 ] == 1 ) & ( TheNodes [ 1 ] == 3 ) & ( TheNodes [ 2 ] == 4 ) ) {
-                        Side = 4;
-                    }
-                    XSide->at(i).push_back(Side);
-                    XElements->at(i).push_back(t);
-                }
-            }
-        }
-    }
+    this->UpdateMinMaxElements();
 
     // Write header
 

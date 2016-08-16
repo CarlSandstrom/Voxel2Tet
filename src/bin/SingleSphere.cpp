@@ -45,6 +45,7 @@ int main(int argc, char *argv[])
     v2t.ExportSurface("/tmp/SingleSphere0.vtp", voxel2tet :: FT_VTK);
     v2t.ExportSurface("/tmp/SingleSphere1.vtp", voxel2tet :: FT_VTK);
     v2t.ExportVolume("/tmp/SingleSphere.vtu", voxel2tet :: FT_VTK);
+    v2t.ExportAllVolumes();
     int i=0;
     i++;
 

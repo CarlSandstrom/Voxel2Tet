@@ -3,6 +3,7 @@
 
 #include <vector>
 #include <string>
+#include <map>
 
 #include "MeshComponents.h"
 #include "MiscFunctions.h"
@@ -17,6 +18,26 @@ enum Exporter_FileTypes { FT_VTK, FT_Poly, FT_OFF, FT_OOFEM, FT_SIMPLE };
 class Exporter
 {
 protected:
+    std::vector<VertexType *> UsedVertices;
+    void UpdateUsedVertices();
+
+    std :: map< int, int >Self2OofemMaterials;
+    void UpdateMaterialsMapping();
+
+    std :: array< double, 3 >MaxCoords;
+    std :: array< double, 3 >MinCoords;
+    void UpdateMinMaxCoordinates();
+
+    std :: array< std :: vector< VertexType * >, 3 >MaxNodes;
+    std :: array< std :: vector< VertexType * >, 3 >MinNodes;
+    void UpdateMinMaxNodes();
+
+    std :: array< std :: vector< TetType * >, 3 >MaxElements;
+    std :: array< std :: vector< int >, 3 >MaxSide;
+    std :: array< std :: vector< TetType * >, 3 >MinElements;
+    std :: array< std :: vector< int >, 3 >MinSide;
+    void UpdateMinMaxElements();
+
     /**
      * @brief Pointer to a list of pointers to the triangles in the mesh. This is typically a pointer to the list of triangles
      * in the MeshData object.
