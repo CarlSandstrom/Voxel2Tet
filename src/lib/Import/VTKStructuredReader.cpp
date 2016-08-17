@@ -31,7 +31,7 @@ void VTKStructuredReader :: LoadFile(std :: string FileName)
                 std :: vector< std :: string >Strings = SplitString(line, ' ');
                 if ( Strings.size() > 0 ) {
                     if ( strcasecmp(Strings [ 0 ].c_str(), "DATASET") == 0 ) {
-                        if ( !strcasecmp(Strings [ 1 ].c_str(), "STRUCTURED_POINTS") == 0 ) {
+                        if ( (!strcasecmp(Strings [ 1 ].c_str(), "STRUCTURED_POINTS")) == 0 ) {
                             STATUS("Can only handle VTK files with dataset STRUCTURED_POINTS\n", 0);
                         }
                     } else if ( strcasecmp(Strings [ 0 ].c_str(), "DIMENSIONS") == 0 ) {
