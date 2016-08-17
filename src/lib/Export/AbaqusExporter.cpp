@@ -79,16 +79,16 @@ void AbaqusExporter::WriteVolumeData(std :: string Filename)
     for (auto a: Self2OofemMaterials) {
         AbaqusFile << "*MATERIAL, NAME=MATERIAL_" << a.first << "\n";
         AbaqusFile << "*DENSITY\n\t1,\n";
-        AbaqusFile << "ELASTIC, TYPE=ISOTROPIC\n\t " << (200e9+i*10e9) << ",\t0.3\n";
+        AbaqusFile << "*ELASTIC, TYPE=ISOTROPIC\n\t " << (200e9+i*10e9) << ",\t0.3\n";
         i++;
     }
 
     // Boundary set
     AbaqusFile << "** Complete node boundary set\n";
     AbaqusFile << "*NSET, NSET=All surface nodes\n";
-    for ( int i = 0; i < 3; i++ ) {
+    int k = 0;
+    for ( size_t i = 0; i < 3; i++ ) {
         // Write max nodes
-        int k = 0;
         for ( size_t j = 0; j < MaxNodes [ i ].size(); j++ ) {
             AbaqusFile << "\t" << MaxNodes [ i ].at(j)->tag + 1 << ",";
             if (k==10) {
@@ -100,7 +100,6 @@ void AbaqusExporter::WriteVolumeData(std :: string Filename)
         }
 
         // Write min nodes
-        k = 0;
         for ( size_t j = 0; j < MinNodes [ i ].size(); j++ ) {
             AbaqusFile << "\t" << MinNodes [ i ].at(j)->tag + 1 << ",";
             if (k==10) {
