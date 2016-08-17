@@ -10,6 +10,8 @@ The original intent was to allow for voxel representations of microstructures to
 Installation
 ============
 
+Currently, Voxel2Tet compiles using either `gcc` or `clang`. However, the coding is pretty standard and modifying the code to compile using other C++ compilers should not pose much of a problem. Note that some compiler dependent features are used, e.g. in logging routines, the compiler specific function `__FUNCTION__` is used. This is simply avoided by not compiling using logging (if you are not a developer, logging is not needed and it is turned off by default).
+
 Ubuntu
 ------
 
