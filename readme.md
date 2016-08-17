@@ -1,9 +1,9 @@
 Introduction
 ============
 
-Voxel2Tet converts voxel representations to tetrahedral mesh with smooth interfaces. The Algorithm first generates a smooth surface using and then coarsens the fine mesh until no more coarsening is permitted. The coarse surface mesh is the used to create a tetrahedral mesh by calling the TetGen library. The purpose of the software is two-fold. First, smooth surfaces are desirable in many context, such as during investigations of interfaces between grains in micromechanics. Second, a reduction of degrees of freedom (i.e. vertices for describing the geometry) for decresing the computational effort used in computational analysis. That being said, a decrease in degrees of freedom is not guaranteed and depends on the original voxel data and the geometry of the object. Typically a very coarse input yields more degrees of freedom. Then again, a coarse voxel description is ill-suited for computations anyway.
+Voxel2Tet converts voxel representations to tetrahedral mesh with smooth interfaces. The Algorithm first generates a smooth surface using and then coarsens the fine mesh until no more coarsening is permitted. The coarse surface mesh is the used to create a tetrahedral mesh by calling the TetGen library. The purpose of the software is two-fold. First, smooth surfaces are desirable in many context, such as during investigations of interfaces between grains in micromechanics. Second, a reduction of degrees of freedom (i.e. vertices for describing the geometry) for decreasing the computational effort used in computational analysis. That being said, a decrease in degrees of freedom is not guaranteed and depends on the original voxel data and the geometry of the object. Typically a very coarse input yields more degrees of freedom. Then again, a coarse voxel description is ill-suited for computations anyway.
 
-The code is in C++ and is written in a modular way such that new featers, such as new import and export filters, are easy to implement. It is text-based and should thus work on all common platforms.
+The code is in C++ and is written in a modular way such that new features, such as new import and export filters, are easy to implement. It is text-based and should thus work on all common platforms.
 
 The original intent was to allow for voxel representations of microstructures to be performed, but the software is general and in no way bound to microstructures.
 
@@ -70,21 +70,22 @@ File/path|Description
 Usage
 =====
 
-Voxel2Tet can be used both as an API and as a command line driven tool. A few examples for API usage is avalible in the ./src/bin folder.
+Voxel2Tet can be used both as an API and as a command line driven tool. A few examples for API usage are available in the `./src/bin` folder.
 
 Command line tool
 -----------------
 
 ### Flags
 
-After compiling Voxel2Tet, the command line tool is available in the ./Examples/ directory. First, there are a few flags used to handle the input/output of the program as listed below.
+After compiling Voxel2Tet, the command line tool is available in the `./bin/` directory. First, there are a few flags used to handle the input/output of the program as listed below.
 
 Flag|Meaning
 ----|-------
+-input _filename_    | _filename_ is the name of the input file. Currently supported files are `.dream3d` and `.vtu`.
 -output _filename_  	| Here, _filename_ is the base filename for the output file without any extension. The extension is determined by the export flags (-export_XXXXX_).
 -exportvtksurface  | Export the final surface in VTK format
 -exportvtkvolume  	| Export the final volume in VTK format
--exportoff        	| Export the funal surface in .OFF format
+-exportoff        	| Export the final surface in .OFF format
 -exportoofem      	| Export final volume as input file for OOFEM
 -exportabaqus     	| Export final volume as input file for Abaqus
 -exportsteps      	| Export the result of each step in VTK format (mainly for debugging purposes)
@@ -107,7 +108,7 @@ Flag|Meaning
 
 The mesh coarsening part is a variation of the mesh coarsening algorithm proposed by H.L. de Cougny (1998). Some features has been added to the de Cougny algorithm: 1) The new algorithm allow for edges 2) For each collapse of a vertex, the error (change of volume) is computed. A collapse implying a to large change in volume is not performed. 3) The error from a collapse is associated with the vertices affected by the collapse. This error is propagated for each collapse and there is a maximum threshold in the accumulated errors that cannot be exceeded.
 
-The meaning of these flags will only be discussed briefly and for full understanding, we refer to the paper by de Cougny.
+The meaning of most of the following flags will only be discussed briefly and for full understanding, we refer to the paper by de Cougny.
 
 Flag|meaning
 ----|-------
@@ -128,17 +129,17 @@ Flag|meaning
 
 Here follows a few examples of the use of the command line tool to get the user started.
 
-The first simple example converts the input example "Subset.dream3d" to a volume with smoothed inner surfaces. From the Examples subdirectory in the build directory, run the following line:
+The first simple example converts the input example `Subset.dream3d` to a volume with smoothed surfaces. From the `bin` subdirectory in the build directory, run the following line:
 
 	$ ./Voxel2Tet -input Subset.dream3d -output /tmp/Default
 
-Note that you have to add a path to the "Subset.dream3d" file. This produces three files in the /tmp/ path: Default.surface.vtp, Default.volume.vtu and Default.stat. The names of the files pretty much says it all. The surfaces (inner and outer) are saved in the Default.surface.vtp file, the volumes are stored in Default.volume.vtu and statistics containing information on e.g. loss/gain in volume of the constituents are found in Default.stat. You can open the .vtp and .vtu files in Paraview for visualization. In paraview you can choose color by "Mat ID" the see the different materials.
+Note that you have to add a path to the `Subset.dream3d` file. This produces three files in the `/tmp/` path: `Default.surface.vtp`, `Default.volume.vtu` and `Default.stat`. The names of the files pretty much says it all. The surfaces (inner and outer) are saved in the `Default.surface.vtp` file, the volumes are stored in `Default.volume.vtu` and statistics containing information on e.g. loss/gain in volume of the constituents are found in `Default.stat`. You can open the `.vtp` and `.vtu` files in Paraview for visualization. In paraview you can choose color by `Mat ID` the see the different materials.
 
 Now, we will see what happens if we make the springs much stiffer. From the Examples subdirectory in the build directory, run the following line:
 
 	$ ./Voxel2Tet -input Subset.dream3d -output /tmp/Stiff -spring_c_factor 0.1 -edge_spring_c_factor 0.1
 
-Once again, you can open the resulting files (now called Stiff.* ) in Paraview. What you should see is a result not very different from voxel data (except that is it a tetrahedralization of voxelsurfaces).
+Once again, you can open the resulting files (now called `Stiff.*` ) in Paraview. What you should see is a result not very different from voxel data (except that is it a tetrahedralization of voxelsurfaces).
 
 Smoothing of very large structures can take several hours (or even days in some extreme cases), thus, it is of importance to have the correct flags set before running the program. Here, the flag voxelcutout comes in handy. The flag tells Voxel2Tet to only extract a small piece of the voxeldata and perform smoothing. This works well when working with microstructures since the geometry is somewhat equal throughout the volume. Run the following line:
 
@@ -149,26 +150,34 @@ So rather than smoothing a 40x40x40=64000 voxel file, we choose to smooth a 10*1
 API
 ---
 
-In the Examples subdirectory, there are a few examples on using the API. The main reason for using the API is to be able to create a tetrahedral mesh given an implicit geometry. By "Implicit" it is meant that an ID for a given coordinate is returned, hence, e.g. centre and radius for a sphere is not given directly to Voxel2Tet (which would be explicit).
+In the `./src/Examples` subdirectory, there are a few examples on using the API. The main reason for using the API is to be able to create a tetrahedral mesh given an implicit geometry. By "Implicit" it is meant that an ID for a given coordinate is returned, hence, e.g. centre and radius for a sphere is not given directly to Voxel2Tet (which would be explicit).
 
-To use the API, the function LoadCallback of a Voxel2TetClass type object is called with a function pointer and some basic information on the volume (origin, voxel size and the dimensions of the object) as arguments.
+To use the API, the function `LoadCallback` of a `Voxel2TetClass` type object is called with a function pointer and some basic information on the volume (origin, voxel size and the dimensions of the object) as arguments.
 
 The API is probably best understood by carefully reading the source code in the Example subdirectory.
 
-In the following, we will briefly discuss the code for "SingleSphere.cpp". The file contains two functions: GiveMaterialIDByCoordinateSphere and the main function. GiveMaterialIDByCoordinateSphere is called from the Voxel2Tet library with a coordinate as arguments. Here, the function simply checks if the coordinate is located inside a sphere with its center in (0.5, 0.5, 0.5) and a radius of 0.25. If so, 1 is returned and otherwise a 2 is returned. This implies that the material inside the sphere will have ID 1 and the material outside ID 2. The IDs returned does not need to ordered in any way and is the same ID that is exported for it corresponding tetrahedral volume.
+In the following, we will briefly discuss the code for `SingleSphere.cpp`. The file contains two functions: `GiveMaterialIDByCoordinateSphere` and the `main` function. `GiveMaterialIDByCoordinateSphere` is called from the Voxel2Tet library with a coordinate as arguments. Here, the function simply checks if the coordinate is located inside a sphere with its center in (0.5, 0.5, 0.5) and a radius of 0.25. If so, 1 is returned and otherwise a 2 is returned. This implies that the material inside the sphere will have ID 1 and the material outside ID 2. The IDs returned does not need to ordered in any way and is the same ID that is exported for it corresponding tetrahedral volume.
 
-In the main function, we need to create an Options type object. This object takes care of command line arguments, so the compiled executable will be able to handle the same flags as discussed in the previous section. After the Voxel2TetClass object is created, the data is loaded by calling the LoadCallback member function. Then, the Process member function is called which performs the smoothing and coarsening of the surfaces. By calling the Tetrahedralize member function, the smoothed volume is tetrahedralized. What follows after that is simply exporting the result.
+In the `main` function, we need to create an Options type object. This object takes care of command line arguments, so the compiled executable will be able to handle the same flags as discussed in the previous section. After the `Voxel2TetClass` object is created, the data is loaded by calling the `LoadCallback` member function. Then, the `Process` member function is called which performs the smoothing and coarsening of the surfaces. By calling the `Tetrahedralize` member function, the smoothed volume is tetrahedralized. What follows after that is simply exporting the result.
+
+Some general remarks
+--------------------
+
+Some remarks on converting voxel data to tetrahedral meshes:
+
+* Higher resolution of the voxel data implies better result.
+* Stray voxels (single voxels of material A enclosed in other materials) gives a high density of tetrahedrons in that region.
 
 Code documentation
 =================
-The code is documented using Doxygen. In order to generate the documentation, make sure that Doxygen is installed on you system. Then run doxygen using the configuration file ./src/doxygen.conf. On linux, this is simply done using
+The code is documented using Doxygen. In order to generate the documentation, make sure that Doxygen is installed on you system. Then run doxygen using the configuration file `./src/doxygen.conf`. On linux, this is simply done using
 
 	$ doxygen doxygen.conf
 
 Coding conventions
 ==================
 
-In order to maintain consistency in terms of coding convention, the tool "Uncrustify" (https://github.com/uncrustify/uncrustify) is used. If code is added or modified, run the tool using the file "uncrustify.cfg" in the project root directory as a configuration file. To run uncrustify on only one file, go to the root folder of Voxel2Tet and run the command (Linux):
+In order to maintain consistency in terms of coding convention, the tool "Uncrustify" (https://github.com/uncrustify/uncrustify) is used. If code is added or modified, run the tool using the file `uncrustify.cfg` in the project root directory as a configuration file. To run uncrustify on only one file, go to the root folder of Voxel2Tet and run the command (Linux):
 
 	$ uncrustify -c ./uncrustify.cfg --replace [source file]
 
