@@ -6,7 +6,7 @@ namespace voxel2tet
 {
 MeshManipulations :: MeshManipulations(BoundingBoxType BoundingBox) : MeshData(BoundingBox)
 {
-    TOL_MAXAREACHANGE = 1e-2;
+    TOL_FLIP_MAXAREACHANGE = 1e-2;
 
     TOL_COL_SMALLESTAREA = 1e-8;
     TOL_COL_MAXNORMALCHANGE = 10 * 2 * 3.1415 / 360;
@@ -222,7 +222,7 @@ FC_MESH MeshManipulations :: FlipEdge(EdgeType *Edge)
     double CurrentArea = EdgeTriangles.at(0)->GiveArea() + EdgeTriangles.at(1)->GiveArea();
     double NewArea = NewTriangles.at(0)->GiveArea() + NewTriangles.at(1)->GiveArea();
 
-    if ( std :: fabs(CurrentArea - NewArea) > TOL_MAXAREACHANGE ) {
+    if ( std :: fabs(CurrentArea - NewArea) > TOL_FLIP_MAXAREACHANGE ) {
         LOG("The combined area of the triangles changes too much. Prevent flipping.\n", 0);
         for ( TriangleType *t : NewTriangles ) {
             delete t;

@@ -275,7 +275,7 @@ void MeshData :: ExportVolume(std :: string FileName, Exporter_FileTypes FileTyp
         break;
     }
     default:
-        STATUS("No export filter found for %s\n", FileName);
+        STATUS("No export filter found for %s\n", FileName.c_str());
         return;
     }
     exporter->WriteVolumeData(FileName);

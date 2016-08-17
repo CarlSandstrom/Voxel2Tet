@@ -87,6 +87,14 @@ void Voxel2TetClass :: PrintHelp()
     printf("\n\t\t-exportsteps      \tExport the result of each step in VTK format (mainly for debugging purposes)");
     printf("\n\t\t-datacontainer name\t(Dream3D input) Name of data group, default 'VoxelDataContainer'");
     printf("\n\t\t-materialid name  \t(Dream3D input) Field containing an identifier for the phase, default 'GrainIds'");
+    printf("\n\t\t-voxelcutout arg) \tOnly consider the subset of the input contained within the boundingbox defined by arg. Here, arg=\"[xmin ymin zmin xmax ymax zmax]\" (include citations and brackets)");
+
+
+    printf("\n\t\t-");
+    printf("\n\t\t-");
+    printf("\n\t\t-");
+    printf("\n\t\t-");
+
     printf("\n\n");
 }
 
@@ -175,8 +183,8 @@ void Voxel2TetClass :: FinalizeLoad()
     }
 
     // Setup tolearances in options
-    if ( !this->Opt->has_key("TOL_MAXAREACHANGE") ) {
-        this->Opt->AddDefaultMap("TOL_MAXAREACHANGE", 1e-2);
+    if ( !this->Opt->has_key("TOL_FLIP_MAXAREACHANGE") ) {
+        this->Opt->AddDefaultMap("TOL_FLIP_MAXAREACHANGE", 1e-2);
     }
     if ( !this->Opt->has_key("TOL_COL_SMALLESTAREA") ) {
         this->Opt->AddDefaultMap("TOL_COL_SMALLESTAREA", 1e-8);

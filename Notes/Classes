@@ -1,0 +1,44 @@
+Mesh data structure 
+===================
+
+VertexType
+	Edges	
+	Triangles
+
+
+EdgeType
+	Vertices[2]
+	GetTriangle				Give triangles using Vertex->Triangles
+
+
+TriangleType
+	Vertices[3]
+	GetEdges				Computes edges from Vertex->Edges
+
+
+MeshData
+	AddTriangle(Vertices)	Check if triangle exists by checking Vertex->Triangle
+	AddEdge(Vertices)		Check if edge exists by checking Vertex->Edges
+
+
+Pseudo-code
+-----------
+
+MeshData.AddTriangle(Vertices)
+
+ * Create Triangle-object
+ * For each pair of vertices (v1, v2):
+ 	* Edges.append( AddEdge(v1, v2) )
+ * Update Vertices with new triangle
+
+
+MeshData.AddEdge(Vertices)
+ * Check if edge exists:
+ 	* Yes: Return pointer
+ 	* No: Proceed
+ * Create edge
+ * Update Vertices with new edge 	
+
+
+
+ 

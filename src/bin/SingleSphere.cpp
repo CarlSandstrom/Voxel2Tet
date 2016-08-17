@@ -4,9 +4,6 @@
 
 #include "Options.h"
 #include "Voxel2Tet.h"
-#include "CallbackImporter.h"
-#include "TetGenExporter.h"
-#include "OFFExporter.h"
 
 /**
  * @brief Function being called from the Voxel2Tet class. The geometry of a sphere with radius .25
@@ -46,7 +43,5 @@ int main(int argc, char *argv[])
     v2t.ExportSurface("/tmp/SingleSphere1.vtp", voxel2tet :: FT_VTK);
     v2t.ExportVolume("/tmp/SingleSphere.vtu", voxel2tet :: FT_VTK);
     v2t.ExportAllVolumes();
-    int i=0;
-    i++;
 
 }

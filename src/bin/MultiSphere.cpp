@@ -6,9 +6,6 @@
 
 #include "Options.h"
 #include "Voxel2Tet.h"
-#include "CallbackImporter.h"
-#include "TetGenExporter.h"
-#include "OFFExporter.h"
 
 std::vector<std::array<double, 3>> Coordinates;
 

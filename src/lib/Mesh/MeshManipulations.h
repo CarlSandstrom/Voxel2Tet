@@ -43,9 +43,9 @@ private:
 public:
 
     /**
-     * @brief Determines the maximum change in area of triangles associated with the collapse of n edge
+     * @brief Determines the maximum change in area of triangles associated with a flip of an edge
      */
-    double TOL_MAXAREACHANGE;
+    double TOL_FLIP_MAXAREACHANGE;
 
     /**
      * @brief Smallest allowed area for triangles in edge collapsing
