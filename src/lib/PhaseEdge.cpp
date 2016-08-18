@@ -63,10 +63,6 @@ void PhaseEdge :: SortAndFixBrokenEdge(std :: vector< PhaseEdge * > *FixedEdges)
             bool LastConnectionFound = false;
             while ( !LastConnectionFound ) {
                 // Remove self from list of PhaseEdges
-                LOG("Remove PhaseEdge object from list for vertex %u\n", VertexToFind->ID);
-                std :: vector< PhaseEdge * > :: iterator ErasePhaseEdges = std :: remove(VertexToFind->PhaseEdges.begin(), VertexToFind->PhaseEdges.end(), this);
-                VertexToFind->PhaseEdges.erase( ErasePhaseEdges, VertexToFind->PhaseEdges.end() );
-                VertexToFind->PhaseEdges.push_back(NewPhaseEdge);
 
                 std :: array< VertexType *, 2 >NextLink;
                 bool NextLinkFound = false;
@@ -102,11 +98,20 @@ void PhaseEdge :: SortAndFixBrokenEdge(std :: vector< PhaseEdge * > *FixedEdges)
                                                                                } };
                         NewPhaseEdge->EdgeSegments.push_back(* NewEdgeSegment);
                     }
+
                     VertexToFind = NextLastVertex;
                 } else {
                     LOG("No more connections found for i=%u\n", i);
                     LastConnectionFound = true;
                 }
+            }
+
+            // Remove reference to old phase edge and add reference to new
+            std::vector<VertexType *> Vertices = NewPhaseEdge->GetFlatListOfVertices();
+
+            for (VertexType *v: Vertices) {
+                v->PhaseEdges.erase( std::remove(v->PhaseEdges.begin(), v->PhaseEdges.end(), this), v->PhaseEdges.end() );
+                v->PhaseEdges.push_back(NewPhaseEdge);
             }
 
             // If no EdgeSegments are left, exit
@@ -195,5 +200,18 @@ void PhaseEdge :: Smooth(MeshData *Mesh)
 void PhaseEdge :: AddPhaseEdgeSegment(VertexType *v1, VertexType *v2)
 {
     EdgeSegments.push_back({ { v1, v2 } });
+}
+
+void PhaseEdge :: LogPhaseEdge()
+{
+#if LOGOUTPUT == 1
+    std::ostringstream Printout;
+    Printout << "PhaseEdge @%x:" << this;
+    for (std::array<VertexType *, 2> Edge : this->EdgeSegments) {
+        Printout << "[" << Edge[0]->ID << ", " << Edge[1]->ID <<"]";
+    }
+
+    LOG("%s\n", Printout.str().c_str());
+#endif
 }
 }

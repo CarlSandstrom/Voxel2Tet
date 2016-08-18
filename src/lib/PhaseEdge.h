@@ -31,11 +31,6 @@ private:
     Options *Opt;
 
     /**
-     * @brief EdgeSegments hold all edge segments for this edge
-     */
-    std :: vector< std :: array< VertexType *, 2 > >EdgeSegments;
-
-    /**
      * @brief FixedVertices holds all vertices that are fixed.
      *
      * Fixed vertices are vertices where a PhaseEdge ends, i.e. where it meets one or more new
@@ -44,6 +39,11 @@ private:
     std :: vector< VertexType * >FixedVertices;
 
 public:
+
+    /**
+     * @brief EdgeSegments hold all edge segments for this edge
+     */
+    std :: vector< std :: array< VertexType *, 2 > >EdgeSegments;
 
     /**
      * @brief Pointer to smoother object for this phase edge.
@@ -110,6 +110,8 @@ public:
      * @brief List of all phase IDs ni contact with this phase edge
      */
     std :: vector< int >Phases;
+
+    void LogPhaseEdge();
 };
 }
 #endif // PHASEEDGE_H
