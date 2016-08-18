@@ -562,6 +562,11 @@ void Voxel2TetClass :: FindEdges()
         }
     }
 
+    LOG("Phase edges:\n", 0);
+    for (PhaseEdge *p: PhaseEdges) {
+        p->LogPhaseEdge();
+    }
+
     STATUS("\tSort and fix non-connected edges...\n", 0);
     LOG("Fix and sort edges\n", 0);
 
@@ -585,6 +590,11 @@ void Voxel2TetClass :: FindEdges()
          *  delete fe;
          * }
          * delete FixedEdges;*/
+    }
+
+    LOG("Phase edges:\n", 0);
+    for (PhaseEdge *p: PhaseEdges) {
+        p->LogPhaseEdge();
     }
 
     STATUS("\tSplit phase edges at shared points\n", 0);
