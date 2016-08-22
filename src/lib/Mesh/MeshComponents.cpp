@@ -357,4 +357,38 @@ std :: array< double, 3 >TetType :: GiveCenterOfMass()
     }
     return cm;
 }
+
+double TetType :: GiveSmallestAngle(int &angle)
+{
+    double smallest=0.0;
+    for (int i=0; i<4; i++) {
+        double thisangle = this->GiveDihedralAngle(i);
+        smallest = std::min(smallest, thisangle);
+    }
+    return smallest;
+}
+
+double TetType :: GiveDihedralAngle(int index)
+{
+
+    // int FaceVertices[4][3] = {{0, 2, 1}, {0, 1, 3}, {1, 2, 3}, {0, 2, 3}};
+    // int FacePairs[6][2] = {{0, 1}, {0, 2}, {0, 3}, {1, 3}, {1, 2}, {2, 3}};
+
+    arma::vec Face1Normal = GiveNormalOfFace(0);
+    arma::vec v1 = {0, 0, 0};
+}
+
+arma::vec TetType :: GiveNormalOfFace(int index)
+{
+    std::array<VertexType *, 3> MyVertexObjects = {{this->Vertices[FaceVertices[index][0]],
+                                                    this->Vertices[FaceVertices[index][1]],
+                                                    this->Vertices[FaceVertices[index][2]]}};
+    arma::vec v0 = {{MyVertexObjects[0]->get_c(0), MyVertexObjects[0]->get_c(1), MyVertexObjects[0]->get_c(2)}};
+    arma::vec v1 = {{MyVertexObjects[1]->get_c(0), MyVertexObjects[1]->get_c(1), MyVertexObjects[1]->get_c(2)}};
+    arma::vec v2 = {{MyVertexObjects[2]->get_c(0), MyVertexObjects[2]->get_c(1), MyVertexObjects[2]->get_c(2)}};
+    arma::vec n1 = arma::cross(v1-v0, v2-v0);
+    n1 = n1 / arma::norm(n1);
+    return n1;
+}
+
 }

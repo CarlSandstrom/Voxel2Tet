@@ -4,6 +4,7 @@
 #include <vector>
 #include <array>
 
+#include <armadillo>
 #include "math.h"
 
 namespace voxel2tet
@@ -350,6 +351,9 @@ public:
 class TetType
 {
 private:
+    int FaceVertices[4][3] = {{0, 2, 1}, {0, 1, 3}, {1, 2, 3}, {0, 2, 3}};
+    int FacePairs[6][2] = {{0, 1}, {0, 2}, {0, 3}, {1, 3}, {1, 2}, {2, 3}};
+
 public:
     /**
      * @brief ID of element. Mostly for debugging purposes.
@@ -371,6 +375,18 @@ public:
      * @return Coordinate
      */
     std :: array< double, 3 >GiveCenterOfMass();
+
+    /**
+     * @brief GiveSmallestAngle
+     * @param angle Pointer to integer containing index of the edge neighboring the smallest dihedral angle
+     * @return Smallest dihedral angle
+     */
+    double GiveSmallestAngle(int &angle);
+
+    double GiveDihedralAngle(int index);
+
+    arma::vec GiveNormalOfFace(int index);
+
 };
 }
 

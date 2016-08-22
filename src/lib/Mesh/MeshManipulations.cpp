@@ -11,7 +11,7 @@ MeshManipulations :: MeshManipulations(BoundingBoxType BoundingBox) : MeshData(B
     TOL_COL_SMALLESTAREA = 1e-8;
     TOL_COL_MAXNORMALCHANGE = 10 * 2 * 3.1415 / 360;
     TOL_COL_CHORD_MAXNORMALCHANGE = 10 * 2 * 3.141593 / 360;
-    TOL_COL_MINANGLE = 20*2*3.1415/360;
+    TOL_COL_MINANGLE = 0*2*3.1415/360;
 
     TOL_FLIP_SMALLESTAREA = 1e-8;
     TOL_FLIP_MAXNORMALCHANGE = 10 * 2 * 3.141593 / 360;
@@ -391,7 +391,7 @@ FC_MESH MeshManipulations :: CollapseEdgeTest(std :: vector< TriangleType * > *T
             return FC_SMALLAREA;
         }
         if (t->GiveSmallestAngle() < TOL_COL_MINANGLE ) {
-            LOG(" - Check failed. To small angle on new triangle.", 0);
+            LOG(" - Check failed. To small angle on new triangle.\n", 0);
             return FC_SMALLANGLE;
         }
     }
@@ -829,6 +829,7 @@ std :: vector< VertexType * >MeshManipulations :: FindIndependentSet()
 
     // Add all fixed vertices (Vertices shared between more than 2 phases)
     for ( VertexType *v : this->Vertices ) {
+        v->PhaseEdges.erase(std::unique(v->PhaseEdges.begin(), v->PhaseEdges.end()), v->PhaseEdges.end());
         if ( v->IsFixedVertex() ) {
             IndepSet.push_back(v);
         }
@@ -952,7 +953,8 @@ void MeshManipulations :: CoarsenMesh()
             for ( VertexType *v : EdgeVertices ) {
                 // If vertex v is not in the set of independent vertices, try to collapse
                 if ( std :: find(IndepSet.begin(), IndepSet.end(), v) == IndepSet.end() ) {
-                    if ( this->CollapseEdge(e, vi) == FC_OK ) {
+                    FC_MESH CollapseResult = this->CollapseEdge(e, vi);
+                    if ( CollapseResult == FC_OK ) {
                         this->UpdateLongestEdgeLength();
                         CoarseningOccurs = true;
 #if EXPORT_MESH_COARSENING
@@ -963,8 +965,19 @@ void MeshManipulations :: CoarsenMesh()
 #if TEST_MESH_FOR_EACH_COARSENING_ITERATION
                         Generator.TestMesh();
 #endif
+
+                        // Debug stuff
+                        for (EdgeType *e: this->Edges) {
+                            if (e->ID==83) {
+                                LOG("", 0);
+                            }
+                        }
+
                         break;
+                    } else {
+                        LOG ("Failed to collapse edge %u by removing vertex %u\n due to reason ", e->ID, vi, CollapseResult);
                     }
+
                 }
                 vi++;
             }
@@ -1041,6 +1054,19 @@ void MeshManipulations :: CoarsenMesh()
         this->FlipAll();
     }
     STATUS("\nCleanup removed %u triangles\n", CleanupCount);
+
+}
+
+int MeshManipulations :: CleanupTetrahedrals()
+{
+
+    for (TetType *t: this->Tets) {
+        for (int i=0; i<4; i++) {
+            t->GiveDihedralAngle(i);
+        }
+    }
+
+    return 0;
 
 }
 

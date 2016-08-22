@@ -180,6 +180,8 @@ public:
      * @return Number of flips performed
      */
     int FlipAll();
+
+    int CleanupTetrahedrals();
 };
 }
 #endif // MESHMANIPULATIONS_H
