@@ -85,7 +85,7 @@ public:
     /**
      * @brief Largest accumulated error in nodes for collapsing
      */
-    double TOL_COL_MAXERROR;
+    double TOL_COL_MAXERROR_ACCUMULATED;
 
     double TOL_COL_MINANGLE;
 
@@ -182,6 +182,10 @@ public:
     int FlipAll();
 
     int CleanupTetrahedrals();
+
+    bool RemoveTetrahedron(int index);
+
+    bool RemoveTetrahedron(TetType *t);
 };
 }
 #endif // MESHMANIPULATIONS_H

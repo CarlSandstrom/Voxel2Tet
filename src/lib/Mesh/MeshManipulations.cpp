@@ -9,16 +9,16 @@ MeshManipulations :: MeshManipulations(BoundingBoxType BoundingBox) : MeshData(B
     TOL_FLIP_MAXAREACHANGE = 1e-2;
 
     TOL_COL_SMALLESTAREA = 1e-8;
-    TOL_COL_MAXNORMALCHANGE = 10 * 2 * 3.1415 / 360;
-    TOL_COL_CHORD_MAXNORMALCHANGE = 10 * 2 * 3.141593 / 360;
-    TOL_COL_MINANGLE = 0*2*3.1415/360;
+    TOL_COL_MAXNORMALCHANGE = 5 * 2 * 3.1415 / 360;
+    TOL_COL_CHORD_MAXNORMALCHANGE = 5 * 2 * 3.141593 / 360;
+    TOL_COL_MINANGLE = 1*2*3.1415/360;
 
     TOL_FLIP_SMALLESTAREA = 1e-8;
-    TOL_FLIP_MAXNORMALCHANGE = 10 * 2 * 3.141593 / 360;
-    TOL_FLIP_MAXNORMALDIFFERENCE = 10 * 2 * 3.1415 / 360;
+    TOL_FLIP_MAXNORMALCHANGE = 5 * 2 * 3.141593 / 360;
+    TOL_FLIP_MAXNORMALDIFFERENCE = 5 * 2 * 3.1415 / 360;
 
     TOL_COL_MAXVOLUMECHANGE = .5 * .5 * .5 * 2;
-    TOL_COL_MAXERROR = .5 * .5 * .5;
+    TOL_COL_MAXERROR_ACCUMULATED = .5 * .5 * .5;
 }
 
 void MeshManipulations :: SortEdgesByLength()
@@ -373,7 +373,7 @@ FC_MESH MeshManipulations :: CollapseEdgeTest(std :: vector< TriangleType * > *T
         TotalError = TotalError + v->error;
     }
 
-    if ( TotalError > TOL_COL_MAXERROR ) {
+    if ( TotalError > TOL_COL_MAXERROR_ACCUMULATED ) {
         return FC_TOOLARGEERROR;
     }
 
@@ -1008,10 +1008,6 @@ void MeshManipulations :: CoarsenMesh()
 
     std::vector<FC_MESH> Reasons;
 
-/*    TOL_COL_CHORD_MAXNORMALCHANGE = TOL_COL_CHORD_MAXNORMALCHANGE*2;
-    TOL_COL_MAXERROR = TOL_COL_MAXERROR*2;
-    TOL_COL_MAXVOLUMECHANGE = TOL_COL_MAXVOLUMECHANGE*2; */
-
     STATUS("Clean up triangles with very small angles\n", 0);
     while (DoesCollapse) {
         DoesCollapse = false;
@@ -1057,17 +1053,82 @@ void MeshManipulations :: CoarsenMesh()
 
 }
 
+bool myComparison(const std::pair<TetType*, double> &a,const std::pair<TetType*, double> &b)
+{
+    return a.second<b.second;
+}
+
 int MeshManipulations :: CleanupTetrahedrals()
 {
 
+    std::vector<std::pair<TetType*, double>> Angles;
+    std::vector<std::pair<TetType*, double>> Volumes;
+
     for (TetType *t: this->Tets) {
-        for (int i=0; i<4; i++) {
-            t->GiveDihedralAngle(i);
+        int SmallestAngleIndex;
+        double theta = t->GiveSmallestDihedralAngle(SmallestAngleIndex);
+        LOG("Smallest dihedral angle for tet %u is %f (%f degrees)\n", t->ID, theta, theta*360/(2*3.1415));
+        Angles.push_back({t, theta});
+
+        double Volume = t->GiveVolume();
+        Volumes.push_back({t, Volume});
+    }
+
+    std::sort(Angles.begin(), Angles.end(), myComparison);
+    std::sort(Volumes.begin(), Volumes.end(), myComparison);
+
+    // Remove small elements
+    size_t i=0;
+    while (i<Volumes.size()) {
+
+        if (Volumes[i].second<1e-9) {
+            this->RemoveTetrahedron(Volumes[i].first);
+            i++;
+        } else {
+            i++;
         }
+
     }
 
     return 0;
 
+}
+
+bool MeshManipulations :: RemoveTetrahedron(int index)
+{
+    TetType *t= this->Tets[index];
+    int ShortestEdge = t->GiveShortestEdgeIndex();
+    VertexType *v0 = t->Vertices[ShortestEdge];
+    VertexType *v1 = t->Vertices[(ShortestEdge<3) ? ShortestEdge+1:0];
+
+    // Move v0 to middle of edge and then change all v1's to v0.
+
+    /* A vertex is "movable" if:
+     *
+     * 1. It is not fixed (has more than one PhaseEdge)
+     * 2.
+     *
+    */
+
+    LOG("Move Vertex %u to %u to remove element %u\n", v0->ID, v1->ID, t->ID);
+    this->Tets.erase(std::remove(this->Tets.begin(), this->Tets.end(), t));
+
+    v1->set_c({{0.5*(v0->get_c(0)+v1->get_c(0)), 0.5*(v0->get_c(1)+v1->get_c(1)), 0.5*(v0->get_c(2)+v1->get_c(2))}});
+
+    for (TetType *t: this->Tets) {
+        for (VertexType *v: t->Vertices) {
+            if (v==v0) {
+                v=v1;
+            }
+        }
+    }
+
+}
+
+bool MeshManipulations :: RemoveTetrahedron(TetType *t)
+{
+    int index = std::distance(this->Tets.begin(), std::find(this->Tets.begin(), this->Tets.end(), t) );
+    return this->RemoveTetrahedron(index);
 }
 
 }
