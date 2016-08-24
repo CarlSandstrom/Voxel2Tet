@@ -1,7 +1,7 @@
 #ifndef MISCFUNCTIONS_H_
 #define MISCFUNCTIONS_H_
 
-#define LOGOUTPUT 1
+#define LOGOUTPUT 0
 #define STATOUTPUT 1
 #define SANITYCHECK 0
 
@@ -9,7 +9,7 @@
 #define EXPORT_SMOOTHING_ANIMATION 0
 
 #define TEST_MESH_FOR_EACH_COARSENING_ITERATION 0
-#define EXPORT_MESH_COARSENING 1
+#define EXPORT_MESH_COARSENING 0
 
 #define TEST_MESH_BETWEEN_STEPS_TETGEN 0
 
@@ -30,6 +30,9 @@
 
 namespace voxel2tet
 {
+#define RADIANS(DEG) DEG * 2 * 3.141593 / 360
+#define DEGREES(RAD) RAD * 360 / 2 / 3.141593
+
 class MeshData;
 
 void dolog(const char *functionname, const char *fmt, ...);
