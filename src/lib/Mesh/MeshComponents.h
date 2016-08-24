@@ -114,6 +114,8 @@ public:
      */
     double get_c(int index);
 
+    arma::vec get_c_vec();
+
     /**
      * @brief List of triangles connected to this vertex
      */
@@ -153,6 +155,7 @@ public:
      * @return List of neighbouring vertices
      */
     std :: vector< VertexType * >FetchNeighbouringVertices();
+
 };
 
 /**
@@ -351,8 +354,9 @@ public:
 class TetType
 {
 private:
-    int FaceVertices[4][3] = {{0, 2, 1}, {0, 1, 3}, {1, 2, 3}, {0, 2, 3}};
+    int FaceVertices[4][3] = {{0, 2, 1}, {0, 1, 3}, {1, 2, 3}, {0, 3, 2}};
     int FacePairs[6][2] = {{0, 1}, {0, 2}, {0, 3}, {1, 3}, {1, 2}, {2, 3}};
+    int EdgeVertices[6][2] = {{0, 1}, {1, 2}, {2, 0}, {0, 3}, {1, 3}, {2, 3}};
 
 public:
     /**
@@ -381,11 +385,15 @@ public:
      * @param angle Pointer to integer containing index of the edge neighboring the smallest dihedral angle
      * @return Smallest dihedral angle
      */
-    double GiveSmallestAngle(int &angle);
+    double GiveSmallestDihedralAngle(int &angle);
 
     double GiveDihedralAngle(int index);
 
     arma::vec GiveNormalOfFace(int index);
+
+    double GiveVolume();
+
+    int GiveShortestEdgeIndex();
 
 };
 }

@@ -40,6 +40,12 @@ std :: array< double, 3 >VertexType :: get_c()
     return this->c;
 }
 
+arma::vec VertexType :: get_c_vec()
+{
+    arma::vec c={this->get_c(0), this->get_c(1), this->get_c(2)};
+    return c;
+}
+
 double VertexType :: get_c(int index)
 {
     return this->c [ index ];
@@ -358,12 +364,15 @@ std :: array< double, 3 >TetType :: GiveCenterOfMass()
     return cm;
 }
 
-double TetType :: GiveSmallestAngle(int &angle)
+double TetType :: GiveSmallestDihedralAngle(int &angleindex)
 {
-    double smallest=0.0;
+    double smallest=10.0;
     for (int i=0; i<4; i++) {
         double thisangle = this->GiveDihedralAngle(i);
-        smallest = std::min(smallest, thisangle);
+        if (thisangle < smallest) {
+           smallest = thisangle;
+           angleindex = i;
+        }
     }
     return smallest;
 }
@@ -371,11 +380,12 @@ double TetType :: GiveSmallestAngle(int &angle)
 double TetType :: GiveDihedralAngle(int index)
 {
 
-    // int FaceVertices[4][3] = {{0, 2, 1}, {0, 1, 3}, {1, 2, 3}, {0, 2, 3}};
-    // int FacePairs[6][2] = {{0, 1}, {0, 2}, {0, 3}, {1, 3}, {1, 2}, {2, 3}};
+    arma::vec Face1Normal = GiveNormalOfFace(FacePairs[index][0]);
+    arma::vec Face2Normal = GiveNormalOfFace(FacePairs[index][1]);
 
-    arma::vec Face1Normal = GiveNormalOfFace(0);
-    arma::vec v1 = {0, 0, 0};
+    double theta = std::acos(-arma::dot(Face1Normal, Face2Normal));
+    return theta;
+
 }
 
 arma::vec TetType :: GiveNormalOfFace(int index)
@@ -389,6 +399,32 @@ arma::vec TetType :: GiveNormalOfFace(int index)
     arma::vec n1 = arma::cross(v1-v0, v2-v0);
     n1 = n1 / arma::norm(n1);
     return n1;
+}
+
+double TetType :: GiveVolume()
+{
+    arma::vec v0 = this->Vertices[0]->get_c_vec();
+    arma::vec v1 = this->Vertices[1]->get_c_vec();
+    arma::vec v2 = this->Vertices[2]->get_c_vec();
+    arma::vec v3 = this->Vertices[3]->get_c_vec();
+    double Volume = std::fabs(arma::dot(v0-v3, arma::cross(v0-v1, v0-v2)))/6.0;
+    return Volume;
+}
+
+int TetType :: GiveShortestEdgeIndex()
+{
+    double lmin = 99999;
+    int imin = 0;
+    for (size_t i=0; i<4; i++) {
+        size_t nexti = (i==3) ? 0 : i+1;
+        arma::vec edgevec = this->Vertices[i]->get_c_vec() - this->Vertices[nexti]->get_c_vec();
+        double thisl = arma::norm(edgevec);
+        if (thisl<lmin) {
+            lmin = thisl;
+            imin = int (i);
+        }
+    }
+    return imin;
 }
 
 }
