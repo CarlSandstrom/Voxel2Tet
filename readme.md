@@ -32,7 +32,7 @@ from the command line.
 
 To compile Voxel2Tet, first download Voxel2Tet source code. Using git, this is done by
 
-	$ git clone git@github.com:CarlSandstrom/Voxel2Tet.git
+	$ git clone https://github.com/CarlSandstrom/Voxel2Tet.git
 
 Then create a build directory, e.g.
 
@@ -43,6 +43,16 @@ Run CMake
 	$ cmake ~/dev/Voxel2Tet/src/
 
 For the standard "release" compilation, no extra flags are needed. The executable files are located in the Examples subdirectory.
+
+Fedora
+------
+The dependencies are the same as for Ubuntu. They can be installed by running
+
+	$ sudo dnf install cmake hdf5-devel armadillo-devel vtk-devel tetgen-devel proj-devel
+
+To compile, enter the cloned directory and run
+
+	$ cmake ./src/ && make
 
 Windows
 -------
