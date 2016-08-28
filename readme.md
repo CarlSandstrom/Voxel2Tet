@@ -40,7 +40,7 @@ Then create a build directory, e.g.
 
 Run CMake
 
-	$ cmake ~/dev/Voxel2Tet/src/
+	$ cmake ~/dev/Voxel2Tet/src/ && make
 
 For the standard "release" compilation, no extra flags are needed. The executable files are located in the Examples subdirectory.
 
