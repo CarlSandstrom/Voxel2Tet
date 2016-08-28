@@ -457,30 +457,32 @@ FC_MESH MeshManipulations :: CollapseEdgeTest(std :: vector< TriangleType * > *T
 FC_MESH MeshManipulations :: CollapseEdge(EdgeType *EdgeToCollapse, int RemoveVertexIndex, bool PerformTesting)
 {
 
+    int SaveVertexIndex = ( RemoveVertexIndex == 0 ) ? 1 : 0;
+
+    VertexType *RemoveVertex = EdgeToCollapse->Vertices[RemoveVertexIndex];
+    VertexType *SaveVertex = EdgeToCollapse->Vertices[SaveVertexIndex];
+
     LOG("Collapse edge %u@%p (%u, %u) by removing vertex %u\n", EdgeToCollapse->ID, EdgeToCollapse, EdgeToCollapse->Vertices [ 0 ]->ID,
-            EdgeToCollapse->Vertices [ 1 ]->ID, EdgeToCollapse->Vertices [ RemoveVertexIndex ]->ID);
+            EdgeToCollapse->Vertices [ 1 ]->ID, RemoveVertex->ID);
 
     // Cannot remove a fixed vertex
-    if ( EdgeToCollapse->Vertices [ RemoveVertexIndex ]->IsFixedVertex() ) {
+    if ( RemoveVertex->IsFixedVertex() ) {
         return FC_FIXEDVERTEX;
     }
 
-    int SaveVertexIndex = ( RemoveVertexIndex == 0 ) ? 1 : 0;
-
     // If the vertex to remove belongs to a PhaseEdge, ensure that the other vertex belongs to the same PhaseEdge
-    if ( EdgeToCollapse->Vertices [ RemoveVertexIndex ]->PhaseEdges.size() > 0 ) {
-        if ( EdgeToCollapse->Vertices [ SaveVertexIndex ]->PhaseEdges.size() == 0 ) {
+    if ( RemoveVertex->PhaseEdges.size() > 0 ) {
+//        if ( SaveVertex->PhaseEdges.size() == 0 ) {
+        if ( std::find(SaveVertex->PhaseEdges.begin(), SaveVertex->PhaseEdges.end(), RemoveVertex->PhaseEdges[0]) == SaveVertex->PhaseEdges.end() ) {
             return FC_CHORD;
         }
     }
-
-    VertexType *SaveVertex = EdgeToCollapse->Vertices [ SaveVertexIndex ];
 
     // Create new triangles. These are create by moving RemoveVertex to the other end of the edge and remove the 0-area triangles
     std :: vector< TriangleType * >TrianglesToRemove = EdgeToCollapse->GiveTriangles();
 
     LOG("Connected triangle IDs: %u, %u\n", TrianglesToRemove.at(0)->ID, TrianglesToRemove.at(1)->ID);
-    std :: vector< TriangleType * >ConnectedTriangles = EdgeToCollapse->Vertices [ RemoveVertexIndex ]->Triangles;
+    std :: vector< TriangleType * >ConnectedTriangles = RemoveVertex->Triangles;
 
     std :: sort( TrianglesToRemove.begin(), TrianglesToRemove.end() );
     std :: sort( ConnectedTriangles.begin(), ConnectedTriangles.end() );
@@ -505,8 +507,8 @@ FC_MESH MeshManipulations :: CollapseEdge(EdgeType *EdgeToCollapse, int RemoveVe
         NewTriangle->UpdateNormal();
 
         for ( int i = 0; i < 3; i++ ) {
-            if ( t->Vertices [ i ] == EdgeToCollapse->Vertices [ RemoveVertexIndex ] ) {
-                NewTriangle->Vertices [ i ] = EdgeToCollapse->Vertices [ SaveVertexIndex ];
+            if ( t->Vertices [ i ] == RemoveVertex ) {
+                NewTriangle->Vertices [ i ] = SaveVertex;
             } else {
                 NewTriangle->Vertices [ i ] = t->Vertices [ i ];
             }
@@ -538,7 +540,7 @@ FC_MESH MeshManipulations :: CollapseEdge(EdgeType *EdgeToCollapse, int RemoveVe
 
     // Find edges to remove (all edges connected to RemoveVertex and in any triangle in TrianglesToRemove)
     std :: vector< EdgeType * >EdgesToRemove;
-    std :: vector< EdgeType * >RemoveVertexEdges = EdgeToCollapse->Vertices.at(RemoveVertexIndex)->Edges;
+    std :: vector< EdgeType * >RemoveVertexEdges = RemoveVertex->Edges;
 
     std :: vector< EdgeType * >TriangleToRemoveEdges;
     for ( TriangleType *t : TrianglesToRemove ) {
@@ -558,7 +560,7 @@ FC_MESH MeshManipulations :: CollapseEdge(EdgeType *EdgeToCollapse, int RemoveVe
     std::set_difference(RemoveVertexEdges.begin(), RemoveVertexEdges.end(), EdgesToRemove.begin(), EdgesToRemove.end(), std::back_inserter(ConnectedEdges));
 
     // Ensure that we don't end up with copies edges, i.e. moves one edge onto another. This means that we "snap of" a volume
-    std::vector<EdgeType *> SaveVertexEdges = EdgeToCollapse->Vertices[SaveVertexIndex]->Edges;
+    std::vector<EdgeType *> SaveVertexEdges = SaveVertex->Edges;
 
     for (EdgeType *se: SaveVertexEdges) {
         if (se!=EdgeToCollapse) {
@@ -567,8 +569,8 @@ FC_MESH MeshManipulations :: CollapseEdge(EdgeType *EdgeToCollapse, int RemoveVe
                 // Construct updated edge
                 EdgeType UpdatedConnectedEdge = *ce;
                 for (size_t i=0; i<2; i++) {
-                    if (UpdatedConnectedEdge.Vertices[i] == EdgeToCollapse->Vertices[RemoveVertexIndex]) {
-                        UpdatedConnectedEdge.Vertices[i] = EdgeToCollapse->Vertices[SaveVertexIndex];
+                    if (UpdatedConnectedEdge.Vertices[i] == RemoveVertex) {
+                        UpdatedConnectedEdge.Vertices[i] = SaveVertex;
                     }
                 }
 
@@ -586,9 +588,9 @@ FC_MESH MeshManipulations :: CollapseEdge(EdgeType *EdgeToCollapse, int RemoveVe
         if ( e != EdgeToCollapse ) {
             for ( int i : { 0, 1 } ) {
                 // "Move" vertex
-                if ( e->Vertices [ i ] == EdgeToCollapse->Vertices.at(RemoveVertexIndex) ) {
+                if ( e->Vertices [ i ] == RemoveVertex ) {
                     e->Vertices [ i ]->RemoveEdge(e);
-                    e->Vertices [ i ] = EdgeToCollapse->Vertices.at(SaveVertexIndex);
+                    e->Vertices [ i ] = SaveVertex;
                     e->Vertices [ i ]->AddEdge(e);
                 }
             }
@@ -688,7 +690,7 @@ FC_MESH MeshManipulations :: CheckCoarsenNormalImproved(std :: vector< TriangleT
         double oldarea  = OldTriangles->at(i)->GiveArea();
         double newarea  = NewTriangles->at(i)->GiveArea();
 
-        LOG("angle1=%f,\tangle2=%f\tOldArea=%f\tNewArea=%f\n", angle1, angle2, oldarea, newarea);
+        LOG("angle1=%f,\tangle2=%f\tOldArea=%f\tNewArea=%f\n", DEGREES(angle1), DEGREES(angle2), oldarea, newarea);
 
         if ( newarea < TOL_COL_SMALLESTAREA ) {
             return FC_SMALLAREA;
@@ -696,13 +698,13 @@ FC_MESH MeshManipulations :: CheckCoarsenNormalImproved(std :: vector< TriangleT
 
         MaxAngle = std :: max( MaxAngle, std :: min( fabs(angle1), fabs(angle2) ) );
 
-        if ( angle1 > 3.141592 / 2 ) {
+        if ( angle1 > RADIANS(30) ) {
             LOG("Should not be collapsed...\n", 0);
             return FC_NORMAL;
         }
     }
 
-    if ( MaxAngle > 90 * 2 * 3.141593 / 360 ) {
+    if ( MaxAngle > RADIANS(30) ) {
         return FC_NORMAL;
     }
 
@@ -965,13 +967,6 @@ void MeshManipulations :: CoarsenMesh()
 #if TEST_MESH_FOR_EACH_COARSENING_ITERATION
                         Generator.TestMesh();
 #endif
-
-                        // Debug stuff
-                        for (EdgeType *e: this->Edges) {
-                            if (e->ID==83) {
-                                LOG("", 0);
-                            }
-                        }
 
                         break;
                     } else {

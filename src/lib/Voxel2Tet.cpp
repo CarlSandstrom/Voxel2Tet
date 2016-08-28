@@ -25,10 +25,10 @@ Voxel2TetClass :: Voxel2TetClass(Options *Opt)
     // Set defult options
 
     // Smoothing options
-    this->Opt->AddDefaultMap("spring_c_factor", ".75");
-    this->Opt->AddDefaultMap("spring_alpha", "2");
+    this->Opt->AddDefaultMap("spring_c_factor", "2");
+    this->Opt->AddDefaultMap("spring_alpha", "1");
 
-    this->Opt->AddDefaultMap("edge_spring_c_factor", ".75");
+    this->Opt->AddDefaultMap("edge_spring_c_factor", ".6");
     this->Opt->AddDefaultMap("edge_spring_alpha", "3");
 
     // Dream3D options
@@ -184,52 +184,52 @@ void Voxel2TetClass :: FinalizeLoad()
 
     // Setup tolearances in options
     if ( !this->Opt->has_key("TOL_FLIP_MAXAREACHANGE") ) {
-        this->Opt->AddDefaultMap("TOL_FLIP_MAXAREACHANGE", 1e-2);
+        this->Opt->AddDefaultMap("TOL_FLIP_MAXAREACHANGE", 99);
     }
     if ( !this->Opt->has_key("TOL_COL_SMALLESTAREA") ) {
         this->Opt->AddDefaultMap("TOL_COL_SMALLESTAREA", 1e-8);
     }
     if ( !this->Opt->has_key("TOL_COL_MINANGLE") ) {
-        this->Opt->AddDefaultMap("TOL_COL_MINANGLE", 20*2*3.1415/360);
+        this->Opt->AddDefaultMap("TOL_COL_MINANGLE", 10*2*3.1415/360);
     }
-
 
     if ( !this->Opt->has_key("TOL_COL_MAXNORMALCHANGE") ) {
-        this->Opt->AddDefaultMap("TOL_COL_MAXNORMALCHANGE", 10 * 2 * 3.1415 / 360);
+        this->Opt->AddDefaultMap("TOL_COL_MAXNORMALCHANGE", 15 * 2 * 3.1415 / 360);
     }
     if ( !this->Opt->has_key("TOL_COL_CHORD_MAXNORMALCHANGE") ) {
-        this->Opt->AddDefaultMap("TOL_COL_CHORD_MAXNORMALCHANGE", 10 * 2 * 3.1415 / 360);
+        this->Opt->AddDefaultMap("TOL_COL_CHORD_MAXNORMALCHANGE", 15 * 2 * 3.1415 / 360);
     }
     if ( !this->Opt->has_key("TOL_FLIP_SMALLESTAREA") ) {
         this->Opt->AddDefaultMap("TOL_FLIP_SMALLESTAREA", 1e-8);
     }
     if ( !this->Opt->has_key("TOL_FLIP_MAXNORMALCHANGE") ) {
-        this->Opt->AddDefaultMap("TOL_FLIP_MAXNORMALCHANGE", 20 * 2 * 3.1415 / 360);
+        this->Opt->AddDefaultMap("TOL_FLIP_MAXNORMALCHANGE", 15 * 2 * 3.1415 / 360);
     }
     if ( !this->Opt->has_key("TOL_FLIP_MAXNORMALDIFFERENCE") ) {
-        this->Opt->AddDefaultMap("TOL_FLIP_MAXNORMALDIFFERENCE", 10 * 2 * 3.1415 / 360);
+        this->Opt->AddDefaultMap("TOL_FLIP_MAXNORMALDIFFERENCE", 15 * 2 * 3.1415 / 360);
     }
 
     if ( !this->Opt->has_key("TOL_COL_MAXVOLUMECHANGE_FACTOR") ) {
-        this->Opt->AddDefaultMap("TOL_COL_MAXVOLUMECHANGE_FACTOR", 2);
+        this->Opt->AddDefaultMap("TOL_COL_MAXVOLUMECHANGE_FACTOR", 5/5);
     }
-    if ( !this->Opt->has_key("TOL_COL_MAXERROR_FACTOR") ) {
-        this->Opt->AddDefaultMap("TOL_COL_MAXERROR_FACTOR", 10);
+
+    if ( !this->Opt->has_key("TOL_COL_MAXERROR_ACCUMULATED_FACTOR") ) {
+        this->Opt->AddDefaultMap("TOL_COL_MAXERROR_ACCUMULATED_FACTOR", 10/5);
     }
 
     if ( !this->Opt->has_key("TOL_COL_MAXVOLUMECHANGE") ) {
         this->Opt->AddDefaultMap( "TOL_COL_MAXVOLUMECHANGE", cellspace [ 0 ] * cellspace [ 1 ] * cellspace [ 2 ] * this->Opt->GiveIntegerValue("TOL_COL_MAXVOLUMECHANGE_FACTOR") );
     }
-    if ( !this->Opt->has_key("TOL_COL_MAXERROR") ) {
-        this->Opt->AddDefaultMap( "TOL_COL_MAXERROR", cellspace [ 0 ] * cellspace [ 1 ] * cellspace [ 2 ] * this->Opt->GiveIntegerValue("TOL_COL_MAXERROR_FACTOR") );
+    if ( !this->Opt->has_key("TOL_COL_MAXERROR_ACCUMULATED") ) {
+        this->Opt->AddDefaultMap( "TOL_COL_MAXERROR_ACCUMULATED", cellspace [ 0 ] * cellspace [ 1 ] * cellspace [ 2 ] * this->Opt->GiveIntegerValue("TOL_COL_MAXERROR_ACCUMULATED_FACTOR") );
     }
 
     // Create mesh managing object
     Mesh = new MeshManipulations(bb);
 
+    this->Mesh->TOL_COL_MAXVOLUMECHANGE = this->Opt->GiveDoubleValue("TOL_COL_MAXVOLUMECHANGE");
+    this->Mesh->TOL_COL_MAXERROR_ACCUMULATED = this->Opt->GiveDoubleValue("TOL_COL_MAXERROR_ACCUMULATED");
 
-    this->Mesh->TOL_COL_MAXVOLUMECHANGE = cellspace [ 0 ] * cellspace [ 1 ] * cellspace [ 2 ] * 2;
-    this->Mesh->TOL_COL_MAXERROR = cellspace [ 0 ] * cellspace [ 1 ] * cellspace [ 2 ] * 2;
 }
 
 void Voxel2TetClass :: UpdateSurfaces()
@@ -284,6 +284,7 @@ void Voxel2TetClass :: Tetrahedralize()
 
     this->Mesh = NewMesh;
 
+    this->ExportAllVolumes();
     this->Mesh->CleanupTetrahedrals();
 
     Timer.StopTimer();
@@ -1117,9 +1118,9 @@ void Voxel2TetClass :: ExportStatistics()
     StatFile << "TOL_FLIP_MAXNORMALCHANGE = " << this->Opt->GiveStringValue("TOL_FLIP_MAXNORMALCHANGE") << "\n";
     StatFile << "TOL_FLIP_MAXNORMALDIFFERENCE = " << this->Opt->GiveStringValue("TOL_FLIP_MAXNORMALDIFFERENCE") << "\n";
     StatFile << "TOL_COL_MAXVOLUMECHANGE = " << this->Opt->GiveStringValue("TOL_COL_MAXVOLUMECHANGE") << "\n";
-    StatFile << "TOL_COL_MAXERROR = " << this->Opt->GiveStringValue("TOL_COL_MAXERROR") << "\n";
+    StatFile << "TOL_COL_MAXERROR_ACCUMULATED = " << this->Opt->GiveStringValue("TOL_COL_MAXERROR_ACCUMULATED") << "\n";
     StatFile << "TOL_COL_MAXVOLUMECHANGE_FACTOR = " << this->Opt->GiveStringValue("TOL_COL_MAXVOLUMECHANGE_FACTOR") << "\n";
-    StatFile << "TOL_COL_MAXERROR_FACTOR = " << this->Opt->GiveStringValue("TOL_COL_MAXERROR_FACTOR") << "\n";
+    StatFile << "TOL_COL_MAXERROR_ACCUMULATED_FACTOR = " << this->Opt->GiveStringValue("TOL_COL_MAXERROR_ACCUMULATED_FACTOR") << "\n";
 
     StatFile << "\nMesh\n----\n";
     StatFile << "Number of input voxels: " << dimensions [ 0 ] * dimensions [ 1 ] * dimensions [ 2 ] << "\n";

@@ -127,6 +127,8 @@ Flag|meaning
 -TOL_COL_MAXVOLUMECHANGE_FACTOR _value_ | Changes the default value of TOL_COL_MAXVOLUMECHANGE such that the value is _value_ times the size of a voxel. Default is 1.
 -TOL_COL_MAXERROR_FACTOR _value_ | Changes the default value of TOL_COL_MAXERROR such that the value is _value_ times the size of a voxel. Default is 1.
 
+A good choice of especially TOL_COL_MAXVOLUMECHANGE_FACTOR and TOL_COL_MAXERROR_FACTOR depends quite a lot of the size of the smallest objects. Choosing a large value gives a smoother surface and works fine if all objects consists of a much higher number of voxels. However, if the value is lower (or about the same) as the number of voxels of the smallest object, the can in effect vanish.
+
 ### Command line examples
 
 Here follows a few examples of the use of the command line tool to get the user started.

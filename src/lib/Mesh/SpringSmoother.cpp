@@ -80,6 +80,7 @@ arma :: vec SpringSmoother::ComputeOutOfBalance(std :: vector< std :: array< dou
         } else {
             nj = ( xi - xc ) / dj;
         }
+        //F = F + 1.0 / ConnectionCoords.size() * dj * nj;
         F = F + dj * nj;
     }
 
