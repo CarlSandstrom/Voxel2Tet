@@ -62,7 +62,10 @@ public:
      * @brief IsFixedVertex tells if the vertex is (always) fixed. A vertex that is the end of a phase edge is always fixed.
      * @return If the vertex is fixed or not
      */
-    bool IsFixedVertex() { return PhaseEdges.size() > 1; }
+    bool IsFixedVertex() {
+        this->PhaseEdges.erase(std::unique(this->PhaseEdges.begin(), this->PhaseEdges.end()), this->PhaseEdges.end());
+        return PhaseEdges.size() > 1;
+    }
 
     /**
      * @brief Determines in which directions this vertex is fixed during smoothing.

@@ -1076,7 +1076,7 @@ int MeshManipulations :: CleanupTetrahedrals()
     size_t i=0;
     while (i<Volumes.size()) {
 
-        if (Volumes[i].second<1e-9) {
+        if (std::fabs(Volumes[i].second)<1e-5) {
             this->RemoveTetrahedron(Volumes[i].first);
             i++;
         } else {

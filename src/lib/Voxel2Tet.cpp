@@ -26,9 +26,9 @@ Voxel2TetClass :: Voxel2TetClass(Options *Opt)
 
     // Smoothing options
     this->Opt->AddDefaultMap("spring_c_factor", "2");
-    this->Opt->AddDefaultMap("spring_alpha", "1");
+    this->Opt->AddDefaultMap("spring_alpha", "2");
 
-    this->Opt->AddDefaultMap("edge_spring_c_factor", ".6");
+    this->Opt->AddDefaultMap("edge_spring_c_factor", "2");
     this->Opt->AddDefaultMap("edge_spring_alpha", "3");
 
     // Dream3D options
@@ -210,11 +210,11 @@ void Voxel2TetClass :: FinalizeLoad()
     }
 
     if ( !this->Opt->has_key("TOL_COL_MAXVOLUMECHANGE_FACTOR") ) {
-        this->Opt->AddDefaultMap("TOL_COL_MAXVOLUMECHANGE_FACTOR", 5/5);
+        this->Opt->AddDefaultMap("TOL_COL_MAXVOLUMECHANGE_FACTOR", 5);
     }
 
     if ( !this->Opt->has_key("TOL_COL_MAXERROR_ACCUMULATED_FACTOR") ) {
-        this->Opt->AddDefaultMap("TOL_COL_MAXERROR_ACCUMULATED_FACTOR", 10/5);
+        this->Opt->AddDefaultMap("TOL_COL_MAXERROR_ACCUMULATED_FACTOR", 10);
     }
 
     if ( !this->Opt->has_key("TOL_COL_MAXVOLUMECHANGE") ) {
