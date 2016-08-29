@@ -32,6 +32,8 @@
 
 #define DOT(v1, v2) ( v1 [ 0 ] * v2 [ 0 ] + v1 [ 1 ] * v2 [ 1 ] + v1 [ 2 ] * v2 [ 2 ] )
 
+#define DISTANCE(v1, v2) sqrt( (v1[0]-v2[0])*(v1[0]-v2[0]) + (v1[1]-v2[1])*(v1[1]-v2[1]) + (v1[2]-v2[2])*(v1[2]-v2[2]) )
+
 #define SUB(dest, v1, v2)          \
     dest [ 0 ] = v1 [ 0 ] - v2 [ 0 ]; \
     dest [ 1 ] = v1 [ 1 ] - v2 [ 1 ]; \
@@ -330,6 +332,30 @@ bool point_in_tri(double V0 [ 3 ], double V1 [ 3 ], double V2 [ 3 ], double P [ 
     double L;
     VECTOR_LENGTH(L, n0);
     double A = .5 * L;
+
+    // If triangle has area 0, it is simply a line. Check if the point is located on any of the edges.
+    if (A==0.0) {
+        double dV0V2 = DISTANCE(V0, V2);
+        double dV0V1 = DISTANCE(V0, V1);
+        double dV1V2 = DISTANCE(V0, V1);
+        double dPV0 =  DISTANCE(P, V0);
+        double dPV1 =  DISTANCE(P, V1);
+        double dPV2 =  DISTANCE(P, V2);
+
+        if (fabs(dV0V2 - (dPV0 + dPV2)) < 1e-8) {
+            return true;
+        }
+
+        if (fabs(dV0V1 - (dPV0 + dPV1)) < 1e-8) {
+            return true;
+        }
+
+        if (fabs(dV1V2 - (dPV1 + dPV2)) < 1e-8) {
+            return true;
+        }
+
+        return false;
+    }
 
     // Compute cross product (normals) for each edge and point P
     double d0 [ 3 ], d1 [ 3 ], d2 [ 3 ];
