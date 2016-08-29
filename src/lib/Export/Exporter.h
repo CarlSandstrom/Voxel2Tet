@@ -39,6 +39,12 @@ protected:
     void UpdateMinMaxElements();
 
     /**
+     * @brief GrainSets is a vector of pairs. The pair, in turn, contains a vector of TetTypes and an associated integer which is the grain ID of those tets.
+     */
+    std::vector< std::pair< std::vector<TetType *>, int > *> GrainSets;
+    void UpdateGrainSets();
+
+    /**
      * @brief Pointer to a list of pointers to the triangles in the mesh. This is typically a pointer to the list of triangles
      * in the MeshData object.
      */

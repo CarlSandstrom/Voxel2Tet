@@ -39,6 +39,9 @@ void AbaqusExporter::WriteVolumeData(std :: string Filename)
     // Find element boundaries
     this->UpdateMinMaxElements();
 
+    // Update grainsets
+    //this->UpdateGrainSets();
+
     AbaqusFile << "**\n";
     AbaqusFile << "** File created by Voxel2Tet\n";
     AbaqusFile << "**\n";

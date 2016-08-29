@@ -131,4 +131,25 @@ void Exporter::UpdateMinMaxElements()
     }
 }
 
+void Exporter :: UpdateGrainSets()
+{
+    for (TetType *t: *this->Tets) {
+        int GrainID = t->MaterialID;
+        std::pair< std::vector<TetType *>, int > *GrainSet = NULL;
+        for (auto p: this->GrainSets) {
+            if (p->second == GrainID) {
+                GrainSet = p;
+                break;
+            }
+        }
+        if (GrainSet == NULL) {
+            GrainSet = new std::pair< std::vector<TetType *>, int >;
+            GrainSet->second = GrainID;
+            this->GrainSets.push_back(GrainSet);
+        }
+        GrainSet->first.push_back(t);
+        LOG("\n", 0);
+    }
+}
+
 }

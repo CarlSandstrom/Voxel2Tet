@@ -284,8 +284,9 @@ void Voxel2TetClass :: Tetrahedralize()
 
     this->Mesh = NewMesh;
 
-    this->ExportAllVolumes();
-    this->Mesh->CleanupTetrahedrals();
+    //this->ExportAllVolumes();
+
+    //this->Mesh->CleanupTetrahedrals();
 
     Timer.StopTimer();
 }
