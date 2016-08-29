@@ -1,5 +1,3 @@
-lib/
-bin/
 CMakeCache.txt
 CMakeFiles/
 Makefile
