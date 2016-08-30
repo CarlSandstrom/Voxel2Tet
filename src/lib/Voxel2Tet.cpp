@@ -1053,13 +1053,10 @@ void Voxel2TetClass :: Process()
 
     this->UpdateSurfaces();
 
-    if ( this->Opt->GiveBooleanValue("exportsteps") ) {
-        this->Mesh->ExportSurface(strfmt("%s_step_%u.simple", this->Opt->GiveStringValue("output").c_str(), outputindex), FT_SIMPLE);
-        this->Mesh->ExportSurface(strfmt("%s_step_%u.vtp", this->Opt->GiveStringValue("output").c_str(), outputindex++), FT_VTK);
-    }
     // Check for intersections and pull back vertices in areas where intersections occur
     this->SurfaceSmoother->PullBackAtIntersections(this->Mesh->Vertices, this->Mesh);
 
+    this->Mesh->FlipAll(false);
     this->UpdateSurfaces();
 
     GetListOfVolumes(CurrentVolumes, PhaseList);

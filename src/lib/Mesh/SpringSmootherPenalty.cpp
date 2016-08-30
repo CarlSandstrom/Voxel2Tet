@@ -34,7 +34,7 @@ void SpringSmootherPenalty :: Smooth(std :: vector< VertexType * >Vertices, Mesh
     }
 
     bool intersecting = true;
-    this->CheckPenetration(&Vertices, Mesh);
+    this->CheckPenetration(&Vertices, (MeshManipulations*) Mesh);
 
     while (intersecting) {
 
@@ -82,13 +82,6 @@ void SpringSmootherPenalty :: Smooth(std :: vector< VertexType * >Vertices, Mesh
                 deltamax = std::max(delta, deltamax);
                 i++;
             }
-        }
-
-        // Check fo penetration
-        std :: vector< std :: pair< TriangleType *, TriangleType * > >IntersectingTriangles = CheckPenetration(& Vertices, Mesh);
-
-        if ( IntersectingTriangles.size() > 0 ) {
-
         }
     }
 }

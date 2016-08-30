@@ -5,6 +5,7 @@
 
 #include "MeshComponents.h"
 #include "MeshData.h"
+#include "MeshManipulations.h"
 
 namespace voxel2tet
 {
@@ -42,9 +43,9 @@ public:
      */
     virtual void Smooth(std :: vector< VertexType * >Vertices, MeshData *Mesh = NULL) = 0;
 
-    std :: vector< std :: pair< TriangleType *, TriangleType * > >CheckPenetration(std :: vector< VertexType * > *Vertices, MeshData *Mesh);
+    std :: vector< std :: pair< TriangleType *, TriangleType * > >CheckPenetration(std :: vector< VertexType * > *Vertices, MeshManipulations *Mesh);
 
-    void PullBackAtIntersections(std :: vector< VertexType * > Vertices, MeshData *Mesh);
+    void PullBackAtIntersections(std :: vector< VertexType * > Vertices, MeshManipulations *Mesh);
 
 };
 

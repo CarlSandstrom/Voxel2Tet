@@ -249,31 +249,31 @@ FC_MESH MeshManipulations :: FlipEdge(EdgeType *Edge, bool SkipIntersectionCheck
     }
 
 
-    if (!SkipIntersectionCheck) {
-        // Check if any of the new triangles penetrates any of the old triangles nearby
 
-        // Add all triangles nearby to NearTriangles
-        std :: array< double, 3 >cm = NewEdge.GiveCenterPoint();
-        std :: vector< TriangleType * >NearTriangles = this->GetTrianglesAround(cm, this->LongestEdgeLength);
+    // Check if any of the new triangles penetrates any of the old triangles nearby
 
-        // Remove EdgeTriangles from NearTriangles
-        for ( int i = 0; i < 2; i++ ) {
-            NearTriangles.erase( std :: remove(NearTriangles.begin(), NearTriangles.end(), EdgeTriangles [ i ]), NearTriangles.end() );
-        }
+    // Add all triangles nearby to NearTriangles
+    std :: array< double, 3 >cm = NewEdge.GiveCenterPoint();
+    std :: vector< TriangleType * >NearTriangles = this->GetTrianglesAround(cm, this->LongestEdgeLength);
 
-        // Check if new triangles penetrates existing triangles (except those that will be deleted of course)
-        for ( TriangleType *t1 : NewTriangles ) {
-            for ( TriangleType *t2 : NearTriangles ) {
+    // Remove EdgeTriangles from NearTriangles
+    for ( int i = 0; i < 2; i++ ) {
+        NearTriangles.erase( std :: remove(NearTriangles.begin(), NearTriangles.end(), EdgeTriangles [ i ]), NearTriangles.end() );
+    }
 
-                FC_MESH R = this->CheckTrianglePenetration(t1, t2);
-                if ( R != FC_OK ) {
-                    this->CheckTrianglePenetration(t1, t2);
-                    LOG("Unable to flip edge. Will result in penetration\n", 0);
-                    return R;
-                }
+    // Check if new triangles penetrates existing triangles (except those that will be deleted of course)
+    for ( TriangleType *t1 : NewTriangles ) {
+        for ( TriangleType *t2 : NearTriangles ) {
+
+            FC_MESH R = this->CheckTrianglePenetration(t1, t2);
+            if ( R != FC_OK ) {
+                this->CheckTrianglePenetration(t1, t2);
+                LOG("Unable to flip edge. Will result in penetration\n", 0);
+                return R;
             }
         }
     }
+
 
 
     LOG("Ok to flip edge\n", 0);

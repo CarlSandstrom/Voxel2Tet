@@ -61,7 +61,7 @@ std::vector<std::vector<VertexType *>> Smoother::GetConnectivityVector(std::vect
     return Connectivity;
 }
 
-std :: vector< std :: pair< TriangleType *, TriangleType * > > Smoother::CheckPenetration(std :: vector< VertexType * > *Vertices, MeshData *Mesh)
+std :: vector< std :: pair< TriangleType *, TriangleType * > > Smoother::CheckPenetration(std :: vector< VertexType * > *Vertices, MeshManipulations *Mesh)
 {
     std :: vector< std :: pair< TriangleType *, TriangleType * > >IntersectingTriangles;
     std :: vector< TriangleType * >Triangles;
@@ -78,7 +78,7 @@ std :: vector< std :: pair< TriangleType *, TriangleType * > > Smoother::CheckPe
         std :: array< double, 3 >c = t1->GiveCenterOfMass();
         double d = t1->GiveLongestEdgeLength();
 
-        std :: vector< TriangleType * >NearTriangles = Mesh->GetTrianglesAround(c, d * 2); // TODO: 2 should to it, but keep it in mind
+        std :: vector< TriangleType * >NearTriangles = Mesh->GetTrianglesAround(c, Mesh->LongestEdgeLength);
 
         for ( TriangleType *t2 : NearTriangles ) {
             if ( t1 != t2 ) {
@@ -99,7 +99,7 @@ std :: vector< std :: pair< TriangleType *, TriangleType * > > Smoother::CheckPe
     return IntersectingTriangles;
 }
 
-void Smoother :: PullBackAtIntersections(std :: vector< VertexType * > Vertices, MeshData *Mesh)
+void Smoother :: PullBackAtIntersections(std :: vector< VertexType * > Vertices, MeshManipulations *Mesh)
 {
 
     // Check for intersecting triangles. If some triangles intersect, stiffen the structure in that area and re-smooth
@@ -130,7 +130,7 @@ void Smoother :: PullBackAtIntersections(std :: vector< VertexType * > Vertices,
             arma :: vec displacement = {
                 v->get_c(0) - v->originalcoordinates [ 0 ], v->get_c(1) - v->originalcoordinates [ 1 ], v->get_c(2) - v->originalcoordinates [ 2 ]
             };
-            arma :: vec newdisplacement = displacement * .999;
+            arma :: vec newdisplacement = displacement * .9;
 
             for ( int i = 0; i < 3; i++ ) {
                 v->set_c(v->originalcoordinates [ i ] + newdisplacement [ i ], i);
@@ -138,6 +138,7 @@ void Smoother :: PullBackAtIntersections(std :: vector< VertexType * > Vertices,
         }
 
         Mesh->ExportSurface(strfmt("/tmp/Intersection_step_%u.vtp", intersecting_count+1), FT_VTK);
+
         intersecting_count++;
         IntersectingTriangles = CheckPenetration(&Vertices, Mesh);
 
