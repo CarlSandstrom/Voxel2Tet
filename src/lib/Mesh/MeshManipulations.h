@@ -100,7 +100,7 @@ public:
      * @param Edge [in] Edge to be flipped
      * @return Value depends on success of flip
      */
-    FC_MESH FlipEdge(EdgeType *Edge);
+    FC_MESH FlipEdge(EdgeType *Edge, bool SkipIntersectionCheck = false);
 
     /**
      * @brief Check if flipping is permitted. For return codes, see CollapseEdge
@@ -179,7 +179,7 @@ public:
      * @brief Perform flipping of edges until no more edges can be flipped. This implies better quality of the mesh.
      * @return Number of flips performed
      */
-    int FlipAll();
+    int FlipAll(bool SkipIntersectionCheck = false);
 
     int CleanupTetrahedrals();
 

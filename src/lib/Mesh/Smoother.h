@@ -14,12 +14,20 @@ namespace voxel2tet
  */
 class Smoother
 {
+    friend std::ostream &operator<<(std::ostream &stream, const Smoother &Smoother) {return stream; }
 public:
     /**
      * @brief constructor
      */
     Smoother();
 
+    /**
+     * @brief Creates a vector where each element is a vector of vertices connected to the corresponding node in the Vertices vector.
+     * Static vertices has no connections and vertices on a PhaseEdge does not have any connection with vertices on surfaces. However,
+     * vertices on the surfaces has connections to vertices on PhaseEdges.
+     * @param Vertices
+     * @return
+     */
     std::vector<std::vector<VertexType *>> GetConnectivityVector(std::vector<VertexType *> Vertices);
 
     /**
@@ -33,6 +41,10 @@ public:
      * @param Mesh For exporting (debugging purposes)
      */
     virtual void Smooth(std :: vector< VertexType * >Vertices, MeshData *Mesh = NULL) = 0;
+
+    std :: vector< std :: pair< TriangleType *, TriangleType * > >CheckPenetration(std :: vector< VertexType * > *Vertices, MeshData *Mesh);
+
+    void PullBackAtIntersections(std :: vector< VertexType * > Vertices, MeshData *Mesh);
 
 };
 

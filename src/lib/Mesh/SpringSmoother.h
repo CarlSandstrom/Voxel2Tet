@@ -30,25 +30,24 @@ class SmootherConfiguration
 class SpringSmoother : public Smoother
 {
     friend std::ostream &operator<<(std::ostream &stream, const SpringSmoother &Smoother);
-private:
-
+protected:
     double c;
     double c_factor;
     double alpha;
     double charlength;
 
+    arma :: vec ComputeOutOfBalance(std :: vector< arma::vec3 >ConnectionCoords, arma::vec3 xc, arma::vec3 x0, double alpha, double c);
+private:
+
     double Compute_c(double l, double alpha);
-    arma :: vec ComputeOutOfBalance(std :: vector< std :: array< double, 3 > >ConnectionCoords, arma :: vec xc, arma :: vec x0, double alpha, double c);
-    arma :: mat ComputeNumericalTangent(std :: vector< std :: array< double, 3 > >ConnectionCoords, arma :: vec xc, arma :: vec x0, double alpha, double c);
-    arma :: mat ComputeAnalyticalTangent(std :: vector< std :: array< double, 3 > >ConnectionCoords, arma :: vec xc, arma :: vec x0, double alpha, double c);
-    arma :: mat ComputeAnalyticalTangentGlobal(std :: vector< std :: array< double, 3 > >ConnectionCoords, arma :: vec xc, arma :: vec x0, double alpha, double c);
+    arma :: mat ComputeNumericalTangent(std :: vector< arma::vec3 >ConnectionCoords, arma :: vec xc, arma :: vec x0, double alpha, double c);
+    arma :: mat ComputeAnalyticalTangent(std :: vector< arma::vec3 >ConnectionCoords, arma :: vec xc, arma :: vec x0, double alpha, double c);
+    arma :: mat ComputeAnalyticalTangentGlobal(std :: vector< arma::vec3 >ConnectionCoords, arma :: vec xc, arma :: vec x0, double alpha, double c);
 
     void SpringSmoothGlobal(std :: vector< VertexType * >Vertices, std :: vector< bool >Fixed,
                             std :: vector< std :: vector< VertexType * > >Connections,
                             double c, double alpha, double charlength, bool Automatic_c = false,
                             MeshData *Mesh = NULL);
-
-    std :: vector< std :: pair< TriangleType *, TriangleType * > >CheckPenetration(std :: vector< VertexType * > *Vertices, MeshData *Mesh);
 
 public:
 

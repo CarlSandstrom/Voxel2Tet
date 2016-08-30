@@ -46,7 +46,7 @@ double SpringSmoother::Compute_c(double l, double alpha)
     return c;
 }
 
-arma :: vec SpringSmoother::ComputeOutOfBalance(std :: vector< std :: array< double, 3 > >ConnectionCoords, arma :: vec xc, arma :: vec x0, double alpha, double c)
+arma :: vec SpringSmoother::ComputeOutOfBalance(std :: vector< arma::vec3 >ConnectionCoords, arma :: vec3 xc, arma :: vec3 x0, double alpha, double c)
 {
     arma :: vec F = {
         0., 0., 0.
@@ -87,7 +87,7 @@ arma :: vec SpringSmoother::ComputeOutOfBalance(std :: vector< std :: array< dou
     return F;
 }
 
-arma :: mat  SpringSmoother::ComputeNumericalTangent(std :: vector< std :: array< double, 3 > >ConnectionCoords, arma :: vec xc, arma :: vec x0, double alpha, double c)
+arma :: mat  SpringSmoother::ComputeNumericalTangent(std :: vector< arma::vec3 >ConnectionCoords, arma :: vec xc, arma :: vec x0, double alpha, double c)
 {
     double eps = 1e-10;
     arma :: mat Tangent = arma :: zeros< arma :: mat >(3, 3);
@@ -105,7 +105,7 @@ arma :: mat  SpringSmoother::ComputeNumericalTangent(std :: vector< std :: array
     return Tangent;
 }
 
-arma :: mat SpringSmoother::ComputeAnalyticalTangent(std :: vector< std :: array< double, 3 > >ConnectionCoords, arma :: vec xc, arma :: vec x0, double alpha, double c)
+arma :: mat SpringSmoother::ComputeAnalyticalTangent(std :: vector< arma::vec3 >ConnectionCoords, arma :: vec xc, arma :: vec x0, double alpha, double c)
 {
     arma :: mat Tangent = arma :: zeros< arma :: mat >(3, 3);
 
@@ -139,7 +139,7 @@ arma :: mat SpringSmoother::ComputeAnalyticalTangent(std :: vector< std :: array
     return Tangent;
 }
 
-arma :: mat SpringSmoother::ComputeAnalyticalTangentGlobal(std :: vector< std :: array< double, 3 > >ConnectionCoords, arma :: vec xc, arma :: vec x0, double alpha, double c)
+arma :: mat SpringSmoother::ComputeAnalyticalTangentGlobal(std :: vector< arma::vec3 >ConnectionCoords, arma :: vec xc, arma :: vec x0, double alpha, double c)
 {
     arma :: mat Tangent = arma :: zeros< arma :: mat >(3, ConnectionCoords.size() * 3 + 3);
     arma :: mat TangentSelf = arma :: zeros< arma :: mat >(3, 3);
@@ -245,7 +245,7 @@ void SpringSmoother::SpringSmoothGlobal(std :: vector< VertexType * >Vertices, s
 
         for ( size_t i = 0; i < Vertices.size(); i++ ) {
             if ( !Fixed [ i ] ) {
-                std :: vector< std :: array< double, 3 > >ConnectionCoords;
+                std :: vector< arma::vec3 >ConnectionCoords;
                 std :: vector< VertexType * >MyConnections = Connections.at(i);
 
                 for ( unsigned k = 0; k < MyConnections.size(); k++ ) {
@@ -392,57 +392,7 @@ void SpringSmoother::SpringSmoothGlobal(std :: vector< VertexType * >Vertices, s
     }
 }
 
-std :: vector< std :: pair< TriangleType *, TriangleType * > > SpringSmoother::CheckPenetration(std :: vector< VertexType * > *Vertices, MeshData *Mesh)
-{
-    std :: vector< std :: pair< TriangleType *, TriangleType * > >IntersectingTriangles;
-    std :: vector< TriangleType * >Triangles;
 
-    for ( VertexType *v : *Vertices ) {
-        for ( TriangleType *t : v->Triangles ) {
-            Triangles.push_back(t);
-        }
-    }
-    std :: sort( Triangles.begin(), Triangles.end() );
-    Triangles.erase( std :: unique( Triangles.begin(), Triangles.end() ), Triangles.end() );
-
-    for ( TriangleType *t1 : Triangles ) {
-        std :: array< double, 3 >c = t1->GiveCenterOfMass();
-        double d = t1->GiveLongestEdgeLength();
-
-        std :: vector< TriangleType * >NearTriangles = Mesh->GetTrianglesAround(c, d * 2); // TODO: 2 should to it, but keep it in mind
-
-        for ( TriangleType *t2 : NearTriangles ) {
-            if ( t1 != t2 ) {
-                if ( Mesh->CheckTrianglePenetration(t1, t2) ) {
-                    //Mesh->CheckTrianglePenetration(t1, t2);
-                    IntersectingTriangles.push_back({ t1, t2 });
-                    LOG("Triangles %u and %u intersect!\n", t1->ID, t2->ID);
-                    LOG( "t1(%u): (%f, %f, %f), (%f, %f, %f), (%f, %f, %f)\n", t1->ID, t1->Vertices.at(0)->get_c(0), t1->Vertices.at(0)->get_c(1), t1->Vertices.at(0)->get_c(2),
-                         t1->Vertices.at(1)->get_c(0), t1->Vertices.at(1)->get_c(1), t1->Vertices.at(1)->get_c(2),
-                         t1->Vertices.at(2)->get_c(0), t1->Vertices.at(2)->get_c(1), t1->Vertices.at(2)->get_c(2) );
-                    LOG( "t2(%u): (%f, %f, %f), (%f, %f, %f), (%f, %f, %f)\n", t2->ID, t2->Vertices.at(0)->get_c(0), t2->Vertices.at(0)->get_c(1), t2->Vertices.at(0)->get_c(2),
-                         t2->Vertices.at(1)->get_c(0), t2->Vertices.at(1)->get_c(1), t2->Vertices.at(1)->get_c(2),
-                         t2->Vertices.at(2)->get_c(0), t2->Vertices.at(2)->get_c(1), t2->Vertices.at(2)->get_c(2) );
-                    /*
-                     *                  std::vector<VertexType*>  StiffenVertices;
-                     *
-                     *                  for (VertexType *v: t1->Vertices) StiffenVertices.push_back(v);
-                     *                  for (VertexType *v: t2->Vertices) StiffenVertices.push_back(v);
-                     *
-                     *                  std::sort(StiffenVertices.begin(), StiffenVertices.end());
-                     *                  StiffenVertices.erase(std::unique(StiffenVertices.begin(), StiffenVertices.end()), StiffenVertices.end());
-                     *
-                     *                  for (VertexType *v: StiffenVertices) {
-                     *                      //v->c_constant = v->c_constant * 0.75;
-                     *                      printf("(%u: c)=%f, ", v->ID, v->c_constant);
-                     *                  }
-                     *                  LOG("\n", 0);*/
-                }
-            }
-        }
-    }
-    return IntersectingTriangles;
-}
 
 std::ostream &operator<<(std::ostream &stream, const SpringSmoother &Smoother)
 {
@@ -478,7 +428,6 @@ void SpringSmoother::Smooth(std :: vector< VertexType * >Vertices, voxel2tet :: 
         PreviousPositions[v] = v->get_c();
     }
 
-
     // Reset 'c' constant for all vertices
     for ( VertexType *v : Vertices ) {
         v->c_constant = c;
@@ -492,212 +441,146 @@ void SpringSmoother::Smooth(std :: vector< VertexType * >Vertices, voxel2tet :: 
     }
 #endif
 
-#ifdef OPENMP
-    threadcount = omp_get_max_threads();
-#endif
-
     bool intersecting = true;
-    int intersecting_count = 0;
 
-    this->CheckPenetration(& Vertices, Mesh);
+    intersecting = false;
+    int itercount = 0;
+    int threadcount = 1;
+    double deltamax = 1e8;
+    int deltamaxnode;
 
-    while ( intersecting ) {
-        intersecting = false;
-        int itercount = 0;
-        int threadcount = 1;
-        double deltamax = 1e8;
-        int deltamaxnode;
+    while ( ( itercount < MAX_ITER_COUNT ) & ( deltamax > ( charlength * 1e-3 ) ) ) {
+        deltamax = 0.0;
+        int deltamaxnodes [ threadcount ];
+        double deltamaxvalues [ threadcount ];
 
-        while ( ( itercount < MAX_ITER_COUNT ) & ( deltamax > ( charlength * 1e-3 ) ) ) {
-            deltamax = 0.0;
-            int deltamaxnodes [ threadcount ];
-            double deltamaxvalues [ threadcount ];
-
-            for ( int i = 0; i < threadcount; i++ ) {
-                deltamaxnodes [ i ] = 0;
-                deltamaxvalues [ i ] = 0.0;
-            }
-
-            //#pragma omp parallel default(shared)
-            {
-                int threadid = 0;
-#ifdef OPENMP
-                threadid = omp_get_thread_num();
-#endif
-
-                //#pragma omp for schedule(static, 100)
-                for ( size_t i = 0; i < Vertices.size(); i++ ) {
-
-                    VertexType *v=Vertices[i];
-                    if (OriginalPositions.find(v)==OriginalPositions.end()) {
-                        LOG("Stuff\n",0);
-                    }
-
-                    std :: vector< std :: array< double, 3 > >ConnectionCoords;
-                    std :: vector< VertexType * >MyConnections = NewConnections.at(i);
-
-                    for ( VertexType *Connection: MyConnections ) {
-                        ConnectionCoords.push_back({ { PreviousPositions[Connection][ 0 ],
-                                                       PreviousPositions[Connection][ 1 ],
-                                                       PreviousPositions[Connection][ 2 ] } });
-                    }
-
-                    // Current vertex's position
-                    arma :: vec xc = {
-                        PreviousPositions[v] [ 0 ], PreviousPositions[v] [ 1 ], PreviousPositions[v] [ 2 ]
-                    };
-
-                    // Current vertex's original position
-                    arma :: vec x0 = {
-                        OriginalPositions[v] [ 0 ], OriginalPositions[v] [ 1 ], OriginalPositions[v] [ 2 ]
-                    };
-
-                    // Compute out-of-balance vector
-                    arma :: vec R = ComputeOutOfBalance(ConnectionCoords, xc, x0, alpha, Vertices.at(i)->c_constant);
-                    double err = arma :: norm(R);
-                    int iter = 0;
-
-                    // Find equilibrium
-                    while ( ( err > 1e-5 ) & ( iter < 100000 ) ) {
-                        arma :: mat T = ComputeAnalyticalTangent(ConnectionCoords, xc, x0, alpha, Vertices.at(i)->c_constant);
-                        arma :: vec delta = -arma :: solve(T, R);
-                        xc = xc + 1. * delta;
-                        R = ComputeOutOfBalance(ConnectionCoords, xc, x0, alpha, Vertices.at(i)->c_constant);
-                        err = arma :: norm(R);
-                        iter++;
-                    }
-
-                    // If too many iterations, throw an exception and investigate...
-                    if ( iter > 99999 ) {
-                        throw( 0 );
-                    }
-
-                    // Update current position
-                    for ( int j = 0; j < 3; j++ ) {
-                        if ( !Vertices.at(i)->Fixed [ j ] ) {
-                            CurrentPositions[Vertices.at(i)] [ j ] = xc [ j ];
-                        }
-                    }
-
-                    // Update maximum delta
-                    arma :: vec d = {
-                        PreviousPositions[v] [ 0 ] - CurrentPositions[v] [ 0 ], PreviousPositions[v] [ 1 ] - CurrentPositions[v] [ 1 ], PreviousPositions[v] [ 2 ] - CurrentPositions[v] [ 2 ]
-                    };
-                    if ( arma :: norm(d) > deltamaxvalues [ threadid ] ) {
-                        deltamaxvalues [ threadid ] = arma :: norm(d);
-                        deltamaxnodes [ threadid ] = i;
-                    }
-
-                }
-
-                // Update vertices
-                for ( VertexType *v: Vertices ) {
-                    for ( int j = 0; j < 3; j++ ) {
-                        v->set_c(CurrentPositions[v] [ j ], j);
-                    }
-                }
-
-                // Update previous positions
-                for ( VertexType *v: Vertices ) {
-                    for ( int j = 0; j < 3; j++ ) {
-                        if ( !v->Fixed [ j ] ) {
-                            PreviousPositions[v] [ j ] = CurrentPositions[v] [ j ];
-                        }
-                    }
-                }
-            }
-
-            deltamaxnode = 0;
-            for ( int i = 0; i < threadcount; i++ ) {
-                if ( deltamaxvalues [ i ] > deltamax ) {
-                    deltamax = deltamaxvalues [ i ];
-                    deltamaxnode = deltamaxnodes [ i ];
-                }
-            }
-
-            STATUS("%c[2K\r\tIteration %u end with deltamax=%f at node %i\r", 27, itercount, deltamax, deltamaxnode);
-            fflush(stdout);
-
-            itercount++;
-
-#if EXPORT_SMOOTHING_ANIMATION == 1
-            // ************************** DEBUG STUFF
-            // Update vertices
-            for ( unsigned int i = 0; i < Vertices.size(); i++ ) {
-                VertexType *v = Vertices.at(i);
-                for ( int j = 0; j < 3; j++ ) {
-                    if ( !v->Fixed [ j ] ) {
-                        v->set_c(CurrentPositions[v] [ j ], j);
-                    }
-                }
-            }
-
-            if ( Mesh != NULL ) {
-                FileName.str("");
-                FileName.clear();
-                FileName << "/tmp/Smoothing" << itercount++ << ".vtp";
-                Mesh->ExportSurface(FileName.str(), FT_VTK);
-            }
-            // ************************** /DEBUG STUFF
-#endif
-
+        for ( int i = 0; i < threadcount; i++ ) {
+            deltamaxnodes [ i ] = 0;
+            deltamaxvalues [ i ] = 0.0;
         }
 
-        // Check for intersecting triangles. If some triangles intersect, stiffen the structure in that area and re-smooth
-        std :: vector< std :: pair< TriangleType *, TriangleType * > >IntersectingTriangles = CheckPenetration(& Vertices, Mesh);
-        if ( IntersectingTriangles.size() > 0 ) {
-            // Pull back nodes until no intersecting triangles remain
-            intersecting_count = 0;
-            while ( IntersectingTriangles.size() > 0 ) {
-                STATUS("Stiffen and re-smooth surface/edge due to %u intersecting triangles, iteration %u\n", IntersectingTriangles.size(), intersecting_count);
-
-                // Stiffen spring
-                std :: vector< VertexType * >TriangleVertices;
-                for ( std :: pair< TriangleType *, TriangleType * >p : IntersectingTriangles ) {
-                    for ( VertexType *v : p.first->Vertices ) {
-                        TriangleVertices.push_back(v);
-                    }
-                    for ( VertexType *v : p.second->Vertices ) {
-                        TriangleVertices.push_back(v);
-                    }
-                }
-
-                std :: sort( TriangleVertices.begin(), TriangleVertices.end() );
-                TriangleVertices.erase( std :: unique( TriangleVertices.begin(), TriangleVertices.end() ), TriangleVertices.end() );
-
-                for ( VertexType *v : TriangleVertices ) {
-                    arma :: vec displacement = {
-                        v->get_c(0) - v->originalcoordinates [ 0 ], v->get_c(1) - v->originalcoordinates [ 1 ], v->get_c(2) - v->originalcoordinates [ 2 ]
-                    };
-                    arma :: vec newdisplacement = displacement * .9;
-
-                    for ( int i = 0; i < 3; i++ ) {
-                        v->set_c(v->originalcoordinates [ i ] + newdisplacement [ i ], i);
-                    }
-                }
-
-                IntersectingTriangles = CheckPenetration(& Vertices, Mesh);
-                intersecting_count++;
-            }
-
-#if EXPORT_SMOOTHING_ANIMATION == 1
-            std :: ostringstream FileName;
-            if ( Mesh != NULL ) {
-                FileName << "/tmp/Smoothing" << 0 << ".vtp";
-                Mesh->ExportSurface(FileName.str(), FT_VTK);
-            }
+        //#pragma omp parallel default(shared)
+        {
+            int threadid = 0;
+#ifdef OPENMP
+            threadid = omp_get_thread_num();
 #endif
-        } else {
-            intersecting = false;
+
+            //#pragma omp for schedule(static, 100)
+            for ( size_t i = 0; i < Vertices.size(); i++ ) {
+
+                VertexType *v=Vertices[i];
+
+                std :: vector< arma::vec3 >ConnectionCoords;
+                std :: vector< VertexType * >MyConnections = NewConnections.at(i);
+
+                for ( VertexType *Connection: MyConnections ) {
+                    ConnectionCoords.push_back({ { PreviousPositions[Connection][ 0 ],
+                                                   PreviousPositions[Connection][ 1 ],
+                                                   PreviousPositions[Connection][ 2 ] } });
+                }
+
+                // Current vertex's position
+                arma :: vec xc = {
+                    PreviousPositions[v] [ 0 ], PreviousPositions[v] [ 1 ], PreviousPositions[v] [ 2 ]
+                };
+
+                // Current vertex's original position
+                arma :: vec x0 = {
+                    OriginalPositions[v] [ 0 ], OriginalPositions[v] [ 1 ], OriginalPositions[v] [ 2 ]
+                };
+
+                // Compute out-of-balance vector
+                arma :: vec R = ComputeOutOfBalance(ConnectionCoords, xc, x0, alpha, Vertices.at(i)->c_constant);
+                double err = arma :: norm(R);
+                int iter = 0;
+
+                // Find equilibrium
+                while ( ( err > 1e-5 ) & ( iter < 100000 ) ) {
+                    arma :: mat T = ComputeAnalyticalTangent(ConnectionCoords, xc, x0, alpha, Vertices.at(i)->c_constant);
+                    arma :: vec delta = -arma :: solve(T, R);
+                    xc = xc + 1. * delta;
+                    R = ComputeOutOfBalance(ConnectionCoords, xc, x0, alpha, Vertices.at(i)->c_constant);
+                    err = arma :: norm(R);
+                    iter++;
+                }
+
+                // If too many iterations, throw an exception and investigate...
+                if ( iter > 99999 ) {
+                    throw( 0 );
+                }
+
+                // Update current position
+                for ( int j = 0; j < 3; j++ ) {
+                    if ( !Vertices.at(i)->Fixed [ j ] ) {
+                        CurrentPositions[Vertices.at(i)] [ j ] = xc [ j ];
+                    }
+                }
+
+                // Update maximum delta
+                arma :: vec d = {
+                    PreviousPositions[v] [ 0 ] - CurrentPositions[v] [ 0 ], PreviousPositions[v] [ 1 ] - CurrentPositions[v] [ 1 ], PreviousPositions[v] [ 2 ] - CurrentPositions[v] [ 2 ]
+                };
+                if ( arma :: norm(d) > deltamaxvalues [ threadid ] ) {
+                    deltamaxvalues [ threadid ] = arma :: norm(d);
+                    deltamaxnodes [ threadid ] = i;
+                }
+
+            }
+
             // Update vertices
             for ( VertexType *v: Vertices ) {
                 for ( int j = 0; j < 3; j++ ) {
-                    v->set_c(CurrentPositions[v] [ j ], j); // TODO: Use array to improve performance
+                    v->set_c(CurrentPositions[v] [ j ], j);
+                }
+            }
+
+            // Update previous positions
+            for ( VertexType *v: Vertices ) {
+                for ( int j = 0; j < 3; j++ ) {
+                    if ( !v->Fixed [ j ] ) {
+                        PreviousPositions[v] [ j ] = CurrentPositions[v] [ j ];
+                    }
                 }
             }
         }
-        STATUS("\n", 0);
+
+        deltamaxnode = 0;
+        for ( int i = 0; i < threadcount; i++ ) {
+            if ( deltamaxvalues [ i ] > deltamax ) {
+                deltamax = deltamaxvalues [ i ];
+                deltamaxnode = deltamaxnodes [ i ];
+            }
+        }
+
+        STATUS("%c[2K\r\tIteration %u end with deltamax=%f at node %i\r", 27, itercount, deltamax, deltamaxnode);
+        fflush(stdout);
+
+        itercount++;
+
+#if EXPORT_SMOOTHING_ANIMATION == 1
+        // ************************** DEBUG STUFF
+        // Update vertices
+        for ( unsigned int i = 0; i < Vertices.size(); i++ ) {
+            VertexType *v = Vertices.at(i);
+            for ( int j = 0; j < 3; j++ ) {
+                if ( !v->Fixed [ j ] ) {
+                    v->set_c(CurrentPositions[v] [ j ], j);
+                }
+            }
+        }
+
+        if ( Mesh != NULL ) {
+            FileName.str("");
+            FileName.clear();
+            FileName << "/tmp/Smoothing" << itercount++ << ".vtp";
+            Mesh->ExportSurface(FileName.str(), FT_VTK);
+        }
+        // ************************** /DEBUG STUFF
+#endif
+
     }
+
 
 #if TEST_MESH_FOR_EACH_SMOOTHING
     TetGenCaller Tetgen;

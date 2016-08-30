@@ -61,8 +61,11 @@ private:
     std :: vector< double >CurrentVolumes;
     std :: vector< int >PhaseList;
 
-    SpringSmoother *SurfaceSmoother;
-    SpringSmoother *EdgeSmoother;
+    Smoother *SurfaceSmoother;
+    Smoother *EdgeSmoother;
+    bool SmoothSimultaneously;
+
+    void UpdateFixed();
 
 public:
 

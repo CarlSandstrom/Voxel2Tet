@@ -48,14 +48,14 @@ public:
     /**
      * @brief Pointer to smoother object for this phase edge.
      */
-    SpringSmoother *EdgeSmoother;
+    Smoother *EdgeSmoother;
 
     /**
      * @brief Constructor
      * @param Opt Input. An Options object for communicating the command line parameters.
      * @param EdgeSmoother Input. Smoother object to the phase edge.
      */
-    PhaseEdge(Options *Opt, SpringSmoother *EdgeSmoother);
+    PhaseEdge(Options *Opt, Smoother *EdgeSmoother);
 
     /**
      * @brief SortAndFixBrokenEdge Identifies all separate phase edges within this PhaseEdge object and outputs all (new) internally connected phase edges.

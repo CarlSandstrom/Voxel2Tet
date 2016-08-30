@@ -2,7 +2,7 @@
 
 namespace voxel2tet
 {
-Surface :: Surface(int Phase1, int Phase2, Options *Opt, SpringSmoother *Smoother)
+Surface :: Surface(int Phase1, int Phase2, Options *Opt, Smoother *Smoother)
 {
     this->Phases [ 0 ] = Phase1;
     this->Phases [ 1 ] = Phase2;

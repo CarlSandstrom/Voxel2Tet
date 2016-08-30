@@ -143,7 +143,7 @@ FC_MESH MeshManipulations :: GetFlippedEdgeData(EdgeType *EdgeToFlip, EdgeType *
     return FC_INVALIDEDGE;
 }
 
-FC_MESH MeshManipulations :: FlipEdge(EdgeType *Edge)
+FC_MESH MeshManipulations :: FlipEdge(EdgeType *Edge, bool SkipIntersectionCheck)
 {
 
     LOG("Flip edge %u@%p (%u, %u)\n", Edge->ID, Edge, Edge->Vertices [ 0 ]->ID, Edge->Vertices [ 1 ]->ID);
@@ -248,24 +248,29 @@ FC_MESH MeshManipulations :: FlipEdge(EdgeType *Edge)
         }
     }
 
-    // Check if any of the new triangles penetrates any of the old triangles nearby
 
-    // Add all triangles nearby to NearTriangles
-    std :: array< double, 3 >cm = NewEdge.GiveCenterPoint();
-    std :: vector< TriangleType * >NearTriangles = this->GetTrianglesAround(cm, this->LongestEdgeLength);
+    if (!SkipIntersectionCheck) {
+        // Check if any of the new triangles penetrates any of the old triangles nearby
 
-    // Remove EdgeTriangles from NearTriangles
-    for ( int i = 0; i < 2; i++ ) {
-        NearTriangles.erase( std :: remove(NearTriangles.begin(), NearTriangles.end(), EdgeTriangles [ i ]), NearTriangles.end() );
-    }
+        // Add all triangles nearby to NearTriangles
+        std :: array< double, 3 >cm = NewEdge.GiveCenterPoint();
+        std :: vector< TriangleType * >NearTriangles = this->GetTrianglesAround(cm, this->LongestEdgeLength);
 
-    // Check if new triangles penetrates existing triangles (except those that will be deleted of course)
-    for ( TriangleType *t1 : NewTriangles ) {
-        for ( TriangleType *t2 : NearTriangles ) {
-            FC_MESH R = this->CheckTrianglePenetration(t1, t2);
-            if ( R != FC_OK ) {
-                LOG("Unable to flip edge. Will result in penetration\n", 0);
-                return R;
+        // Remove EdgeTriangles from NearTriangles
+        for ( int i = 0; i < 2; i++ ) {
+            NearTriangles.erase( std :: remove(NearTriangles.begin(), NearTriangles.end(), EdgeTriangles [ i ]), NearTriangles.end() );
+        }
+
+        // Check if new triangles penetrates existing triangles (except those that will be deleted of course)
+        for ( TriangleType *t1 : NewTriangles ) {
+            for ( TriangleType *t2 : NearTriangles ) {
+
+                FC_MESH R = this->CheckTrianglePenetration(t1, t2);
+                if ( R != FC_OK ) {
+                    this->CheckTrianglePenetration(t1, t2);
+                    LOG("Unable to flip edge. Will result in penetration\n", 0);
+                    return R;
+                }
             }
         }
     }
@@ -472,7 +477,7 @@ FC_MESH MeshManipulations :: CollapseEdge(EdgeType *EdgeToCollapse, int RemoveVe
 
     // If the vertex to remove belongs to a PhaseEdge, ensure that the other vertex belongs to the same PhaseEdge
     if ( RemoveVertex->PhaseEdges.size() > 0 ) {
-//        if ( SaveVertex->PhaseEdges.size() == 0 ) {
+        //        if ( SaveVertex->PhaseEdges.size() == 0 ) {
         if ( std::find(SaveVertex->PhaseEdges.begin(), SaveVertex->PhaseEdges.end(), RemoveVertex->PhaseEdges[0]) == SaveVertex->PhaseEdges.end() ) {
             return FC_CHORD;
         }
@@ -877,7 +882,7 @@ std :: vector< VertexType * >MeshManipulations :: FindIndependentSet()
     return IndepSet;
 }
 
-int MeshManipulations :: FlipAll()
+int MeshManipulations :: FlipAll(bool SkipIntersectionCheck)
 {
     this->UpdateLongestEdgeLength();
 
@@ -890,7 +895,7 @@ int MeshManipulations :: FlipAll()
         while ( j < this->Edges.size() ) {
             EdgeType *e = this->Edges [ j ];
             LOG("Flip edge iteration %u: edge @%p (%u, %u)\n", i, e, e->Vertices [ 0 ]->ID, e->Vertices [ 1 ]->ID);
-            if ( this->FlipEdge(e) == FC_OK ) {
+            if ( this->FlipEdge(e, SkipIntersectionCheck) == FC_OK ) {
                 flipcount++;
                 edgeflipped = true;
             } else {

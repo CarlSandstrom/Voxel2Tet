@@ -6,7 +6,7 @@
 #include <fstream>
 
 #ifdef OPENMP
- #include <omp.h>
+#include <omp.h>
 #endif
 
 #include "Voxel2Tet.h"
@@ -15,6 +15,7 @@
 #include "CallbackImporter.h"
 #include "TetGenCaller.h"
 #include "SpringSmoother.h"
+#include "SpringSmootherPenalty.h"
 
 namespace voxel2tet
 {
@@ -50,6 +51,8 @@ Voxel2TetClass :: Voxel2TetClass(Options *Opt)
         std :: string name = inputname.substr(0, lastindex);
         this->Opt->AddDefaultMap( "output", name.c_str() );
     }
+
+    SmoothSimultaneously = true;
 
     LOG("Starting Voxel2Tet\n", 0);
 }
@@ -159,17 +162,29 @@ void Voxel2TetClass :: FinalizeLoad()
     STATUS("\tVoxel dimensions are %f * %f * %f\n", cellspace [ 0 ], cellspace [ 1 ], cellspace [ 2 ]);
     STATUS("\tNumber of voxels are %u * %u * %u = %u\n", dim [ 0 ], dim [ 1 ], dim [ 2 ], dim [ 0 ] * dim [ 1 ] * dim [ 2 ]);
 
-    // Setup smoothing classes
-    if ( this->Opt->has_key("spring_c") ) {
-        this->SurfaceSmoother = new SpringSmoother(cellspace[0], Opt->GiveDoubleValue("spring_c"), Opt->GiveDoubleValue("spring_alpha"), Opt->GiveDoubleValue("spring_c_factor"), false );
-    } else {
-        this->SurfaceSmoother = new SpringSmoother(cellspace[0], Opt->GiveDoubleValue("spring_c"), Opt->GiveDoubleValue("spring_alpha"), Opt->GiveDoubleValue("spring_c_factor"), true );
-    }
+    if ( this->Opt->has_key("smoothpenalty")) {
+        SmoothSimultaneously = true;
 
-    if ( this->Opt->has_key("edge_spring_c") ) {
-        this->EdgeSmoother = new SpringSmoother(cellspace[0], Opt->GiveDoubleValue("edge_spring_c"), Opt->GiveDoubleValue("edge_spring_alpha"), Opt->GiveDoubleValue("edge_spring_c_factor"), false );
+        if ( this->Opt->has_key("spring_c") ) {
+            this->SurfaceSmoother = new SpringSmootherPenalty(cellspace[0], Opt->GiveDoubleValue("spring_c"), Opt->GiveDoubleValue("spring_alpha"), Opt->GiveDoubleValue("spring_c_factor"), false );
+        } else {
+            this->SurfaceSmoother = new SpringSmootherPenalty(cellspace[0], Opt->GiveDoubleValue("spring_c"), Opt->GiveDoubleValue("spring_alpha"), Opt->GiveDoubleValue("spring_c_factor"), true );
+        }
+
     } else {
-        this->EdgeSmoother = new SpringSmoother(cellspace[0], Opt->GiveDoubleValue("edge_spring_c"), Opt->GiveDoubleValue("edge_spring_alpha"), Opt->GiveDoubleValue("edge_spring_c_factor"), true );
+        // Setup smoothing classes
+        if ( this->Opt->has_key("spring_c") ) {
+            this->SurfaceSmoother = new SpringSmoother(cellspace[0], Opt->GiveDoubleValue("spring_c"), Opt->GiveDoubleValue("spring_alpha"), Opt->GiveDoubleValue("spring_c_factor"), false );
+        } else {
+            this->SurfaceSmoother = new SpringSmoother(cellspace[0], Opt->GiveDoubleValue("spring_c"), Opt->GiveDoubleValue("spring_alpha"), Opt->GiveDoubleValue("spring_c_factor"), true );
+        }
+
+        if ( this->Opt->has_key("edge_spring_c") ) {
+            this->EdgeSmoother = new SpringSmoother(cellspace[0], Opt->GiveDoubleValue("edge_spring_c"), Opt->GiveDoubleValue("edge_spring_alpha"), Opt->GiveDoubleValue("edge_spring_c_factor"), false );
+        } else {
+            this->EdgeSmoother = new SpringSmoother(cellspace[0], Opt->GiveDoubleValue("edge_spring_c"), Opt->GiveDoubleValue("edge_spring_alpha"), Opt->GiveDoubleValue("edge_spring_c_factor"), true );
+        }
+        SmoothSimultaneously = false;
     }
 
     // Setup bounding box
@@ -772,6 +787,27 @@ void Voxel2TetClass :: SmoothEdgesSimultaneously()
     this->EdgeSmoother->Smooth(VertexList, this->Mesh);
 }
 
+void Voxel2TetClass :: UpdateFixed()
+{
+    for (VertexType *v: this->Mesh->Vertices) {
+        for ( int j = 0; j < 3; j++ ) {
+
+            // If the node is located on the surface in the j:th direction, fix it in that direction
+            if ( ( v->get_c(j) > ( this->Imp->GiveBoundingBox().maxvalues [ j ] - eps ) ) | ( v->get_c(j) < ( this->Imp->GiveBoundingBox().minvalues [ j ] + eps ) ) ) {
+                v->Fixed [ j ] = true;
+            } else {
+                v->Fixed [ j ] = false;
+            }
+
+        }
+
+        if (v->IsFixedVertex()) {
+            for (int i=0; i<3; i++) v->Fixed[i] = true;
+        }
+
+    }
+}
+
 void Voxel2TetClass :: SmoothSurfaces()
 {
     STATUS("Smooth surfaces\n", 0);
@@ -963,42 +999,66 @@ void Voxel2TetClass :: Process()
     double Spacing [ 3 ];
     this->Imp->GiveSpacing(Spacing);
 
-    this->SmoothEdgesSimultaneously();
-    Timer.StopTimer();
+    if (this->SmoothSimultaneously) {
+        UpdateFixed();
+        this->SurfaceSmoother->Smooth(this->Mesh->Vertices, this->Mesh);
+        if ( this->Opt->GiveBooleanValue("exportsteps") ) {
+            this->Mesh->ExportSurface(strfmt("%s_step_%u.simple", this->Opt->GiveStringValue("output").c_str(), outputindex), FT_SIMPLE);
+            this->Mesh->ExportSurface(strfmt("%s_step_%u.vtp", this->Opt->GiveStringValue("output").c_str(), outputindex++), FT_VTK);
+        }
+
+    } else {
+        this->SmoothEdgesSimultaneously();
+        Timer.StopTimer();
 
 #if TEST_MESH_BETWEEN_STEPS_TETGEN == 1
-    TetGenCaller Generator;
-    Generator.Mesh = this->Mesh;
+        TetGenCaller Generator;
+        Generator.Mesh = this->Mesh;
+        Generator.TestMesh();
+#endif
+
+        GetListOfVolumes(CurrentVolumes, PhaseList);
+        PhaseVolumes.push_back(CurrentVolumes);
+
+        if ( this->Opt->GiveBooleanValue("exportsteps") ) {
+            this->Mesh->ExportSurface(strfmt("%s_step_%u.simple", this->Opt->GiveStringValue("output").c_str(), outputindex), FT_SIMPLE);
+            this->Mesh->ExportSurface(strfmt("%s_step_%u.vtp", this->Opt->GiveStringValue("output").c_str(), outputindex++), FT_VTK);
+        }
+
+        Timer.StartTimer("Smooth surfaces");
+        this->SmoothSurfaces();
+        Timer.StopTimer();
+
+        GetListOfVolumes(CurrentVolumes, PhaseList);
+        PhaseVolumes.push_back(CurrentVolumes);
+
+        if ( this->Opt->GiveBooleanValue("exportsteps") ) {
+            this->Mesh->ExportSurface(strfmt("%s_step_%u.simple", this->Opt->GiveStringValue("output").c_str(), outputindex), FT_SIMPLE);
+            this->Mesh->ExportSurface(strfmt("%s_step_%u.vtp", this->Opt->GiveStringValue("output").c_str(), outputindex++), FT_VTK);
+        }
+
+    }
+
+#if TEST_MESH_BETWEEN_STEPS_TETGEN == 1
     Generator.TestMesh();
 #endif
 
-    GetListOfVolumes(CurrentVolumes, PhaseList);
-    PhaseVolumes.push_back(CurrentVolumes);
+    // Perform flipping of edges where it will increase mesh quality
+    this->Mesh->FlipAll(false);
 
     if ( this->Opt->GiveBooleanValue("exportsteps") ) {
         this->Mesh->ExportSurface(strfmt("%s_step_%u.simple", this->Opt->GiveStringValue("output").c_str(), outputindex), FT_SIMPLE);
         this->Mesh->ExportSurface(strfmt("%s_step_%u.vtp", this->Opt->GiveStringValue("output").c_str(), outputindex++), FT_VTK);
     }
 
-    Timer.StartTimer("Smooth surfaces");
-    this->SmoothSurfaces();
-    Timer.StopTimer();
-
-#if TEST_MESH_BETWEEN_STEPS_TETGEN == 1
-    Generator.TestMesh();
-#endif
-
-    GetListOfVolumes(CurrentVolumes, PhaseList);
-    PhaseVolumes.push_back(CurrentVolumes);
+    this->UpdateSurfaces();
 
     if ( this->Opt->GiveBooleanValue("exportsteps") ) {
         this->Mesh->ExportSurface(strfmt("%s_step_%u.simple", this->Opt->GiveStringValue("output").c_str(), outputindex), FT_SIMPLE);
         this->Mesh->ExportSurface(strfmt("%s_step_%u.vtp", this->Opt->GiveStringValue("output").c_str(), outputindex++), FT_VTK);
     }
-
-    //this->Mesh->DoSanityCheck();
-    this->Mesh->FlipAll();
-    //this->Mesh->DoSanityCheck();
+    // Check for intersections and pull back vertices in areas where intersections occur
+    this->SurfaceSmoother->PullBackAtIntersections(this->Mesh->Vertices, this->Mesh);
 
     this->UpdateSurfaces();
 

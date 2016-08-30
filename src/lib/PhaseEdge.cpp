@@ -2,7 +2,7 @@
 
 namespace voxel2tet
 {
-PhaseEdge :: PhaseEdge(Options *Opt, SpringSmoother *EdgeSmoother)
+PhaseEdge :: PhaseEdge(Options *Opt, Smoother *EdgeSmoother)
 {
     this->Opt = Opt;
     this->EdgeSmoother = EdgeSmoother;
