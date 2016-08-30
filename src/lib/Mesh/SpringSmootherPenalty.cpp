@@ -10,7 +10,7 @@ SpringSmootherPenalty::SpringSmootherPenalty(double VoxelCharLength, double c, d
 
 void SpringSmootherPenalty :: Smooth(std :: vector< VertexType * >Vertices, MeshData *Mesh)
 {
-    double MAXCHANGE = 1e-3 * charlength;
+    double MAXCHANGE = 1e-4 * charlength;
 
     std::vector<std::vector<VertexType *>> Connections = this->GetConnectivityVector(Vertices);
 
@@ -33,57 +33,58 @@ void SpringSmootherPenalty :: Smooth(std :: vector< VertexType * >Vertices, Mesh
         PreviousPositions[v] = v->get_c_vec();
     }
 
-    bool intersecting = true;
     this->CheckPenetration(&Vertices, (MeshManipulations*) Mesh);
 
-    while (intersecting) {
+    double deltamax = 1e8;
 
-        double deltamax = 1e8;
-        intersecting = false;
+    while (deltamax > MAXCHANGE) {
 
-        while (deltamax > MAXCHANGE) {
+        deltamax = 0.0;
+        size_t i=0;
 
-            deltamax = 0.0;
-            size_t i=0;
+        for (VertexType *v: Vertices) {
 
-            for (VertexType *v: Vertices) {
-
-                std::vector<arma::vec3> ConnectionCoords;
-                for (VertexType *cv: Connections[i]) {
-                    ConnectionCoords.push_back(cv->get_c_vec());
-                }
-
-                arma::vec3 xc = CurrentPositions[v];
-                arma::vec3 x0 = OriginalPositions[v];
-
-                arma::vec3 NewPosition = {0, 0, 0};
-
-                for (VertexType *cv: Connections[i]) {
-                    NewPosition = NewPosition + 1.0 / double ( Connections[i].size() ) * cv->get_c_vec();
-                }
-                
-                for (int i=0; i<3; i++) {
-                    if (!v->Fixed[i]) {
-                        CurrentPositions[v][i] = NewPosition[i];
-                        v->set_c(CurrentPositions[v][i], i);
-                    }
-                }
-
-                double delta = arma::norm(CurrentPositions[v]-PreviousPositions[v]);
-
-                for (int i=0; i<3; i++) {
-                    if (!v->Fixed[i]) {
-                        PreviousPositions[v][i] = CurrentPositions[v][i];
-                    }
-                }
-
-                arma::vec3 R = ComputeOutOfBalance(ConnectionCoords, xc, x0, alpha, c);
-
-                deltamax = std::max(delta, deltamax);
-                i++;
+            std::vector<arma::vec3> ConnectionCoords;
+            for (VertexType *cv: Connections[i]) {
+                ConnectionCoords.push_back(cv->get_c_vec());
             }
+
+            arma::vec3 xc = CurrentPositions[v];
+            arma::vec3 x0 = OriginalPositions[v];
+            //double ThisC = (v->PhaseEdges.size()>0) ?  : ;
+            arma::vec3 R = ComputeOutOfBalance(ConnectionCoords, xc, x0, alpha, c);
+
+            double err = arma::norm(R);
+
+            while (err>1e-5) {
+                arma::mat K = ComputeAnalyticalTangent(ConnectionCoords, xc, x0, alpha, c);
+                arma::vec d = -arma::solve(K,R);
+                xc = xc + d;
+                R = ComputeOutOfBalance(ConnectionCoords, xc, x0, alpha, c);
+                err = arma::norm(R);
+            }
+
+
+            for (int i=0; i<3; i++) {
+                if (!v->Fixed[i]) {
+                    CurrentPositions[v][i] = xc[i];
+                    v->set_c(CurrentPositions[v][i], i);
+                }
+            }
+
+            double delta = arma::norm(CurrentPositions[v]-PreviousPositions[v]);
+
+            for (int i=0; i<3; i++) {
+                if (!v->Fixed[i]) {
+                    PreviousPositions[v][i] = CurrentPositions[v][i];
+                }
+            }
+
+            deltamax = std::max(delta, deltamax);
+            i++;
         }
     }
+
 }
 
 }
