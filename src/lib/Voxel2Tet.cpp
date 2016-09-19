@@ -983,8 +983,6 @@ void Voxel2TetClass :: Process()
     this->FindSurfaces();
     Timer.StopTimer();
 
-    this->ExportSurface("/tmp/UnchangedSurface2.off", FT_OFF);
-
     // Compute volumes enclosed by surfaces
     Timer.StartTimer("Compute volumes");
 
