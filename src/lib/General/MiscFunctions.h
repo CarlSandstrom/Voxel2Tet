@@ -58,7 +58,12 @@ bool CompareTriangleAngles(TriangleType *t1, TriangleType *t2);
 
 bool CompareEdgeLength(EdgeType *e1, EdgeType *e2);
 
+// Operator overloading in order to perform sorting of Vertices and triangles according to ID
+template< typename T > bool SortByID(T obj1, T obj2);
+template< typename T > bool EqualByID(T obj1, T obj2);
+
 template< typename T >std :: vector< int >FindSubsetIndices(std :: vector< T >Container, std :: vector< T >Subset);
+
 }
 
 #endif /* MISCFUNCTIONS_H_ */

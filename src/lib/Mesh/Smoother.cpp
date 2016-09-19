@@ -22,7 +22,7 @@ std::vector<std::vector<VertexType *>> Smoother::GetConnectivityVector(std::vect
             }
 
             // Remove duplicate vertices
-            std::sort(ConnectedVertices.begin(), ConnectedVertices.end());
+            std::sort(ConnectedVertices.begin(), ConnectedVertices.end(), SortByID<VertexType *>);
             ConnectedVertices.erase( std :: unique( ConnectedVertices.begin(), ConnectedVertices.end() ), ConnectedVertices.end() );
 
             // Remove self
@@ -71,7 +71,7 @@ std :: vector< std :: pair< TriangleType *, TriangleType * > > Smoother::CheckPe
             Triangles.push_back(t);
         }
     }
-    std :: sort( Triangles.begin(), Triangles.end() );
+    std :: sort( Triangles.begin(), Triangles.end(), SortByID<TriangleType *> );
     Triangles.erase( std :: unique( Triangles.begin(), Triangles.end() ), Triangles.end() );
 
     for ( TriangleType *t1 : Triangles ) {
@@ -123,7 +123,7 @@ void Smoother :: PullBackAtIntersections(std :: vector< VertexType * > Vertices,
             }
         }
 
-        std :: sort( TriangleVertices.begin(), TriangleVertices.end() );
+        std :: sort( TriangleVertices.begin(), TriangleVertices.end(), SortByID<VertexType *> );
         TriangleVertices.erase( std :: unique( TriangleVertices.begin(), TriangleVertices.end() ), TriangleVertices.end() );
 
         for ( VertexType *v : TriangleVertices ) {

@@ -27,8 +27,12 @@ void OFFExporter :: WriteSurfaceData(std :: string Filename)
         }
     }
 
-    std :: sort( UsedVertices.begin(), UsedVertices.end() );
+    std :: sort( UsedVertices.begin(), UsedVertices.end(), SortByID<VertexType *>);
     UsedVertices.erase( std :: unique( UsedVertices.begin(), UsedVertices.end() ), UsedVertices.end() );
+
+    for (VertexType *v:UsedVertices) {
+        printf ("%u: %f, %f, %f\n", v->ID, v->get_c(0), v->get_c(1), v->get_c(2));
+    }
 
     int i = 0;
     for ( VertexType *v : UsedVertices ) {
@@ -41,7 +45,7 @@ void OFFExporter :: WriteSurfaceData(std :: string Filename)
 
     // Write vertices
     for ( auto v : UsedVertices ) {
-        OFFFile << std :: setiosflags(std :: ios :: fixed) << std :: setprecision(15) << v->get_c(0) << " " << v->get_c(1) << " " << v->get_c(2) << "\n";
+        OFFFile << std :: setiosflags(std :: ios :: fixed) << std :: setprecision(15) << v->get_c(0) << " " << v->get_c(1) << " " << v->get_c(2) << " " << "# " << v->ID << "\n";
     }
 
     // Write facets

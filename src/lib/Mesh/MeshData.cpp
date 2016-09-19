@@ -436,15 +436,16 @@ void MeshData :: RemoveTetragedron(TetType *t)
 std :: vector< TriangleType * >MeshData :: GetTrianglesAround(std :: array< double, 3 >c, double r)
 {
     std :: vector< VertexType * >NearVertices = this->VertexOctreeRoot->GiveVerticesWithinSphere(c [ 0 ], c [ 1 ], c [ 2 ], r);
-    std :: sort( NearVertices.begin(), NearVertices.end() );
+    std :: sort( NearVertices.begin(), NearVertices.end(), SortByID<VertexType *> );
     NearVertices.erase( std :: unique( NearVertices.begin(), NearVertices.end() ), NearVertices.end() );
+
     std :: vector< TriangleType * >NearTriangles;
     for ( VertexType *v : NearVertices ) {
         for ( TriangleType *t : v->Triangles ) {
             NearTriangles.push_back(t);
         }
     }
-    std :: sort( NearTriangles.begin(), NearTriangles.end() );
+    std :: sort( NearTriangles.begin(), NearTriangles.end(), SortByID <TriangleType *> );
     NearTriangles.erase( std :: unique( NearTriangles.begin(), NearTriangles.end() ), NearTriangles.end() );
 
     return NearTriangles;

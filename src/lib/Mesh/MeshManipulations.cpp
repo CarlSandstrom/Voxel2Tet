@@ -239,7 +239,7 @@ FC_MESH MeshManipulations :: FlipEdge(EdgeType *Edge, bool SkipIntersectionCheck
         }
     }
 
-    std :: sort( ConnectedTriangles.begin(), ConnectedTriangles.end() );
+    std :: sort( ConnectedTriangles.begin(), ConnectedTriangles.end(), SortByID<TriangleType *> );
 
     for ( unsigned int i = 0; i < ConnectedTriangles.size() - 1; i++ ) {
         if ( ConnectedTriangles.at(i) == ConnectedTriangles.at(i + 1) ) {
@@ -370,7 +370,7 @@ FC_MESH MeshManipulations :: CollapseEdgeTest(std :: vector< TriangleType * > *T
             eVertices.push_back(t->Vertices [ i ]);
         }
     }
-    std :: sort( eVertices.begin(), eVertices.end() );
+    std :: sort( eVertices.begin(), eVertices.end(), SortByID<VertexType *> );
     eVertices.erase( std :: unique( eVertices.begin(), eVertices.end() ), eVertices.end() );
 
     double TotalError = 0;
@@ -489,12 +489,14 @@ FC_MESH MeshManipulations :: CollapseEdge(EdgeType *EdgeToCollapse, int RemoveVe
     LOG("Connected triangle IDs: %u, %u\n", TrianglesToRemove.at(0)->ID, TrianglesToRemove.at(1)->ID);
     std :: vector< TriangleType * >ConnectedTriangles = RemoveVertex->Triangles;
 
-    std :: sort( TrianglesToRemove.begin(), TrianglesToRemove.end() );
-    std :: sort( ConnectedTriangles.begin(), ConnectedTriangles.end() );
+    std :: sort( TrianglesToRemove.begin(), TrianglesToRemove.end());
+    std :: sort( ConnectedTriangles.begin(), ConnectedTriangles.end());
 
     std :: vector< TriangleType * >TrianglesToSave;
     std :: set_difference( ConnectedTriangles.begin(), ConnectedTriangles.end(),
-                           TrianglesToRemove.begin(), TrianglesToRemove.end(), std :: inserter( TrianglesToSave, TrianglesToSave.begin() ) );
+                           TrianglesToRemove.begin(), TrianglesToRemove.end(), std :: inserter( TrianglesToSave, TrianglesToSave.begin() ));
+
+    std::sort(TrianglesToSave.begin(), TrianglesToSave.end(), SortByID<TriangleType *>); //TODO: Why cant we use SortByID in the above sort and set_difference functions?
 
     // NewTriangles is the updated subset of of TrianglesToSave with the removed vertex changed to the saved vertex
     std :: vector< TriangleType * >NewTriangles;
@@ -1105,20 +1107,26 @@ bool MeshManipulations :: RemoveTetrahedron(int index)
 
     /* A vertex is "movable" if:
      *
-     * 1. It is not fixed (has more than one PhaseEdge)
-     * 2.
+     * 1. It is not fixed (has more than one PhaseEdge or located on the surface (exception see point 2).
+     * 2. If both vertices are located on the same outer surface.
+     * 3.
      *
     */
 
     LOG("Move Vertex %u to %u to remove element %u\n", v0->ID, v1->ID, t->ID);
     this->Tets.erase(std::remove(this->Tets.begin(), this->Tets.end(), t));
 
-    v1->set_c({{0.5*(v0->get_c(0)+v1->get_c(0)), 0.5*(v0->get_c(1)+v1->get_c(1)), 0.5*(v0->get_c(2)+v1->get_c(2))}});
-
-    for (TetType *t: this->Tets) {
-        for (VertexType *v: t->Vertices) {
+    int i=0;
+    for (TetType *thist: this->Tets) {
+        for (VertexType *v: thist->Vertices) {
             if (v==v0) {
-                v=v1;
+                if (!(v->Fixed[0] | v->Fixed[1] | v->Fixed[2])) {
+                    LOG("Move vertex %u to %u (change tet %u)\n", v->ID, v1->ID, thist->ID);
+                    //v1->set_c({{0.5*(v0->get_c(0)+v1->get_c(0)), 0.5*(v0->get_c(1)+v1->get_c(1)), 0.5*(v0->get_c(2)+v1->get_c(2))}});
+                    v=v1;
+                } else {
+                    LOG("Skip\n", 0);
+                }
             }
         }
     }

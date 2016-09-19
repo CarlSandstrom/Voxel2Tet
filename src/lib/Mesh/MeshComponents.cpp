@@ -1,6 +1,7 @@
 #include <algorithm>
 
 #include "MeshComponents.h"
+#include "MiscFunctions.h"
 
 namespace voxel2tet
 {
@@ -114,6 +115,8 @@ std :: vector< TriangleType * >EdgeType :: GiveTriangles()
 
     std :: set_intersection( this->Vertices [ 0 ]->Triangles.begin(), this->Vertices [ 0 ]->Triangles.end(),
                              this->Vertices [ 1 ]->Triangles.begin(), this->Vertices [ 1 ]->Triangles.end(), std :: back_inserter(TriangleCollection) );
+
+    std::sort(TriangleCollection.begin(), TriangleCollection.end(), SortByID <TriangleType *>);
 
     return TriangleCollection;
 }
@@ -292,7 +295,7 @@ std :: array< EdgeType *, 3 >TriangleType :: GiveEdges()
     }
 
     // Sort and check if neighbours in vector are copies. If so, we have found an edge of the triangle.
-    std :: sort( EdgeCollection.begin(), EdgeCollection.end() );
+    std :: sort( EdgeCollection.begin(), EdgeCollection.end(), SortByID <EdgeType *> );
     std :: array< EdgeType *, 3 > DupEdges;
     int i=0;
     size_t j=0;

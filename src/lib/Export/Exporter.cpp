@@ -29,9 +29,8 @@ void Exporter::UpdateUsedVertices()
         }
     }
 
-    std :: sort( UsedVertices.begin(), UsedVertices.end() );
+    std :: sort( UsedVertices.begin(), UsedVertices.end(), SortByID<VertexType *> );
     UsedVertices.erase( std :: unique( UsedVertices.begin(), UsedVertices.end() ), UsedVertices.end() );
-
 
     int i = 0;
     for ( VertexType *v : UsedVertices ) {

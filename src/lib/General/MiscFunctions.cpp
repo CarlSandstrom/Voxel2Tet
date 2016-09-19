@@ -111,5 +111,23 @@ double ComputeAngleBetweenVectors(std :: array< double, 3 >v1, std :: array< dou
 }
 
 
+template< typename T > bool SortByID(T obj1, T obj2)
+{
+    return obj1->ID <  obj2->ID;
+}
+template bool SortByID(VertexType *, VertexType *);
+template bool SortByID(TriangleType *, TriangleType *);
+template bool SortByID(EdgeType *, EdgeType *);
+template bool SortByID(TetType *, TetType *);
+
+template< typename T > bool EqualByID(T obj1, T obj2)
+{
+    return obj1->ID == obj2->ID;
+}
+template bool EqualByID(VertexType *, VertexType *);
+template bool EqualByID(TriangleType *, TriangleType *);
+template bool EqualByID(EdgeType *, EdgeType *);
+template bool EqualByID(TetType *, TetType *);
+
 template std :: vector< int >FindSubsetIndices(std :: vector< VertexType * >, std :: vector< VertexType * > );
 }

@@ -299,9 +299,13 @@ void Voxel2TetClass :: Tetrahedralize()
 
     this->Mesh = NewMesh;
 
-    //this->ExportAllVolumes();
-
-    //this->Mesh->CleanupTetrahedrals();
+    this->ExportAllVolumes();
+    this->ExportVolume("/tmp/Reference0.vtu", FT_VTK);
+    this->ExportVolume("/tmp/Reference1.vtu", FT_VTK);
+    UpdateFixed();
+    this->Mesh->CleanupTetrahedrals();
+    this->ExportVolume("/tmp/Better0.vtu", FT_VTK);
+    this->ExportVolume("/tmp/Better1.vtu", FT_VTK);
 
     Timer.StopTimer();
 }
@@ -313,6 +317,9 @@ void Voxel2TetClass :: ExportVolume(std :: string FileName, Exporter_FileTypes F
 
 void Voxel2TetClass :: FindSurfaces()
 {
+
+
+
     STATUS("\tFind surfaces\n", 0);
 
     int dim [ 3 ];
@@ -421,7 +428,6 @@ void Voxel2TetClass :: FindSurfaces()
     }
 
     this->UpdateSurfaces();
-
 
     STATUS("Find volumes\n", 0);
     for ( Surface *s : this->Surfaces ) {
@@ -894,10 +900,10 @@ void Voxel2TetClass   :: AddSurfaceSquare(std :: vector< int >VertexIDs, std :: 
     std::array<EdgeType *, 3> e1 = triangle1->GiveEdges();
 
     std::vector<EdgeType *> SharedEdge;
-    std :: set_intersection( e0.begin(), e0.end(),e1.begin(), e1.end(), back_inserter(SharedEdge) );
+    std :: set_intersection( e0.begin(), e0.end(),e1.begin(), e1.end(), back_inserter(SharedEdge), SortByID<EdgeType *> );
 
     std::vector<EdgeType *> NotSharedEdges;
-    std :: set_symmetric_difference( e0.begin(), e0.end(),e1.begin(), e1.end(), back_inserter(NotSharedEdges) );
+    std :: set_symmetric_difference( e0.begin(), e0.end(),e1.begin(), e1.end(), back_inserter(NotSharedEdges), SortByID<EdgeType *> );
 
     SharedEdge[0]->IsTransverse = true;
 
@@ -977,9 +983,10 @@ void Voxel2TetClass :: Process()
     this->FindSurfaces();
     Timer.StopTimer();
 
+    this->ExportSurface("/tmp/UnchangedSurface2.off", FT_OFF);
+
     // Compute volumes enclosed by surfaces
     Timer.StartTimer("Compute volumes");
-
 
     double TotalVolume = GetListOfVolumes(CurrentVolumes, PhaseList);
     LOG("Total volume: %f\n", TotalVolume);
