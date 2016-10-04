@@ -126,7 +126,9 @@ MeshData *TetGenCaller :: Execute()
 
     CopyMeshFromSelf(& in);
 
-    tetrahedralize( ( char * ) "pq2/10AV", & in, & out, NULL ); //pq1.414a0.1
+    //tetrahedralize( ( char * ) "pq2/10AV", & in, & out, NULL ); //pq1.414a0.1
+
+    tetrahedralize( ( char * ) "AVq1.5/15CC", & in, & out, NULL ); //pq1.414a0.1
     STATUS("==================================================================\n\n", 0);
 
     return CopyTetMesh(& out);

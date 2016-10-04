@@ -1004,7 +1004,7 @@ void MeshManipulations :: CoarsenMesh()
     }
     STATUS("\n", 0);
 
-    bool DoesCollapse = true;
+    bool DoesCollapse = false;
     int CleanupIteration = 0;
     int CleanupCount=0;
 

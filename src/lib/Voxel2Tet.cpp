@@ -303,9 +303,9 @@ void Voxel2TetClass :: Tetrahedralize()
     this->ExportVolume("/tmp/Reference0.vtu", FT_VTK);
     this->ExportVolume("/tmp/Reference1.vtu", FT_VTK);
     UpdateFixed();
-    this->Mesh->CleanupTetrahedrals();
-    this->ExportVolume("/tmp/Better0.vtu", FT_VTK);
-    this->ExportVolume("/tmp/Better1.vtu", FT_VTK);
+    //this->Mesh->CleanupTetrahedrals();
+    //this->ExportVolume("/tmp/Better0.vtu", FT_VTK);
+    //this->ExportVolume("/tmp/Better1.vtu", FT_VTK);
 
     Timer.StopTimer();
 }
@@ -1096,18 +1096,6 @@ void Voxel2TetClass :: Process()
         this->Mesh->ExportSurface(strfmt("%s_step_%u.vtp", this->Opt->GiveStringValue("output").c_str(), outputindex++), FT_VTK);
     }
 
-    for ( int p : PhaseList ) {
-        printf("%u\t\t", p);
-    }
-
-    printf("\n");
-
-    for ( size_t i = 0; i < PhaseVolumes.size(); i++ ) {
-        for ( size_t j = 0; j < PhaseVolumes.at(i).size(); j++ ) {
-            printf( "%f\t", PhaseVolumes.at(i).at(j) );
-        }
-        printf("\n");
-    }
 #if EXPORT_MESH_COARSENING == 1
     dooutputlogmesh(* this->Mesh, ( char * ) "/tmp/finalcoarsening%u.vtp", 0);
 #endif
