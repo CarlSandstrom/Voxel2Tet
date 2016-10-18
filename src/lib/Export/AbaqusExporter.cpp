@@ -10,10 +10,10 @@
 namespace voxel2tet
 {
 
-AbaqusExporter::AbaqusExporter(std :: vector< TriangleType * > *Triangles, std :: vector< VertexType * > *Vertices, std :: vector< EdgeType * > *Edges, std :: vector< TetType * > *Tets) :
+AbaqusExporter::AbaqusExporter(std :: vector< TriangleType * > *Triangles, std :: vector< VertexType * > *Vertices, std :: vector< EdgeType * > *Edges, std :: vector< TetType * > *Tets, bool UsePhon) :
     Exporter(Triangles, Vertices, Edges, Tets)
 {
-
+    this->UsePhon = UsePhon;
 }
 
 void AbaqusExporter::WriteVolumeData(std :: string Filename)
@@ -39,9 +39,6 @@ void AbaqusExporter::WriteVolumeData(std :: string Filename)
     // Find element boundaries
     this->UpdateMinMaxElements();
 
-    // Update grainsets
-    //this->UpdateGrainSets();
-
     AbaqusFile << "**\n";
     AbaqusFile << "** File created by Voxel2Tet\n";
     AbaqusFile << "**\n";
@@ -56,10 +53,14 @@ void AbaqusExporter::WriteVolumeData(std :: string Filename)
     // Write vertices/nodes
     for ( size_t i = 0; i < this->Vertices->size(); i++ ) {
         AbaqusFile << i + 1 << ",\t" << UsedVertices.at(i)->get_c(0) << ",\t" \
-                  << UsedVertices.at(i)->get_c(1) << ",\t" << UsedVertices.at(i)->get_c(2) << "\n";
+                   << UsedVertices.at(i)->get_c(1) << ",\t" << UsedVertices.at(i)->get_c(2) << "\n";
     }
 
+    // Write tets
     AbaqusFile << "**\n** SOLID ELEMENTS\n**\n";
+
+    int LastElementID = 0;
+
     for (auto a: Self2OofemMaterials) {
         AbaqusFile << "*ELEMENT, TYPE=C3D4, ELSET=SOLID_" << a.first << "\n";
         for (TetType *t: *this->Tets) {
@@ -68,9 +69,20 @@ void AbaqusExporter::WriteVolumeData(std :: string Filename)
                               t->Vertices[1]->tag+1 << ",\t" << t->Vertices[2]->tag+1 <<
                               ",\t" << t->Vertices[3]->tag+1 << "\n";
             }
+            LastElementID = std::max(LastElementID, t->ID+1);
         }
         LOG("%u\n", a.first);
     }
+
+    // Write triangles
+    AbaqusFile << "**\n** FACE ELEMENTS\n**\n";
+    AbaqusFile << "*ELEMENT, TYPE=CPE3\n";
+
+    for (TriangleType *t: *this->Triangles) {
+        int TriangleID = t->ID + LastElementID + 1;
+        AbaqusFile << TriangleID << ",\t" << t->Vertices[0]->tag+1 << ",\t" << t->Vertices[1]->tag+1 << ",\t" << t->Vertices[2]->tag+1 << "\n";
+    }
+    AbaqusFile << "\n";
 
     AbaqusFile << "**\n** SECTION DATA\n**\n";
     for (auto a: Self2OofemMaterials) {
@@ -190,6 +202,76 @@ void AbaqusExporter::WriteVolumeData(std :: string Filename)
             AbaqusFile << "\n";
         }
     }
+
+    if (UsePhon) {
+        // Update grainsets
+        this->UpdateGrainSets();
+
+        // Update trianglesets
+        this->UpdateTriangleSets();
+
+        // Create face sets
+        int facecount=0;
+        for (size_t setid=0; setid<this->TriangleSets.size(); setid++) {
+            TriangleType *t=this->TriangleSets[setid]->first[0];
+
+            int maxx=0, minx=0, maxy=0, miny=0, maxz=0, minz=0;
+            for (VertexType *v: t->Vertices) {
+                if (fabs(v->get_c(0)-this->MaxCoords[0]) < 1e-8) maxx++;
+                if (fabs(v->get_c(1)-this->MaxCoords[1]) < 1e-8) maxy++;
+                if (fabs(v->get_c(2)-this->MaxCoords[2]) < 1e-8) maxz++;
+
+                if (fabs(v->get_c(0)-this->MinCoords[0]) < 1e-8) minx++;
+                if (fabs(v->get_c(1)-this->MinCoords[1]) < 1e-8) miny++;
+                if (fabs(v->get_c(2)-this->MinCoords[2]) < 1e-8) minz++;
+            }
+
+            bool IsOnSurface = (maxx==3) | (maxy==3) | (maxz==3) | (minx==3) | (miny==3) | (minz==3);
+
+            if (!IsOnSurface) {
+            //if ((t->PosNormalMatID >= 0) & (t->NegNormalMatID >= 0)) {
+
+                AbaqusFile << "*ELSET, ELSET=face" << facecount+1 << "\n";
+                k=0;
+
+                for (size_t elcount=0; elcount < this->TriangleSets[setid]->first.size(); elcount++) {
+                    int TriangleID = this->TriangleSets[setid]->first.at(elcount)->ID + 1 + LastElementID;
+                    AbaqusFile << "\t" << TriangleID;
+                    if (elcount!=this->TriangleSets[setid]->first.size()-1) AbaqusFile << ",";
+                    if (k==10) {
+                        AbaqusFile << "\n";
+                        k=0;
+                    } else {
+                        k++;
+                    }
+                }
+
+                AbaqusFile << "\n\n";
+                facecount++;
+
+            }
+        }
+
+        // Create poly sets
+        for (size_t setid=0; setid<this->GrainSets.size(); setid++) {
+            AbaqusFile << "*ELSET, ELSET=poly" << setid+1 << "\n";
+            k=0;
+
+            for (size_t elcount=0; elcount < this->GrainSets[setid]->first.size(); elcount++) {
+                int TetID = this->GrainSets[setid]->first.at(elcount)->ID + 1;
+                AbaqusFile << "\t" << TetID;
+                if (elcount!=this->GrainSets[setid]->first.size()-1) AbaqusFile << ",";
+                if (k==10) {
+                    AbaqusFile << "\n";
+                    k=0;
+                } else {
+                    k++;
+                }
+            }
+            AbaqusFile << "\n\n";
+        }
+    }
+
 }
 
 }

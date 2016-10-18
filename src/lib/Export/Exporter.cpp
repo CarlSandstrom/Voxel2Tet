@@ -147,7 +147,26 @@ void Exporter :: UpdateGrainSets()
             this->GrainSets.push_back(GrainSet);
         }
         GrainSet->first.push_back(t);
-        LOG("\n", 0);
+    }
+}
+
+void Exporter :: UpdateTriangleSets()
+{
+    for (TriangleType *t: *this->Triangles) {
+        int InterfaceID = t->InterfaceID;
+        std::pair< std::vector<TriangleType *>, int > *TriangleSet = NULL;
+        for (auto p: this->TriangleSets) {
+            if (p->second == InterfaceID) {
+                TriangleSet = p;
+                break;
+            }
+        }
+        if (TriangleSet == NULL) {
+            TriangleSet = new std::pair< std::vector<TriangleType *>, int >;
+            TriangleSet->second = InterfaceID;
+            this->TriangleSets.push_back(TriangleSet);
+        }
+        TriangleSet->first.push_back(t);
     }
 }
 

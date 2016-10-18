@@ -271,7 +271,11 @@ void MeshData :: ExportVolume(std :: string FileName, Exporter_FileTypes FileTyp
         break;
     }
     case FT_ABAQUS: {
-        exporter = new AbaqusExporter(& this->Triangles, & this->Vertices, & this->Edges, & this->Tets);
+        exporter = new AbaqusExporter(& this->Triangles, & this->Vertices, & this->Edges, & this->Tets, false);
+        break;
+    }
+    case FT_ABAQUSPHON: {
+        exporter = new AbaqusExporter(& this->Triangles, & this->Vertices, & this->Edges, & this->Tets, true);
         break;
     }
     default:

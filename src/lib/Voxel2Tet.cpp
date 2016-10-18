@@ -300,8 +300,8 @@ void Voxel2TetClass :: Tetrahedralize()
     this->Mesh = NewMesh;
 
     this->ExportAllVolumes();
-    this->ExportVolume("/tmp/Reference0.vtu", FT_VTK);
-    this->ExportVolume("/tmp/Reference1.vtu", FT_VTK);
+    //this->ExportVolume("/tmp/Reference0.vtu", FT_VTK);
+    //this->ExportVolume("/tmp/Reference1.vtu", FT_VTK);
     UpdateFixed();
     //this->Mesh->CleanupTetrahedrals();
     //this->ExportVolume("/tmp/Better0.vtu", FT_VTK);
@@ -1119,7 +1119,7 @@ void Voxel2TetClass :: ExportAllVolumes()
     // Volumes
     if ( this->Opt->GiveBooleanValue("exportvtkvolume") ) {
         this->Mesh->ExportVolume(strfmt( "%s.volume_0.vtu", this->Opt->GiveStringValue("output").c_str() ), FT_VTK);
-        this->Mesh->ExportVolume(strfmt( "%s.volume_1.vtu", this->Opt->GiveStringValue("output").c_str() ), FT_VTK);
+        //this->Mesh->ExportVolume(strfmt( "%s.volume_1.vtu", this->Opt->GiveStringValue("output").c_str() ), FT_VTK);
     }
 
     if ( this->Opt->GiveBooleanValue("exportoofem") ) {
@@ -1128,6 +1128,9 @@ void Voxel2TetClass :: ExportAllVolumes()
 
     if ( this->Opt->GiveBooleanValue("exportabaqus") ) {
         this->Mesh->ExportVolume(strfmt( "%s.inp", this->Opt->GiveStringValue("output").c_str() ), FT_ABAQUS);
+    }
+    if ( this->Opt->GiveBooleanValue("exportabaqusphon") ) {
+        this->Mesh->ExportVolume(strfmt( "%s.inp", this->Opt->GiveStringValue("output").c_str() ), FT_ABAQUSPHON);
     }
 }
 

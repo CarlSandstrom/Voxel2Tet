@@ -10,7 +10,7 @@
 
 namespace voxel2tet
 {
-enum Exporter_FileTypes { FT_VTK, FT_Poly, FT_OFF, FT_OOFEM, FT_SIMPLE, FT_ABAQUS };
+enum Exporter_FileTypes { FT_VTK, FT_Poly, FT_OFF, FT_OOFEM, FT_SIMPLE, FT_ABAQUS, FT_ABAQUSPHON };
 
 /**
  * @brief Abstract class for all classes exporting meshes.
@@ -43,6 +43,9 @@ protected:
      */
     std::vector< std::pair< std::vector<TetType *>, int > *> GrainSets;
     void UpdateGrainSets();
+
+    std::vector<std::pair<std::vector<TriangleType *>, int> *> TriangleSets;
+    void UpdateTriangleSets();
 
     /**
      * @brief Pointer to a list of pointers to the triangles in the mesh. This is typically a pointer to the list of triangles
