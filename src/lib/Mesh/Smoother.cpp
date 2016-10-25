@@ -137,7 +137,7 @@ void Smoother :: PullBackAtIntersections(std :: vector< VertexType * > Vertices,
             }
         }
 
-        Mesh->ExportSurface(strfmt("/tmp/Intersection_step_%u.vtp", intersecting_count+1), FT_VTK);
+//        Mesh->ExportSurface(strfmt("/tmp/Intersection_step_%u.vtp", intersecting_count+1), FT_VTK);
 
         intersecting_count++;
         IntersectingTriangles = CheckPenetration(&Vertices, Mesh);
