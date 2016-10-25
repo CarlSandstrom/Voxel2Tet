@@ -55,6 +55,9 @@ void VTKStructuredReader :: LoadFile(std :: string FileName)
                     } else if ( strcasecmp(Strings [ 0 ].c_str(), "CELL_DATA") == 0 ) {
                         this->celldata = std :: stoi(Strings [ 1 ]);
                         this->GrainIdsData = ( int * ) malloc(sizeof( int ) * this->celldata);
+                    } else if ( strcasecmp(Strings [ 0 ].c_str(), "POINT_DATA") == 0 ) {
+                        this->celldata = std :: stoi(Strings [ 1 ]);
+                        this->GrainIdsData = ( int * ) malloc(sizeof( int ) * this->celldata);
                     } else if ( strcasecmp(Strings [ 0 ].c_str(), "SCALARS") == 0 ) {
                         this->DataName = Strings [ 1 ];
                     } else if ( strcasecmp(Strings [ 0 ].c_str(), "LOOKUP_TABLE") == 0 ) {
