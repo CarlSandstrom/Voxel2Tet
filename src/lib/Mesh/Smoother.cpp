@@ -107,7 +107,7 @@ void Smoother :: PullBackAtIntersections(std :: vector< VertexType * > Vertices,
     int intersecting_count = 0;
     // Pull back nodes until no intersecting triangles remain
 
-    Mesh->ExportSurface(strfmt("/tmp/Intersection_step_%u.vtp", intersecting_count), FT_VTK);
+    // Mesh->ExportSurface(strfmt("/tmp/Intersection_step_%u.vtp", intersecting_count), FT_VTK);
 
     while ( IntersectingTriangles.size() > 0 ) {
         STATUS("Stiffen and re-smooth surface/edge due to %u intersecting triangles, iteration %u\n", IntersectingTriangles.size(), intersecting_count);
