@@ -267,7 +267,6 @@ FC_MESH MeshManipulations :: FlipEdge(EdgeType *Edge, bool SkipIntersectionCheck
 
             FC_MESH R = this->CheckTrianglePenetration(t1, t2);
             if ( R != FC_OK ) {
-                this->CheckTrianglePenetration(t1, t2);
                 LOG("Unable to flip edge. Will result in penetration\n", 0);
                 return R;
             }
