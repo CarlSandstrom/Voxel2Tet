@@ -51,7 +51,6 @@ void SpringSmootherPenalty :: Smooth(std :: vector< VertexType * >Vertices, Mesh
 
             arma::vec3 xc = CurrentPositions[v];
             arma::vec3 x0 = OriginalPositions[v];
-            //double ThisC = (v->PhaseEdges.size()>0) ?  : ;
             arma::vec3 R = ComputeOutOfBalance(ConnectionCoords, xc, x0, alpha, c);
 
             double err = arma::norm(R);
