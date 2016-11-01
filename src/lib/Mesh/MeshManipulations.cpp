@@ -9,13 +9,13 @@ MeshManipulations :: MeshManipulations(BoundingBoxType BoundingBox) : MeshData(B
     TOL_FLIP_MAXAREACHANGE = 1e-2;
 
     TOL_COL_SMALLESTAREA = 1e-8;
-    TOL_COL_MAXNORMALCHANGE = 5 * 2 * 3.1415 / 360;
-    TOL_COL_CHORD_MAXNORMALCHANGE = 5 * 2 * 3.141593 / 360;
-    TOL_COL_MINANGLE = 1*2*3.1415/360;
+    TOL_COL_MAXNORMALCHANGE = RADIANS(5);
+    TOL_COL_CHORD_MAXNORMALCHANGE = RADIANS(5);
+    TOL_COL_MINANGLE = RADIANS(1);
 
     TOL_FLIP_SMALLESTAREA = 1e-8;
-    TOL_FLIP_MAXNORMALCHANGE = 5 * 2 * 3.141593 / 360;
-    TOL_FLIP_MAXNORMALDIFFERENCE = 5 * 2 * 3.1415 / 360;
+    TOL_FLIP_MAXNORMALCHANGE = RADIANS(5);
+    TOL_FLIP_MAXNORMALDIFFERENCE = RADIANS(5);
 
     TOL_COL_MAXVOLUMECHANGE = .5 * .5 * .5 * 2;
     TOL_COL_MAXERROR_ACCUMULATED = .5 * .5 * .5;
@@ -147,8 +147,6 @@ FC_MESH MeshManipulations :: FlipEdge(EdgeType *Edge, bool SkipIntersectionCheck
 {
 
     LOG("Flip edge %u@%p (%u, %u)\n", Edge->ID, Edge, Edge->Vertices [ 0 ]->ID, Edge->Vertices [ 1 ]->ID);
-
-    // this->DoSanityCheck();
 
     std :: vector< TriangleType * >EdgeTriangles = Edge->GiveTriangles();
 

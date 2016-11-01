@@ -432,7 +432,7 @@ TetType *MeshData :: AddTetrahedron(TetType *NewTet)
     return NewTet;
 }
 
-void MeshData :: RemoveTetragedron(TetType *t)
+void MeshData :: RemoveTetrahedron(TetType *t)
 {
     throw( 0 ); // TODO: Complete this
 }
@@ -492,32 +492,7 @@ FC_MESH MeshData :: CheckTrianglePenetration(TriangleType *t1, TriangleType *t2)
 
 FC_MESH MeshData :: CheckTrianglePenetration(std :: array< VertexType *, 3 >t1, std :: array< VertexType *, 3 >t2, int &sharedvertices)
 {
-    /*
-     *  // For perforance, check if bounding boxes of triangles intersect first
-     *  std::array<double, 3> b1max;
-     *  std::array<double, 3> b1min;
-     *  std::array<double, 3> b2max;
-     *  std::array<double, 3> b2min;
-     *
-     *  for (int i=0; i<3; i++) {
-     *      b1max[i] = std::max( std::max(t1.at(0)->get_c(i), t1.at(1)->get_c(i)) , t1.at(2)->get_c(i));
-     *      b1min[i] = std::min( std::min(t1.at(0)->get_c(i), t1.at(1)->get_c(i)) , t1.at(2)->get_c(i));
-     *      b2max[i] = std::max( std::max(t2.at(0)->get_c(i), t2.at(1)->get_c(i)) , t2.at(2)->get_c(i));
-     *      b2min[i] = std::min( std::min(t2.at(0)->get_c(i), t2.at(1)->get_c(i)) , t2.at(2)->get_c(i));
-     *  }
-     *
-     *  std::array<bool, 3> bbOverlaps = {true, true, true};
-     *
-     *  bool overlaps=true;
-     *
-     *  for (int i=0; i<3; i++) {
-     *      if (b1max[i]<b2min[i]) bbOverlaps[i] = false;
-     *      if (b2max[i]<b1min[i]) bbOverlaps[i] = false;
-     *      overlaps = overlaps & bbOverlaps[i];
-     *      if (!overlaps) return FC_OK;
-     *  }
-     *
-     */
+
     //LOG("Check for penetration of triangles %u [%u, %u, %u] and %u [%u, %u, %u]\n", t1[0]->ID, t1[1]->ID, t1[2]->ID, t2[0]->ID, t2[1]->ID, t2[2]->ID);
 
     sharedvertices = 0;

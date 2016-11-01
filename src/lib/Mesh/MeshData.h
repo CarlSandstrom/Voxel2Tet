@@ -166,7 +166,7 @@ public:
      * @brief Removes a TetType object from Tets list. NOT YET IMPLEMENTED.
      * @param t Pointer to TetType object
      */
-    void RemoveTetragedron(TetType *t);
+    void RemoveTetrahedron(TetType *t);
 
     /**
      * @brief GetTrianglesAround gives a vector containing all triangles with at least one vertex withing the sphere created by the coordinate c and distance r.

@@ -34,12 +34,26 @@ private:
      */
     FC_MESH GetFlippedEdgeData(EdgeType *EdgeToFlip, EdgeType *NewEdge, std :: array< TriangleType *, 2 > *NewTriangles);
 
+    /**
+     * @brief SortEdgesByLength Sort list of edges according to length
+     */
     void SortEdgesByLength();
+
+    /**
+     * @brief SortEdgesByMinArea Sort edges according to the smallest size of the smallest triangle the edge is connected to
+     */
     void SortEdgesByMinArea();
 
 public:
 
+    /**
+     * @brief LongestEdgeLength Contains the longest edge in the triangulation
+     */
     double LongestEdgeLength;
+
+    /**
+     * @brief UpdateLongestEdgeLength Updates the LongestEdgeLength member
+     */
     void UpdateLongestEdgeLength();
 
     /**
