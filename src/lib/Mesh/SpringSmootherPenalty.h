@@ -12,6 +12,8 @@ public:
     SpringSmootherPenalty(double VoxelCharLength, double c, double alpha, double c_factor, bool compute_c=false);
     ~SpringSmootherPenalty() {}
     virtual void Smooth(std :: vector< VertexType * >Vertices, MeshData *Mesh = NULL);
+protected:
+    std::string DoOutput() const;
 };
 
 }

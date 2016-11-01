@@ -86,4 +86,12 @@ void SpringSmootherPenalty :: Smooth(std :: vector< VertexType * >Vertices, Mesh
 
 }
 
+std::string SpringSmootherPenalty::DoOutput() const
+{
+    std::string stream;
+    stream = "\talpha = " + std::to_string(alpha) + ", " +
+     "c = " + std::to_string(c) + ", c_factor = " + std::to_string(c_factor) + "\n";
+    return stream;
+}
+
 }

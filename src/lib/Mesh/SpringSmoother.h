@@ -29,7 +29,6 @@ class SmootherConfiguration
  */
 class SpringSmoother : public Smoother
 {
-    friend std::ostream &operator<<(std::ostream &stream, const SpringSmoother &Smoother);
 protected:
     double c;
     double c_factor;
@@ -49,6 +48,9 @@ private:
                             std :: vector< std :: vector< VertexType * > >Connections,
                             double c, double alpha, double charlength, bool Automatic_c = false,
                             MeshData *Mesh = NULL);
+
+protected:
+    std::string DoOutput() const;
 
 public:
 

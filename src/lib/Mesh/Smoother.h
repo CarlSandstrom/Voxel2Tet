@@ -15,7 +15,7 @@ namespace voxel2tet
  */
 class Smoother
 {
-    friend std::ostream &operator<<(std::ostream &stream, const Smoother &Smoother) {return stream; }
+    friend std::ostream &operator<<(std::ostream &stream, const Smoother &ThisSmoother) {stream << ThisSmoother.DoOutput(); return stream;}
 public:
     /**
      * @brief constructor
@@ -47,6 +47,8 @@ public:
 
     void PullBackAtIntersections(std :: vector< VertexType * > Vertices, MeshManipulations *Mesh);
 
+protected:
+    virtual std::string DoOutput() const = 0;
 };
 
 }

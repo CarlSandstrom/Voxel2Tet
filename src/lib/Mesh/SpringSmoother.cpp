@@ -264,13 +264,12 @@ void SpringSmoother :: Smooth(std :: vector< VertexType * >Vertices, MeshData *M
 
 }
 
-
-std::ostream &operator<<(std::ostream &stream, const SpringSmoother &Smoother)
+std::string SpringSmoother::DoOutput() const
 {
-    stream << "\talpha = " << Smoother.alpha << ", ";
-    stream << "c = " << Smoother.c << ", c_factor = " << Smoother.c_factor << "\n";
+    std::string stream;
+    stream = "\talpha = " + std::to_string(alpha) + ", " +
+     "c = " + std::to_string(c) + ", c_factor = " + std::to_string(c_factor) + "\n";
     return stream;
 }
-
 
 }
