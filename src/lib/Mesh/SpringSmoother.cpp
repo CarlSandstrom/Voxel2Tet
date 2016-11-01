@@ -1,6 +1,3 @@
-#ifdef OPENMP
-#include <omp.h>
-#endif
 #include "SpringSmoother.h"
 
 namespace voxel2tet

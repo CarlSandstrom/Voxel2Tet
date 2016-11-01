@@ -5,9 +5,6 @@
 #include <stdarg.h>
 #include <MeshComponents.h>
 #include <sstream>
-#ifdef OPENMP
- #include <omp.h>
-#endif
 
 #include "MeshData.h"
 
@@ -17,11 +14,7 @@ void dolog(const char *functionname, const char *fmt, ...)
 #if LOGOUTPUT == 1
     va_list argp;
     va_start(argp, fmt);
- #ifdef OPENMP
-    printf( "%s[%u]:\t", functionname, omp_get_thread_num() );
- #else
     printf("%s:\t", functionname);
- #endif
     vfprintf(stdout, fmt, argp);
     va_end(argp);
 #endif
