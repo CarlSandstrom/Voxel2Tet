@@ -162,6 +162,8 @@ void Voxel2TetClass :: FinalizeLoad()
     STATUS("\tVoxel dimensions are %f * %f * %f\n", cellspace [ 0 ], cellspace [ 1 ], cellspace [ 2 ]);
     STATUS("\tNumber of voxels are %u * %u * %u = %u\n", dim [ 0 ], dim [ 1 ], dim [ 2 ], dim [ 0 ] * dim [ 1 ] * dim [ 2 ]);
 
+    this->EdgeSmoother = 0;
+
     if ( this->Opt->has_key("smoothpenalty")) {
         SmoothSimultaneously = true;
 
@@ -1160,8 +1162,10 @@ void Voxel2TetClass :: ExportStatistics()
     StatFile << "Smoothing algorithm:\n";
     StatFile << "Surface smoother:\n";
     StatFile << *this->SurfaceSmoother;
-    StatFile << "Edge smoother:\n";
-    StatFile << *this->EdgeSmoother;
+    if (this->EdgeSmoother!=0) {
+        StatFile << "Edge smoother:\n";
+        StatFile << *this->EdgeSmoother;
+    }
 
     StatFile << "\nMesh coarsening:\n";
     StatFile << "TOL_MAXAREACHANGE = " << this->Opt->GiveStringValue("TOL_MAXAREACHANGE") << "\n";
