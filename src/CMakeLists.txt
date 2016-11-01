@@ -1,10 +1,7 @@
 cmake_minimum_required (VERSION 2.6)
 project (Voxel2Tet)
 
-set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -Wall -Wno-missing-braces -std=c++11")
-
-option(OPENMP "Specifies if OpenMP support should be active" OFF)
-
+set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -Wall -std=c++11")
 set(linkerlist Voxel2TetLib)
 
 # Look for required libraries
@@ -33,22 +30,6 @@ if (WITH_HDF5)
   add_definitions(-DH5_NO_DEPRECATED_SYMBOLS)
 endif (WITH_HDF5)
 
-#### LAPACK
-
-find_package(LAPACK REQUIRED)
-if (LAPACK_FOUND)
-  include_directories(${LAPACK_DIR})
-  set(linkerlist ${linkerlist} ${LAPACK_LIBRARIES})
-endif (LAPACK_FOUND)
-
-#### BLAS
-
-find_package(BLAS REQUIRED)
-if (BLAS_FOUND)
-  include_directories(${BLAS_DIR})
-  set(linkerlist ${linkerlist} ${BLAS_LIBRARIES})
-endif (BLAS_FOUND)
-
 #### ARMADILLO
 
 find_package(Armadillo REQUIRED)
@@ -69,24 +50,12 @@ endif (VTK_FOUND)
 #### TetGen
 
 find_path(TETGEN_H tetgen.h)
-#find_path(TETGEN_H tetgen.h HINTS /home/carl/lib/tetgen1.5.0/)
 MESSAGE( STATUS "Include file tetgen.h found in ${TETGEN_H}" )
 include_directories (${TETGEN_H})
 
 find_library(TETGEN_LIB libtet.so)
-#find_library(TETGEN_LIB libtet.a HINTS /home/carl/lib/tetgen1.5.0/bin)
 MESSAGE( STATUS "Tetgen library found in ${TETGEN_LIB}")
 set(linkerlist ${linkerlist} ${TETGEN_LIB})
-
-#### OpenMP
-if (OPENMP)
-    find_package(OpenMP)
-    if (OPENMP_FOUND)
-        set (CMAKE_C_FLAGS "${CMAKE_C_FLAGS} ${OpenMP_C_FLAGS}")
-        set (CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} ${OpenMP_CXX_FLAGS}")
-        add_definitions(-DOPENMP=ON)
-    endif()
-endif()
 
 #### Project files
 
