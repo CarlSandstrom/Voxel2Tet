@@ -441,9 +441,6 @@ void SpringSmoother::Smooth(std :: vector< VertexType * >Vertices, voxel2tet :: 
     }
 #endif
 
-    bool intersecting = true;
-
-    intersecting = false;
     int itercount = 0;
     int threadcount = 1;
     double deltamax = 1e8;

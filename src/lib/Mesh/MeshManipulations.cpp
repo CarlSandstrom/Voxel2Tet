@@ -1115,7 +1115,6 @@ bool MeshManipulations :: RemoveTetrahedron(int index)
     LOG("Move Vertex %u to %u to remove element %u\n", v0->ID, v1->ID, t->ID);
     this->Tets.erase(std::remove(this->Tets.begin(), this->Tets.end(), t));
 
-    int i=0;
     for (TetType *thist: this->Tets) {
         for (VertexType *v: thist->Vertices) {
             if (v==v0) {
@@ -1129,6 +1128,7 @@ bool MeshManipulations :: RemoveTetrahedron(int index)
             }
         }
     }
+    return false;
 
 }
 

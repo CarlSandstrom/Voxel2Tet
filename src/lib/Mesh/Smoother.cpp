@@ -76,7 +76,6 @@ std :: vector< std :: pair< TriangleType *, TriangleType * > > Smoother::CheckPe
 
     for ( TriangleType *t1 : Triangles ) {
         std :: array< double, 3 >c = t1->GiveCenterOfMass();
-        double d = t1->GiveLongestEdgeLength();
 
         std :: vector< TriangleType * >NearTriangles = Mesh->GetTrianglesAround(c, Mesh->LongestEdgeLength);
 
