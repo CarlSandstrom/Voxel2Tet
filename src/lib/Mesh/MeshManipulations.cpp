@@ -485,7 +485,6 @@ FC_MESH MeshManipulations::CollapseEdge(EdgeType *EdgeToCollapse, int RemoveVert
 
     // If the vertex to remove belongs to a PhaseEdge, ensure that the other vertex belongs to the same PhaseEdge
     if (RemoveVertex->PhaseEdges.size() > 0) {
-        //        if ( SaveVertex->PhaseEdges.size() == 0 ) {
         if (std::find(SaveVertex->PhaseEdges.begin(), SaveVertex->PhaseEdges.end(), RemoveVertex->PhaseEdges[0]) ==
             SaveVertex->PhaseEdges.end()) {
             return FC_CHORD;
@@ -708,6 +707,7 @@ FC_MESH MeshManipulations::CheckCoarsenNormalImproved(std::vector<TriangleType *
 
     double MaxAngle = 0;
 
+    // Check change in normals and size of element
     for (unsigned int i = 0; i < OldTriangles->size(); i++) {
         std::array<double, 3> OldNormal = OldTriangles->at(i)->GiveUnitNormal();
         std::array<double, 3> NewNormal = NewTriangles->at(i)->GiveUnitNormal();

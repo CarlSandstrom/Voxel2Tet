@@ -153,7 +153,7 @@ public:
      * @param NewTriangles Vector of pointers to TriangleTypes
      * @return FC_MESH type stating if collapsing is ok or not
      */
-    FC_MESH CheckCoarsenNormal(std::vector<TriangleType *> *OldTriangles, std::vector<TriangleType *> *NewTriangles);
+    FC_MESH CheckCoarsenNormal(std::vector<TriangleType *> *OldTriangles, std::vector<TriangleType *> *NewTriangles); // TODO: This does not seem to be used
 
     /**
      * @brief Check if edge collapse results in a too large loss of volume or a too large change in normal.
