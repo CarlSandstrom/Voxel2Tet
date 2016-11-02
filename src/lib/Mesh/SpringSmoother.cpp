@@ -101,82 +101,36 @@ arma :: mat  SpringSmoother::ComputeNumericalTangent(std :: vector< arma::vec3 >
     return Tangent;
 }
 
-arma :: mat SpringSmoother::ComputeAnalyticalTangent(std :: vector< arma::vec3 >ConnectionCoords, arma :: vec xc, arma :: vec x0, double alpha, double c)
-{
-    arma :: mat Tangent = arma :: zeros< arma :: mat >(3, 3);
+arma :: mat SpringSmoother::ComputeAnalyticalTangent(std :: vector< arma::vec3 >ConnectionCoords, arma :: vec xc, arma :: vec x0, double alpha, double c) {
+    arma::mat Tangent = arma::zeros<arma::mat>(3, 3);
 
-    arma :: vec a0 = x0 - xc;
-    double d0 = arma :: norm(a0);
-    arma :: vec n0;
-
-    // Non-linear part
-    // We run into numerical trouble if d0=0. However, in the case of d0=0, everyting nonlinear is zero...
-    arma :: vec Dexp;
-    arma :: mat Dn0;
-    if ( d0 < 1e-8 ) {
-        n0 = {
-            0., 0., 0.
-        };
-        Dexp = {
-            0., 0., 0.
-        };
-        Dn0 = -arma :: zeros< arma :: mat >(3, 3);
-    } else {
-        n0 = a0 / d0;
-        Dexp = -std :: exp( std :: pow(d0 / c, alpha) ) * alpha / c *pow(d0 / c, alpha - 1) * n0;
-        Dn0 = -arma :: eye< arma :: mat >(3, 3) / d0 + a0 *a0.t() / pow(d0, 3);
-    }
-    Tangent = Tangent + n0 *Dexp.t() + Dn0 * ( std :: exp( std :: pow(d0 / c, alpha) ) - 1 );
-
-
-    // Linear part
-    Tangent = Tangent - arma :: eye< arma :: mat >(3, 3);
-
-    return Tangent;
-}
-
-arma :: mat SpringSmoother::ComputeAnalyticalTangentGlobal(std :: vector< arma::vec3 >ConnectionCoords, arma :: vec xc, arma :: vec x0, double alpha, double c)
-{
-    arma :: mat Tangent = arma :: zeros< arma :: mat >(3, ConnectionCoords.size() * 3 + 3);
-    arma :: mat TangentSelf = arma :: zeros< arma :: mat >(3, 3);
-
-    arma :: vec a0 = x0 - xc;
-    double d0 = arma :: norm(a0);
-    arma :: vec n0;
-
-    // delta x_i part
+    arma::vec a0 = x0 - xc;
+    double d0 = arma::norm(a0);
+    arma::vec n0;
 
     // Non-linear part
     // We run into numerical trouble if d0=0. However, in the case of d0=0, everyting nonlinear is zero...
-    arma :: vec Dexp;
-    arma :: mat Dn0;
-    if ( d0 < 1e-8 ) {
+    arma::vec Dexp;
+    arma::mat Dn0;
+    if (d0 < 1e-8) {
         n0 = {
-            0., 0., 0.
+                0., 0., 0.
         };
         Dexp = {
-            0., 0., 0.
+                0., 0., 0.
         };
-        Dn0 = -arma :: zeros< arma :: mat >(3, 3);
+        Dn0 = -arma::zeros<arma::mat>(3, 3);
     } else {
         n0 = a0 / d0;
-        Dexp = -std :: exp( std :: pow(d0 / c, alpha) ) * alpha / c *pow(d0 / c, alpha - 1) * n0;
-        Dn0 = -arma :: eye< arma :: mat >(3, 3) / d0 + a0 *a0.t() / pow(d0, 3);
+        Dexp = -std::exp(std::pow(d0 / c, alpha)) * alpha / c * pow(d0 / c, alpha - 1) * n0;
+        Dn0 = -arma::eye<arma::mat>(3, 3) / d0 + a0 * a0.t() / pow(d0, 3);
     }
-    TangentSelf = n0 * Dexp.t() + Dn0 * ( std :: exp( std :: pow(d0 / c, alpha) ) - 1 );
+    Tangent = Tangent + n0 * Dexp.t() + Dn0 * (std::exp(std::pow(d0 / c, alpha)) - 1);
+
 
     // Linear part
-    TangentSelf = TangentSelf - arma :: eye< arma :: mat >(3, 3) * ConnectionCoords.size();
+    Tangent = Tangent - arma::eye<arma::mat>(3, 3);
 
-    // Assemble self part to tangent
-    Tangent( arma :: span(0, 2), arma :: span(0, 2) ) = TangentSelf;
-
-    // delta x_j part
-    for ( unsigned int i = 0; i < ConnectionCoords.size(); i++ ) {
-        for ( int j = 0; j < 3; j++ ) {
-            Tangent(j, 3 * ( i + 1 ) + j) = 1.0; // /ConnectionCoords.size();
-        }
-    }
     return Tangent;
 }
 

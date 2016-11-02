@@ -42,12 +42,6 @@ private:
 
     double Compute_c(double l, double alpha);
     arma :: mat ComputeNumericalTangent(std :: vector< arma::vec3 >ConnectionCoords, arma :: vec xc, arma :: vec x0, double alpha, double c);
-    arma :: mat ComputeAnalyticalTangentGlobal(std :: vector< arma::vec3 >ConnectionCoords, arma :: vec xc, arma :: vec x0, double alpha, double c);
-
-    void SpringSmoothGlobal(std :: vector< VertexType * >Vertices, std :: vector< bool >Fixed,
-                            std :: vector< std :: vector< VertexType * > >Connections,
-                            double c, double alpha, double charlength, bool Automatic_c = false,
-                            MeshData *Mesh = NULL);
 
 protected:
     std::string DoOutput() const;

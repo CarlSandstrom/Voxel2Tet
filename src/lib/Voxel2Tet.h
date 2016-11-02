@@ -38,18 +38,13 @@ private:
     void FindSurfaces();
     void FindEdges();
 
-    void SmoothEdgesIndividually();
     void SmoothEdgesSimultaneously();
     void SmoothSurfaces();
-    void SmoothAllAtOnce();
 
     void AddSurfaceSquare(std :: vector< int >VoxelIDs, std :: vector< int >phases, int normalphase);
     PhaseEdge *AddPhaseEdge(std :: vector< VertexType * >EdgeSegment, std :: vector< int >Phases);
 
     void FinalizeLoad();
-
-    template< typename T >
-    std :: vector< int >FindSubsetIndices(std :: vector< T >Container, std :: vector< T >Subset);
 
     void UpdateSurfaces();
 

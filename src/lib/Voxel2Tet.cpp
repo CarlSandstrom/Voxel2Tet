@@ -305,13 +305,7 @@ namespace voxel2tet {
 
         this->Mesh = NewMesh;
 
-        this->ExportAllVolumes();
-        //this->ExportVolume("/tmp/Reference0.vtu", FT_VTK);
-        //this->ExportVolume("/tmp/Reference1.vtu", FT_VTK);
         UpdateFixed();
-        //this->Mesh->CleanupTetrahedrals();
-        //this->ExportVolume("/tmp/Better0.vtu", FT_VTK);
-        //this->ExportVolume("/tmp/Better1.vtu", FT_VTK);
 
         Timer.StopTimer();
     }
@@ -707,15 +701,6 @@ namespace voxel2tet {
         }
     }
 
-    void Voxel2TetClass::SmoothEdgesIndividually() {
-        STATUS("Smooth edges (individually)\n", 0);
-        for (unsigned int i = 0; i < this->PhaseEdges.size(); i++) {
-            LOG("Smooth edge %i\n", i);
-            PhaseEdge *e = this->PhaseEdges.at(i);
-            e->Smooth(this->Mesh);
-        }
-    }
-
     void Voxel2TetClass::SmoothEdgesSimultaneously() {
 
         //TODO: This does far too much stuff. A lot of thing has moved to the Smoother class. Clean this up.
@@ -846,12 +831,6 @@ namespace voxel2tet {
             s->Smooth(this->Mesh);
             i++;
         }
-    }
-
-    void Voxel2TetClass::SmoothAllAtOnce() {
-        STATUS("Smooth complete structure\n", 0);
-
-        this->SurfaceSmoother->Smooth(this->Mesh->Vertices);
     }
 
     PhaseEdge *Voxel2TetClass::AddPhaseEdge(std::vector<VertexType *> EdgeSegment, std::vector<int> Phases) {
