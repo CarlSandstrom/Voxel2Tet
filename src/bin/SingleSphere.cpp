@@ -1,6 +1,4 @@
 #include <iostream>
-#include <string>
-#include <stdio.h>
 
 #include "Options.h"
 #include "Voxel2Tet.h"

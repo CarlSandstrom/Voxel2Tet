@@ -1,10 +1,7 @@
 #include <iostream>
-#include <string>
-#include <stdio.h>
 
 #include "Options.h"
 #include "Voxel2Tet.h"
-#include "CallbackImporter.h"
 #include "TetGenExporter.h"
 #include "OFFExporter.h"
 

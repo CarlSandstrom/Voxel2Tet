@@ -1,6 +1,4 @@
 #include <iostream>
-#include <string>
-#include <stdio.h>
 #include <ctime>
 
 #include "Options.h"
