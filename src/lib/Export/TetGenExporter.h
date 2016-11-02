@@ -1,5 +1,6 @@
 #ifndef TETGETEXPORTER_H
 #define TETGETEXPORTER_H
+
 #include <string>
 #include <array>
 
@@ -20,9 +21,13 @@ public:
     /**
      * @copydoc Exporter::Exporter
      */
-    TetGenExporter(std :: vector< TriangleType * > *Triangles, std :: vector< VertexType * > *Vertices, std :: vector< EdgeType * > *Edges, std :: vector< TetType * > *Tets);
-    virtual void WriteSurfaceData(std :: string Filename);
-    virtual void WriteVolumeData(std :: string Filename) {}
+    TetGenExporter(std::vector<TriangleType *> *Triangles, std::vector<VertexType *> *Vertices,
+                   std::vector<EdgeType *> *Edges, std::vector<TetType *> *Tets);
+
+    virtual void WriteSurfaceData(std::string Filename);
+
+    virtual void WriteVolumeData(std::string Filename)
+    {}
 };
 }
 #endif // TETGETEXPORTER_H

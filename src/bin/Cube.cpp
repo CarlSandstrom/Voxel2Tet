@@ -18,7 +18,7 @@
  */
 int GiveMaterialIDByCoordinateCube(double x, double y, double z)
 {
-    if ( ( x <= 1. ) & ( x >= 0. ) & ( y <= 1. ) & ( y >= 0. ) & ( z <= 1. ) & ( z >= 0 ) ) {
+    if ((x <= 1.) & (x >= 0.) & (y <= 1.) & (y >= 0.) & (z <= 1.) & (z >= 0)) {
         return 1;
     } else {
         return 0;
@@ -27,23 +27,24 @@ int GiveMaterialIDByCoordinateCube(double x, double y, double z)
 
 int main(int argc, char *argv[])
 {
-    std :: map< std :: string, std :: string >DefaultOptions;
+    std::map<std::string, std::string> DefaultOptions;
 
     // The Options object is created with the command line arguments, thus, we can use the same
     // arguments as for the Voxel2Tet binary.
-    voxel2tet :: Options *Options = new voxel2tet :: Options(argc, argv, DefaultOptions, {});
+    voxel2tet::Options *Options = new voxel2tet::Options(argc, argv, DefaultOptions, {});
 
-    voxel2tet :: Voxel2TetClass v2t(Options);
+    voxel2tet::Voxel2TetClass v2t(Options);
 
     // Set dimensions
     double spacing = 0.4;
     double length = 1.0;
-    int dimensions = std :: ceil(length / spacing);
+    int dimensions = std::ceil(length / spacing);
 
-    v2t.LoadCallback(& GiveMaterialIDByCoordinateCube, { { 0, 0, 0 } }, { { spacing, spacing, spacing } }, { { dimensions, dimensions, dimensions } });
+    v2t.LoadCallback(&GiveMaterialIDByCoordinateCube, {{0, 0, 0}}, {{spacing, spacing, spacing}},
+                     {{dimensions, dimensions, dimensions}});
     v2t.Process();
     v2t.Tetrahedralize();
-    v2t.ExportSurface("/tmp/Cube.vtp", voxel2tet :: FT_VTK);
-    v2t.ExportVolume("/tmp/Cube.vtu", voxel2tet :: FT_VTK);
+    v2t.ExportSurface("/tmp/Cube.vtp", voxel2tet::FT_VTK);
+    v2t.ExportVolume("/tmp/Cube.vtu", voxel2tet::FT_VTK);
 
 }

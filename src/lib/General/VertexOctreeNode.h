@@ -26,13 +26,14 @@ private:
 
     // List of indices pointing to this->Vertices contained within this node
     // TODO: Is it neccessary to use indices? Why not pionters?
-    std :: vector< int >VertexIds;
+    std::vector<int> VertexIds;
 
     // Splits node into eight nodes
     void split();
 
     // Determines wether a coordinate is located within this node
     bool IsInBoundingBox(double x, double y, double z);
+
 public:
 
     /**
@@ -41,7 +42,8 @@ public:
      * @param Vertices Pointer to a list for vertices. This is the list of vertices used henceforth.
      * @param level Level of this node. 0 is for root. Other levels are taken care of by its parent.
      */
-    VertexOctreeNode(BoundingBoxType BoundingBox, std :: vector< VertexType * > *Vertices, int level);
+    VertexOctreeNode(BoundingBoxType BoundingBox, std::vector<VertexType *> *Vertices, int level);
+
     ~VertexOctreeNode();
 
     /**
@@ -63,12 +65,12 @@ public:
      *
      * This is the complete list of vertices, not only for the vertices in this node.
      */
-    std :: vector< VertexType * > *Vertices;
+    std::vector<VertexType *> *Vertices;
 
     /**
      * @brief List of nodes owned by this node
      */
-    std :: vector< VertexOctreeNode * >children;
+    std::vector<VertexOctreeNode *> children;
 
     /**
      * @brief Find a vertex in the structure by coordinate. If a vertex at the specified coordinate exists, return a pointer to that vertex object.
@@ -87,7 +89,7 @@ public:
      * @param r Radius of sphere
      * @return List of vertices
      */
-    std :: vector< VertexType * >GiveVerticesWithinSphere(double x, double y, double z, double r);
+    std::vector<VertexType *> GiveVerticesWithinSphere(double x, double y, double z, double r);
 
     /**
      * @brief Print information from this node and its children. For each level, a tab is added in front of the information to illustrate the hierachy.

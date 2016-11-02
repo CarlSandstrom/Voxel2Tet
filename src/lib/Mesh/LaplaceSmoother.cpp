@@ -3,21 +3,22 @@
 namespace voxel2tet
 {
 
-LaplaceSmoother::LaplaceSmoother(double VoxelCharLength, double c, double alpha, double c_factor, bool compute_c) : SpringSmoother( VoxelCharLength, c, alpha, c_factor, compute_c)
+LaplaceSmoother::LaplaceSmoother(double VoxelCharLength, double c, double alpha, double c_factor, bool compute_c)
+        : SpringSmoother(VoxelCharLength, c, alpha, c_factor, compute_c)
 {
 
 }
 
-void LaplaceSmoother :: Smooth(std :: vector< VertexType * >Vertices, MeshData *Mesh)
+void LaplaceSmoother::Smooth(std::vector<VertexType *> Vertices, MeshData *Mesh)
 {
     double MAXCHANGE = 1e-3 * charlength;
 
     std::vector<std::vector<VertexType *>> Connections = this->GetConnectivityVector(Vertices);
 
     // Create vectors for current and previous positions for all involved vertices (even those vertices connected to a vertex in Vertices vector)
-    std :: map<VertexType *, arma::vec3 >OriginalPositions;
-    std :: map<VertexType *, arma::vec3 >CurrentPositions;
-    std :: map<VertexType *, arma::vec3 >PreviousPositions;
+    std::map<VertexType *, arma::vec3> OriginalPositions;
+    std::map<VertexType *, arma::vec3> CurrentPositions;
+    std::map<VertexType *, arma::vec3> PreviousPositions;
 
     for (std::vector<VertexType *> VertexList: Connections) {
         for (VertexType *v: VertexList) {
@@ -34,7 +35,7 @@ void LaplaceSmoother :: Smooth(std :: vector< VertexType * >Vertices, MeshData *
     }
 
     bool intersecting = true;
-    this->CheckPenetration(&Vertices, (MeshManipulations*) Mesh);
+    this->CheckPenetration(&Vertices, (MeshManipulations *) Mesh);
 
     while (intersecting) {
 
@@ -44,7 +45,7 @@ void LaplaceSmoother :: Smooth(std :: vector< VertexType * >Vertices, MeshData *
         while (deltamax > MAXCHANGE) {
 
             deltamax = 0.0;
-            size_t i=0;
+            size_t i = 0;
 
             for (VertexType *v: Vertices) {
 
@@ -59,19 +60,19 @@ void LaplaceSmoother :: Smooth(std :: vector< VertexType * >Vertices, MeshData *
                 arma::vec3 NewPosition = {0, 0, 0};
 
                 for (VertexType *cv: Connections[i]) {
-                    NewPosition = NewPosition + 1.0 / double ( Connections[i].size() ) * cv->get_c_vec();
+                    NewPosition = NewPosition + 1.0 / double(Connections[i].size()) * cv->get_c_vec();
                 }
-                
-                for (int i=0; i<3; i++) {
+
+                for (int i = 0; i < 3; i++) {
                     if (!v->Fixed[i]) {
                         CurrentPositions[v][i] = NewPosition[i];
                         v->set_c(CurrentPositions[v][i], i);
                     }
                 }
 
-                double delta = arma::norm(CurrentPositions[v]-PreviousPositions[v]);
+                double delta = arma::norm(CurrentPositions[v] - PreviousPositions[v]);
 
-                for (int i=0; i<3; i++) {
+                for (int i = 0; i < 3; i++) {
                     if (!v->Fixed[i]) {
                         PreviousPositions[v][i] = CurrentPositions[v][i];
                     }

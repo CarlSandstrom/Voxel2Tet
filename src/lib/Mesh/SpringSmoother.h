@@ -35,13 +35,20 @@ protected:
     double alpha;
     double charlength;
 
-    arma :: vec ComputeOutOfBalance(std :: vector< arma::vec3 >ConnectionCoords, arma::vec3 xc, arma::vec3 x0, double alpha, double c);
-    arma :: mat ComputeAnalyticalTangent(std :: vector< arma::vec3 >ConnectionCoords, arma :: vec xc, arma :: vec x0, double alpha, double c);
+    arma::vec
+    ComputeOutOfBalance(std::vector<arma::vec3> ConnectionCoords, arma::vec3 xc, arma::vec3 x0, double alpha, double c);
+
+    arma::mat
+    ComputeAnalyticalTangent(std::vector<arma::vec3> ConnectionCoords, arma::vec xc, arma::vec x0, double alpha,
+                             double c);
 
 private:
 
     double Compute_c(double l, double alpha);
-    arma :: mat ComputeNumericalTangent(std :: vector< arma::vec3 >ConnectionCoords, arma :: vec xc, arma :: vec x0, double alpha, double c);
+
+    arma::mat
+    ComputeNumericalTangent(std::vector<arma::vec3> ConnectionCoords, arma::vec xc, arma::vec x0, double alpha,
+                            double c);
 
 protected:
     std::string DoOutput() const;
@@ -56,10 +63,12 @@ public:
      * @param c_factor If c is computed, use a factor c_factor of the VoxelCharLength when determining the equilibrium
      * @param compute_c Determines if c should be used from input or computed
      */
-    SpringSmoother(double VoxelCharLength, double c, double alpha, double c_factor, bool compute_c=false);
-    ~SpringSmoother() {}
+    SpringSmoother(double VoxelCharLength, double c, double alpha, double c_factor, bool compute_c = false);
 
-    void Smooth(std :: vector< VertexType * >Vertices, MeshData *Mesh = NULL);
+    ~SpringSmoother()
+    {}
+
+    void Smooth(std::vector<VertexType *> Vertices, MeshData *Mesh = NULL);
 };
 
 }

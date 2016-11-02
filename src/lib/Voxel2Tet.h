@@ -32,17 +32,21 @@ class Voxel2TetClass
 private:
     Options *Opt;
     Importer *Imp;
-    std :: vector< Surface * >Surfaces;
-    std :: vector< Volume * >Volumes;
-    std :: vector< PhaseEdge * >PhaseEdges;
+    std::vector<Surface *> Surfaces;
+    std::vector<Volume *> Volumes;
+    std::vector<PhaseEdge *> PhaseEdges;
+
     void FindSurfaces();
+
     void FindEdges();
 
     void SmoothEdgesSimultaneously();
+
     void SmoothSurfaces();
 
-    void AddSurfaceSquare(std :: vector< int >VoxelIDs, std :: vector< int >phases, int normalphase);
-    PhaseEdge *AddPhaseEdge(std :: vector< VertexType * >EdgeSegment, std :: vector< int >Phases);
+    void AddSurfaceSquare(std::vector<int> VoxelIDs, std::vector<int> phases, int normalphase);
+
+    PhaseEdge *AddPhaseEdge(std::vector<VertexType *> EdgeSegment, std::vector<int> Phases);
 
     void FinalizeLoad();
 
@@ -52,9 +56,9 @@ private:
 
     TimeStamp Timer;
 
-    std :: vector< std :: vector< double > >PhaseVolumes;
-    std :: vector< double >CurrentVolumes;
-    std :: vector< int >PhaseList;
+    std::vector<std::vector<double> > PhaseVolumes;
+    std::vector<double> CurrentVolumes;
+    std::vector<int> PhaseList;
 
     Smoother *SurfaceSmoother;
     Smoother *EdgeSmoother;
@@ -69,6 +73,7 @@ public:
      * @param Opt Input. Pointer to Options object.
      */
     Voxel2TetClass(Options *Opt);
+
     ~Voxel2TetClass();
 
     /**
@@ -87,14 +92,14 @@ public:
      * @param PhaseList [Out] List of phases
      * @return Total volume
      */
-    double GetListOfVolumes(std :: vector< double > &VolumeList, std :: vector< int > &PhaseList);
+    double GetListOfVolumes(std::vector<double> &VolumeList, std::vector<int> &PhaseList);
 
     /**
      * @brief Exports all surfaces to file
      * @param FileName File name of output file
      * @param FileType File type
      */
-    void ExportSurface(std :: string FileName, Exporter_FileTypes FileType);
+    void ExportSurface(std::string FileName, Exporter_FileTypes FileType);
 
     /**
      * @brief Perform tetrahedralization.
@@ -106,13 +111,13 @@ public:
      * @param FileName File name of output file
      * @param FileType File type
      */
-    void ExportVolume(std :: string FileName, Exporter_FileTypes FileType);
+    void ExportVolume(std::string FileName, Exporter_FileTypes FileType);
 
     /**
      * @brief Loads a file
      * @param FileName File name of file to load
      */
-    void LoadFile(std :: string FileName);
+    void LoadFile(std::string FileName);
 
     /**
      * @brief Loads data using a callback function.
@@ -121,14 +126,15 @@ public:
      * @param spacing Side length of voxels
      * @param dimensions Number of voxels in each dimension
      */
-    void LoadCallback(cbMaterialIDByCoordinate MaterialIDByCoordinate, std :: array< double, 3 >origin, std :: array< double, 3 >spacing, std :: array< int, 3 >dimensions);
+    void LoadCallback(cbMaterialIDByCoordinate MaterialIDByCoordinate, std::array<double, 3> origin,
+                      std::array<double, 3> spacing, std::array<int, 3> dimensions);
 
     /**
      * @brief FindVolumeContainingPoint finds the volume that contains the point P
      * @param P [in] Point
      * @return Pointer to volume object that contains P or NULL if none found.
      */
-    Volume *FindVolumeContainingPoint(std :: array< double, 3 >P);
+    Volume *FindVolumeContainingPoint(std::array<double, 3> P);
 
 
     /**

@@ -10,7 +10,9 @@
 namespace voxel2tet
 {
 class TriangleType;
+
 class EdgeType;
+
 class PhaseEdge;
 
 /**
@@ -24,7 +26,7 @@ class PhaseEdge;
 class VertexType
 {
 private:
-    std :: array< double, 3 >c;
+    std::array<double, 3> c;
 
 public:
     /**
@@ -50,7 +52,7 @@ public:
     /**
      * @brief List of Phase edges the vertex is connected to.
      */
-    std :: vector< PhaseEdge * >PhaseEdges;
+    std::vector<PhaseEdge *> PhaseEdges;
 
     /**
      * @brief Add a phase edge to PhaseEdges
@@ -62,7 +64,8 @@ public:
      * @brief IsFixedVertex tells if the vertex is (always) fixed. A vertex that is the end of a phase edge is always fixed.
      * @return If the vertex is fixed or not
      */
-    bool IsFixedVertex() {
+    bool IsFixedVertex()
+    {
         this->PhaseEdges.erase(std::unique(this->PhaseEdges.begin(), this->PhaseEdges.end()), this->PhaseEdges.end());
         return PhaseEdges.size() > 1;
     }
@@ -70,13 +73,14 @@ public:
     /**
      * @brief Determines in which directions this vertex is fixed during smoothing.
      */
-    std :: array< bool, 3 >Fixed;
+    std::array<bool, 3> Fixed;
 
     /**
      * @brief Determines if this vertex belongs to an phase edge.
      * @return True or false depending on if the vertex belongs to a phase edge.
      */
-    bool IsPhaseEdgeVertex() { return PhaseEdges.size() > 0; }
+    bool IsPhaseEdgeVertex()
+    { return PhaseEdges.size() > 0; }
 
     /**
      * @brief Constructor
@@ -89,13 +93,13 @@ public:
     /**
      * @brief Contains the original coordinates before smoothing.
      */
-    double originalcoordinates [ 3 ];
+    double originalcoordinates[3];
 
     /**
      * @brief Update coordinates of this vertex
      * @param newc Array containing new coordinate information
      */
-    void set_c(std :: array< double, 3 >newc);
+    void set_c(std::array<double, 3> newc);
 
     /**
      * @brief Update coordinates of this vertex
@@ -108,7 +112,7 @@ public:
      * @brief Retrieve coordinates of current vertex
      * @return Coordinates
      */
-    std :: array< double, 3 >get_c();
+    std::array<double, 3> get_c();
 
     /**
      * @brief Retrieve coordina
@@ -122,12 +126,12 @@ public:
     /**
      * @brief List of triangles connected to this vertex
      */
-    std :: vector< TriangleType * >Triangles;
+    std::vector<TriangleType *> Triangles;
 
     /**
      * @brief List of edges connected to this vertex
      */
-    std :: vector< EdgeType * >Edges;
+    std::vector<EdgeType *> Edges;
 
     /**
      * @brief Adds a triangle to vertex triangle list and ensures uniqueness on list
@@ -157,7 +161,7 @@ public:
      * @brief Produce a list of all neighbouring vertices
      * @return List of neighbouring vertices
      */
-    std :: vector< VertexType * >FetchNeighbouringVertices();
+    std::vector<VertexType *> FetchNeighbouringVertices();
 
 };
 
@@ -184,7 +188,7 @@ public:
     /**
      * @brief Array of two vertices describing the edge.
      */
-    std :: array< VertexType *, 2 >Vertices;
+    std::array<VertexType *, 2> Vertices;
 
     /**
      * @brief Produces a list of triangles connected to this edge.
@@ -197,7 +201,7 @@ public:
      *
      * @return List of triangles
      */
-    std :: vector< TriangleType * >GiveTriangles();
+    std::vector<TriangleType *> GiveTriangles();
 
     /**
      * @brief Computes the length of this edge.
@@ -209,7 +213,7 @@ public:
      * @brief Compute center point of edge.
      * @return Center point of edge
      */
-    std :: array< double, 3 >GiveCenterPoint();
+    std::array<double, 3> GiveCenterPoint();
 };
 
 /**
@@ -225,22 +229,23 @@ class TriangleType
 {
 private:
     // Give vector for edge between node and node+1
-    std :: array< double, 3 >GiveEdgeVector(int node);
+    std::array<double, 3> GiveEdgeVector(int node);
 
     // Normal of element
-    std :: array< double, 3 >Normal;
+    std::array<double, 3> Normal;
 public:
 
     /**
      * @brief Constructor
      */
-    TriangleType() {}
+    TriangleType()
+    {}
 
     /**
      * @brief Constructor
      * @param Vertices VertexType objects determining the corners of the triangle
      */
-    TriangleType(std :: array< VertexType *, 3 >Vertices);
+    TriangleType(std::array<VertexType *, 3> Vertices);
 
     /**
      * @brief ID of Triangle object. Mostly for debugging purposes.
@@ -265,7 +270,7 @@ public:
     /**
      * @brief Array of vertices defining the triangle
      */
-    std :: array< VertexType *, 3 >Vertices;
+    std::array<VertexType *, 3> Vertices;
 
     /**
      * @brief Returns the Edge object located at edge index
@@ -285,7 +290,7 @@ public:
      *
      * @return Array of pointers to Edge objects
      */
-    std :: array< EdgeType *, 3 >GiveEdges();
+    std::array<EdgeType *, 3> GiveEdges();
 
     /**
      * @brief Computes the longest edge length of the triangle.
@@ -309,7 +314,7 @@ public:
      * @brief Computes center of mass for triangle
      * @return Coordinate
      */
-    std :: array< double, 3 >GiveCenterOfMass();
+    std::array<double, 3> GiveCenterOfMass();
 
     /**
      * @brief Computes the largest inner angle of the triangle.
@@ -332,13 +337,14 @@ public:
      *
      * @return Array of doubles describing the normal
      */
-    std :: array< double, 3 >GiveNormal() { return Normal; }
+    std::array<double, 3> GiveNormal()
+    { return Normal; }
 
     /**
      * @brief Gives normalized normal. See GiveNormal().
      * @return Normalized normal
      */
-    std :: array< double, 3 >GiveUnitNormal();
+    std::array<double, 3> GiveUnitNormal();
 
     /**
      * @brief Updates normal
@@ -357,9 +363,22 @@ public:
 class TetType
 {
 private:
-    int FaceVertices[4][3] = {{0, 2, 1}, {0, 1, 3}, {1, 2, 3}, {0, 3, 2}};
-    int FacePairs[6][2] = {{0, 1}, {0, 2}, {0, 3}, {1, 3}, {1, 2}, {2, 3}};
-    int EdgeVertices[6][2] = {{0, 1}, {1, 2}, {2, 0}, {0, 3}, {1, 3}, {2, 3}};
+    int FaceVertices[4][3] = {{0, 2, 1},
+                              {0, 1, 3},
+                              {1, 2, 3},
+                              {0, 3, 2}};
+    int FacePairs[6][2] = {{0, 1},
+                           {0, 2},
+                           {0, 3},
+                           {1, 3},
+                           {1, 2},
+                           {2, 3}};
+    int EdgeVertices[6][2] = {{0, 1},
+                              {1, 2},
+                              {2, 0},
+                              {0, 3},
+                              {1, 3},
+                              {2, 3}};
 
 public:
     /**
@@ -375,13 +394,13 @@ public:
     /**
      * @brief Vertices determininmg the tetrahedral element.
      */
-    std :: array< VertexType *, 4 >Vertices;
+    std::array<VertexType *, 4> Vertices;
 
     /**
      * @brief Returns center of mass
      * @return Coordinate
      */
-    std :: array< double, 3 >GiveCenterOfMass();
+    std::array<double, 3> GiveCenterOfMass();
 
     /**
      * @brief GiveSmallestAngle

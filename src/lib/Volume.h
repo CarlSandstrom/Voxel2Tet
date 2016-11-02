@@ -31,19 +31,19 @@ public:
     /**
      * @brief List of Surface objects that describe the boundary of the volume.
      */
-    std :: vector< Surface * >Surfaces;
+    std::vector<Surface *> Surfaces;
 
     /**
      * @brief GiveTriangles returns all triangles on the surface of the volume
      * @return Vector of triangles
      */
-    std :: vector< TriangleType * >GiveTriangles();
+    std::vector<TriangleType *> GiveTriangles();
 
     /**
      * @brief GiveVertices returns all vertices on the surface of the volume
      * @return Vector of vertices
      */
-    std :: vector< VertexType * >GiveVertices();
+    std::vector<VertexType *> GiveVertices();
 
     /**
      * @brief IsPointInside determines if point P lies withing the volume
@@ -53,7 +53,7 @@ public:
      * @param P [in] Point coodrinates
      * @return True if point is within the volume, false if outside.
      */
-    bool IsPointInside(std :: array< double, 3 >P);
+    bool IsPointInside(std::array<double, 3> P);
 
     /**
      * @brief Computes the volume of the Volume object.

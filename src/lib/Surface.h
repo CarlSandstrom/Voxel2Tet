@@ -44,22 +44,22 @@ public:
     /**
      * @brief Holds phase indices for phases on either side of the surface
      */
-    std :: array< int, 2 >Phases;
+    std::array<int, 2> Phases;
 
     /**
      * @brief Vertices List of vertices on the surface
      */
-    std :: vector< VertexType * >Vertices;
+    std::vector<VertexType *> Vertices;
 
     /**
      * @brief Triangles List of triangles on the surface
      */
-    std :: vector< TriangleType * >Triangles;
+    std::vector<TriangleType *> Triangles;
 
     /**
      * @brief PhaseEdges List of phase edges on the surface
      */
-    std :: vector< PhaseEdge * >PhaseEdges;
+    std::vector<PhaseEdge *> PhaseEdges;
 
     /**
      * @brief AddVertex Adds the vertex \p Vertex to the surface

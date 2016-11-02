@@ -15,7 +15,12 @@ namespace voxel2tet
  */
 class Smoother
 {
-    friend std::ostream &operator<<(std::ostream &stream, const Smoother &ThisSmoother) {stream << ThisSmoother.DoOutput(); return stream;}
+    friend std::ostream &operator<<(std::ostream &stream, const Smoother &ThisSmoother)
+    {
+        stream << ThisSmoother.DoOutput();
+        return stream;
+    }
+
 public:
     /**
      * @brief constructor
@@ -41,11 +46,12 @@ public:
      * @param Connections Gives the connections of each vertex. Should be the same length as Vertices
      * @param Mesh For exporting (debugging purposes)
      */
-    virtual void Smooth(std :: vector< VertexType * >Vertices, MeshData *Mesh = NULL) = 0;
+    virtual void Smooth(std::vector<VertexType *> Vertices, MeshData *Mesh = NULL) = 0;
 
-    std :: vector< std :: pair< TriangleType *, TriangleType * > >CheckPenetration(std :: vector< VertexType * > *Vertices, MeshManipulations *Mesh);
+    std::vector<std::pair<TriangleType *, TriangleType *> >
+    CheckPenetration(std::vector<VertexType *> *Vertices, MeshManipulations *Mesh);
 
-    void PullBackAtIntersections(std :: vector< VertexType * > Vertices, MeshManipulations *Mesh);
+    void PullBackAtIntersections(std::vector<VertexType *> Vertices, MeshManipulations *Mesh);
 
 protected:
     virtual std::string DoOutput() const = 0;

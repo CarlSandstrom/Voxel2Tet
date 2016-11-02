@@ -13,16 +13,20 @@ namespace voxel2tet
  * Each block starts vith an integer telling the number of comming lines for that block.
  *
  */
-class SimpleExporter: public Exporter
+class SimpleExporter : public Exporter
 {
 public:
 
     /**
      * @copydoc Exporter::Exporter
      */
-    SimpleExporter(std :: vector< TriangleType * > *Triangles, std :: vector< VertexType * > *Vertices, std :: vector< EdgeType * > *Edges, std :: vector< TetType * > *Tets);
-    virtual void WriteSurfaceData(std :: string Filename);
-    virtual void WriteVolumeData(std :: string Filename) {}
+    SimpleExporter(std::vector<TriangleType *> *Triangles, std::vector<VertexType *> *Vertices,
+                   std::vector<EdgeType *> *Edges, std::vector<TetType *> *Tets);
+
+    virtual void WriteSurfaceData(std::string Filename);
+
+    virtual void WriteVolumeData(std::string Filename)
+    {}
 
 };
 

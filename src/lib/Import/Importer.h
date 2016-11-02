@@ -7,46 +7,50 @@
 
 #include "Options.h"
 
-namespace voxel2tet {
+namespace voxel2tet
+{
 
-typedef int IntTriplet [ 3 ];
+typedef int IntTriplet[3];
 
 /**
   * Type for array of three doubles. Typically a coordinate.
   */
-typedef struct {
+typedef struct
+{
     /**
      * @brief Coordinate values
      */
-    double c [ 3 ];
+    double c[3];
 } DoubleTriplet;
 
 /**
   * Holds the coordinates for the maximum (x, y, z) and the minimum (x, y, z)
   */
-typedef struct {
+typedef struct
+{
     /**
      * @brief Max values for (x, y, z)
      */
-    std :: array< double, 3 >maxvalues;
+    std::array<double, 3> maxvalues;
     /**
      * @brief Min values for (x, y, z)
      */
-    std :: array< double, 3 >minvalues;
+    std::array<double, 3> minvalues;
 } BoundingBoxType;
 
 /**
   * Holds the number of voxels for the maximum (x, y, z) and the minimum (x, y, z)
   */
-typedef struct {
+typedef struct
+{
     /**
      * @brief Max number of voxels for (x, y, z)
      */
-    std :: array< int, 3 >maxvalues;
+    std::array<int, 3> maxvalues;
     /**
      * @brief Min number of voxels for (x, y, z)
      */
-    std :: array< int, 3 >minvalues;
+    std::array<int, 3> minvalues;
 } VoxelBoundingBoxType;
 
 /**
@@ -58,17 +62,17 @@ protected:
     /**
      * @brief Dimensions of a voxel
      */
-    double spacing_data [ 3 ];
+    double spacing_data[3];
 
     /**
      * @brief Origin of voxel data
      */
-    double origin_data [ 3 ];
+    double origin_data[3];
 
     /**
      * @brief Number of voxels in each dimension
      */
-    int dimensions_data [ 3 ];
+    int dimensions_data[3];
 
     /**
      * @brief Bounding box
@@ -88,7 +92,8 @@ protected:
 
 public:
 
-    Importer() {UseCutOut = false; }
+    Importer()
+    { UseCutOut = false; }
 
     bool UseCutOut;
 
@@ -102,7 +107,7 @@ public:
      *
      * @param FileName
      */
-    virtual void LoadFile(std :: string FileName) = 0;
+    virtual void LoadFile(std::string FileName) = 0;
 
     /**
      * @brief Returns the identifier of the material located at coordinate (x, y, z).
@@ -126,7 +131,7 @@ public:
      * @brief Returns the dimensions of one voxel
      * @param spacing Array of 3
      */
-    virtual void GiveSpacing(double spacing [ 3 ]);
+    virtual void GiveSpacing(double spacing[3]);
 
     /**
      * @brief Returns bounding box for voxel data
@@ -138,7 +143,7 @@ public:
      * @brief Returns the number of voxels in each dimension.
      * @param dimensions Array of 3 integers
      */
-    virtual void GiveDimensions(int dimensions [ 3 ]);
+    virtual void GiveDimensions(int dimensions[3]);
 
     /**
      * @brief Convert indices to coordinate
@@ -155,7 +160,7 @@ public:
      * @brief Returns origin of voxel data
      * @param origin Coordinate. Array of 3 doubles
      */
-    virtual void GiveOrigin(double origin [ 3 ]);
+    virtual void GiveOrigin(double origin[3]);
 };
 }
 

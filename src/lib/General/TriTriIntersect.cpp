@@ -149,18 +149,18 @@
     }
 
 // From http://grv.inf.pucrs.br/projects/SmallVR/Exercicios/exercicioCaminho/Tri2Tri.cpp
-int coplanar_tri_tri(double N [ 3 ], double V0 [ 3 ], double V1 [ 3 ], double V2 [ 3 ],
-                     double U0 [ 3 ], double U1 [ 3 ], double U2 [ 3 ])
+int coplanar_tri_tri(double N[3], double V0[3], double V1[3], double V2[3],
+                     double U0[3], double U1[3], double U2[3])
 {
-    double A [ 3 ];
+    double A[3];
     short i0, i1;
     /* first project onto an axis-aligned plane, that maximizes the area */
     /* of the triangles, compute indices: i0,i1. */
-    A [ 0 ] = fabs(N [ 0 ]);
-    A [ 1 ] = fabs(N [ 1 ]);
-    A [ 2 ] = fabs(N [ 2 ]);
-    if ( A [ 0 ] > A [ 1 ] ) {
-        if ( A [ 0 ] > A [ 2 ] ) {
+    A[0] = fabs(N[0]);
+    A[1] = fabs(N[1]);
+    A[2] = fabs(N[2]);
+    if (A[0] > A[1]) {
+        if (A[0] > A[2]) {
             i0 = 1;  /* A[0] is greatest */
             i1 = 2;
         } else {
@@ -168,7 +168,7 @@ int coplanar_tri_tri(double N [ 3 ], double V0 [ 3 ], double V1 [ 3 ], double V2
             i1 = 1;
         }
     } else {   /* A[0]<=A[1] */
-        if ( A [ 2 ] > A [ 1 ] ) {
+        if (A[2] > A[1]) {
             i0 = 0;  /* A[2] is greatest */
             i1 = 1;
         } else {
@@ -190,14 +190,14 @@ int coplanar_tri_tri(double N [ 3 ], double V0 [ 3 ], double V1 [ 3 ], double V2
 }
 
 
-int tri_tri_intersect(double V0 [ 3 ], double V1 [ 3 ], double V2 [ 3 ],
-                      double U0 [ 3 ], double U1 [ 3 ], double U2 [ 3 ])
+int tri_tri_intersect(double V0[3], double V1[3], double V2[3],
+                      double U0[3], double U1[3], double U2[3])
 {
-    double E1 [ 3 ], E2 [ 3 ];
-    double N1 [ 3 ], N2 [ 3 ], d1, d2;
+    double E1[3], E2[3];
+    double N1[3], N2[3], d1, d2;
     double du0, du1, du2, dv0, dv1, dv2;
-    double D [ 3 ];
-    double isect1 [ 2 ], isect2 [ 2 ];
+    double D[3];
+    double isect1[2], isect2[2];
     double du0du1, du0du2, dv0dv1, dv0dv2;
     short index;
     double vp0, vp1, vp2;
@@ -218,20 +218,20 @@ int tri_tri_intersect(double V0 [ 3 ], double V1 [ 3 ], double V2 [ 3 ],
 
     /* coplanarity robustness check */
 #if USE_EPSILON_TEST == TRUE
-    if ( fabs(du0) < EPSILON ) {
+    if (fabs(du0) < EPSILON) {
         du0 = 0.0;
     }
-    if ( fabs(du1) < EPSILON ) {
+    if (fabs(du1) < EPSILON) {
         du1 = 0.0;
     }
-    if ( fabs(du2) < EPSILON ) {
+    if (fabs(du2) < EPSILON) {
         du2 = 0.0;
     }
 #endif
     du0du1 = du0 * du1;
     du0du2 = du0 * du2;
 
-    if ( du0du1 > 0.0f && du0du2 > 0.0f ) { /* same sign on all of them + not equal 0 ? */
+    if (du0du1 > 0.0f && du0du2 > 0.0f) { /* same sign on all of them + not equal 0 ? */
         return 0;                /* no intersection occurs */
     }
     /* compute plane of triangle (U0,U1,U2) */
@@ -247,13 +247,13 @@ int tri_tri_intersect(double V0 [ 3 ], double V1 [ 3 ], double V2 [ 3 ],
     dv2 = DOT(N2, V2) + d2;
 
 #if USE_EPSILON_TEST == TRUE
-    if ( fabs(dv0) < EPSILON ) {
+    if (fabs(dv0) < EPSILON) {
         dv0 = 0.0;
     }
-    if ( fabs(dv1) < EPSILON ) {
+    if (fabs(dv1) < EPSILON) {
         dv1 = 0.0;
     }
-    if ( fabs(dv2) < EPSILON ) {
+    if (fabs(dv2) < EPSILON) {
         dv2 = 0.0;
     }
 #endif
@@ -261,43 +261,43 @@ int tri_tri_intersect(double V0 [ 3 ], double V1 [ 3 ], double V2 [ 3 ],
     dv0dv1 = dv0 * dv1;
     dv0dv2 = dv0 * dv2;
 
-    if ( dv0dv1 > 0.0f && dv0dv2 > 0.0f ) { /* same sign on all of them + not equal 0 ? */
+    if (dv0dv1 > 0.0f && dv0dv2 > 0.0f) { /* same sign on all of them + not equal 0 ? */
         return 0;                /* no intersection occurs */
     }
     /* compute direction of intersection line */
     CROSS(D, N1, N2);
 
     /* compute and index to the largest component of D */
-    max = fabs(D [ 0 ]);
+    max = fabs(D[0]);
     index = 0;
-    b = fabs(D [ 1 ]);
-    c = fabs(D [ 2 ]);
-    if ( b > max ) {
+    b = fabs(D[1]);
+    c = fabs(D[2]);
+    if (b > max) {
         max = b, index = 1;
     }
-    if ( c > max ) {
+    if (c > max) {
         max = c, index = 2;
     }
 
     /* this is the simplified projection onto L*/
-    vp0 = V0 [ index ];
-    vp1 = V1 [ index ];
-    vp2 = V2 [ index ];
+    vp0 = V0[index];
+    vp1 = V1[index];
+    vp2 = V2[index];
 
-    up0 = U0 [ index ];
-    up1 = U1 [ index ];
-    up2 = U2 [ index ];
+    up0 = U0[index];
+    up1 = U1[index];
+    up2 = U2[index];
 
     /* compute interval for triangle 1 */
-    COMPUTE_INTERVALS(vp0, vp1, vp2, dv0, dv1, dv2, dv0dv1, dv0dv2, isect1 [ 0 ], isect1 [ 1 ]);
+    COMPUTE_INTERVALS(vp0, vp1, vp2, dv0, dv1, dv2, dv0dv1, dv0dv2, isect1[0], isect1[1]);
 
     /* compute interval for triangle 2 */
-    COMPUTE_INTERVALS(up0, up1, up2, du0, du1, du2, du0du1, du0du2, isect2 [ 0 ], isect2 [ 1 ]);
+    COMPUTE_INTERVALS(up0, up1, up2, du0, du1, du2, du0du1, du0du2, isect2[0], isect2[1]);
 
-    SORT(isect1 [ 0 ], isect1 [ 1 ]);
-    SORT(isect2 [ 0 ], isect2 [ 1 ]);
+    SORT(isect1[0], isect1[1]);
+    SORT(isect2[0], isect2[1]);
 
-    if ( isect1 [ 1 ] < isect2 [ 0 ] || isect2 [ 1 ] < isect1 [ 0 ] ) {
+    if (isect1[1] < isect2[0] || isect2[1] < isect1[0]) {
         return 0;
     }
     return 1;
@@ -315,10 +315,10 @@ int tri_tri_intersect(double V0 [ 3 ], double V1 [ 3 ], double V2 [ 3 ],
 }
 
 
-bool point_in_tri(double V0 [ 3 ], double V1 [ 3 ], double V2 [ 3 ], double P [ 3 ])
+bool point_in_tri(double V0[3], double V1[3], double V2[3], double P[3])
 // By Carl Sandström
 {
-    double e0 [ 3 ], e1 [ 3 ], e2 [ 3 ];
+    double e0[3], e1[3], e2[3];
 
     // Compute edge vectors
     SUB(e0, V1, V0);
@@ -326,7 +326,7 @@ bool point_in_tri(double V0 [ 3 ], double V1 [ 3 ], double V2 [ 3 ], double P [ 
     SUB(e2, V0, V2);
 
     // Compute area of triangle
-    double n0 [ 3 ];
+    double n0[3];
     CROSS(n0, e0, e2);
 
     double L;
@@ -334,13 +334,13 @@ bool point_in_tri(double V0 [ 3 ], double V1 [ 3 ], double V2 [ 3 ], double P [ 
     double A = .5 * L;
 
     // If triangle has area 0, it is simply a line. Check if the point is located on any of the edges.
-    if (A==0.0) {
+    if (A == 0.0) {
         double dV0V2 = DISTANCE(V0, V2);
         double dV0V1 = DISTANCE(V0, V1);
         double dV1V2 = DISTANCE(V0, V1);
-        double dPV0 =  DISTANCE(P, V0);
-        double dPV1 =  DISTANCE(P, V1);
-        double dPV2 =  DISTANCE(P, V2);
+        double dPV0 = DISTANCE(P, V0);
+        double dPV1 = DISTANCE(P, V1);
+        double dPV2 = DISTANCE(P, V2);
 
         if (fabs(dV0V2 - (dPV0 + dPV2)) < 1e-8) {
             return true;
@@ -358,12 +358,12 @@ bool point_in_tri(double V0 [ 3 ], double V1 [ 3 ], double V2 [ 3 ], double P [ 
     }
 
     // Compute cross product (normals) for each edge and point P
-    double d0 [ 3 ], d1 [ 3 ], d2 [ 3 ];
+    double d0[3], d1[3], d2[3];
     SUB(d0, P, V0);
     SUB(d1, P, V1);
     SUB(d2, P, V2);
 
-    double b0 [ 3 ], b1 [ 3 ], b2 [ 3 ];
+    double b0[3], b1[3], b2[3];
     CROSS(b0, e0, d0);
     CROSS(b1, e1, d1);
     CROSS(b2, e2, d2);
@@ -381,27 +381,27 @@ bool point_in_tri(double V0 [ 3 ], double V1 [ 3 ], double V2 [ 3 ], double P [ 
 
     double asum = a0 + a1 + a2;
 
-    if ( fabs(A - asum) < 1e-7 ) {
+    if (fabs(A - asum) < 1e-7) {
         return true;
     }
 
     return false;
 }
 
-bool tri_tri_intersect_shared_edge(double s0 [ 3 ], double s1 [ 3 ], double u0 [ 3 ], double u1 [ 3 ])
+bool tri_tri_intersect_shared_edge(double s0[3], double s1[3], double u0[3], double u1[3])
 // By C Sandström
 {
     // Compute vectors from s0
-    double se [ 3 ];
+    double se[3];
     SUB(se, s0, s1);
 
-    double s0u0 [ 3 ], s0u1 [ 3 ];
+    double s0u0[3], s0u1[3];
     SUB(s0u0, u0, s0);
     SUB(s0u1, u1, s0);
 
     // Compute unit normal to the two triangles
 
-    double n0 [ 3 ], n1 [ 3 ];
+    double n0[3], n1[3];
     CROSS(n0, se, s0u0);
     CROSS(n1, se, s0u1);
 
@@ -412,29 +412,29 @@ bool tri_tri_intersect_shared_edge(double s0 [ 3 ], double s1 [ 3 ], double u0 [
     //printf("n1 =(%f, %f, %f)\n", n1[0], n1[1], n1[2]);
 
     // Compute difference
-    double d [ 3 ];
+    double d[3];
     SUB(d, n0, n1);
     double L;
 
     VECTOR_LENGTH(L, d);
     //printf ("|n0-n1| = %f\n", L);
 
-    if ( L < .05 ) {
+    if (L < .05) {
         return true;        // TODO: .01 does not work. investigate
     }
     return false;
 }
 
 // Snippet from https://en.wikipedia.org/wiki/M%C3%B6ller%E2%80%93Trumbore_intersection_algorithm
-int triangle_ray_intersection(double V1 [ 3 ],  // Triangle vertices
-                              double V2 [ 3 ],
-                              double V3 [ 3 ],
-                              double O [ 3 ], //Ray origin
-                              double D [ 3 ], //Ray direction
+int triangle_ray_intersection(double V1[3],  // Triangle vertices
+                              double V2[3],
+                              double V3[3],
+                              double O[3], //Ray origin
+                              double D[3], //Ray direction
                               float *out)
 {
-    double e1 [ 3 ], e2 [ 3 ]; //Edge1, Edge2
-    double P [ 3 ], Q [ 3 ], T [ 3 ];
+    double e1[3], e2[3]; //Edge1, Edge2
+    double P[3], Q[3], T[3];
     float det, inv_det, u, v;
     float t;
 
@@ -446,7 +446,7 @@ int triangle_ray_intersection(double V1 [ 3 ],  // Triangle vertices
     //if determinant is near zero, ray lies in plane of triangle
     det = DOT(e1, P);
     //NOT CULLING
-    if ( det > -EPSILON && det < EPSILON ) {
+    if (det > -EPSILON && det < EPSILON) {
         return 0;
     }
     inv_det = 1.f / det;
@@ -457,7 +457,7 @@ int triangle_ray_intersection(double V1 [ 3 ],  // Triangle vertices
     //Calculate u parameter and test bound
     u = DOT(T, P) * inv_det;
     //The intersection lies outside of the triangle
-    if ( u < 0.f || u > 1.f ) {
+    if (u < 0.f || u > 1.f) {
         return 0;
     }
 
@@ -467,14 +467,14 @@ int triangle_ray_intersection(double V1 [ 3 ],  // Triangle vertices
     //Calculate V parameter and test bound
     v = DOT(D, Q) * inv_det;
     //The intersection lies outside of the triangle
-    if ( v < 0.f || u + v  > 1.f ) {
+    if (v < 0.f || u + v > 1.f) {
         return 0;
     }
 
     t = DOT(e2, Q) * inv_det;
 
-    if ( t > EPSILON ) { //ray intersection
-        * out = t;
+    if (t > EPSILON) { //ray intersection
+        *out = t;
         return 1;
     }
 

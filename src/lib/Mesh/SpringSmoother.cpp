@@ -3,7 +3,8 @@
 namespace voxel2tet
 {
 
-SpringSmoother::SpringSmoother(double VoxelCharLength, double c, double alpha, double c_factor, bool compute_c) : Smoother ()
+SpringSmoother::SpringSmoother(double VoxelCharLength, double c, double alpha, double c_factor, bool compute_c)
+        : Smoother()
 {
 
     this->alpha = alpha;
@@ -21,20 +22,20 @@ SpringSmoother::SpringSmoother(double VoxelCharLength, double c, double alpha, d
 double SpringSmoother::Compute_c(double l, double alpha)
 {
     double c = l; // Initial guess
-    double R = exp( pow(l / c, alpha) ) - 1 - l;
+    double R = exp(pow(l / c, alpha)) - 1 - l;
     double err = fabs(R);
     int iter = 0;
 
-    while ( err > 1e-8 ) {
-        double tangent = -exp( pow(l / c, alpha) ) * alpha * pow(l / c, alpha - 1) * l * pow(c, -2);
+    while (err > 1e-8) {
+        double tangent = -exp(pow(l / c, alpha)) * alpha * pow(l / c, alpha - 1) * l * pow(c, -2);
         double deltac = -1 / tangent * R;
         c = c + deltac;
-        R = exp( pow(l / c, alpha) ) - 1 - l;
+        R = exp(pow(l / c, alpha)) - 1 - l;
         err = fabs(R);
         iter++;
         if (iter > 1000) {
             STATUS("Unable to find a suitable c\n", 0);
-            throw(0);
+            throw (0);
         }
     }
 
@@ -43,39 +44,40 @@ double SpringSmoother::Compute_c(double l, double alpha)
     return c;
 }
 
-arma :: vec SpringSmoother::ComputeOutOfBalance(std :: vector< arma::vec3 >ConnectionCoords, arma :: vec3 xc, arma :: vec3 x0, double alpha, double c)
+arma::vec SpringSmoother::ComputeOutOfBalance(std::vector<arma::vec3> ConnectionCoords, arma::vec3 xc, arma::vec3 x0,
+                                              double alpha, double c)
 {
-    arma :: vec F = {
-        0., 0., 0.
+    arma::vec F = {
+            0., 0., 0.
     };
 
     // Compute nonlinear part of force
-    arma :: vec n0;
+    arma::vec n0;
 
-    double d0 = arma :: norm(x0 - xc);
-    if ( d0 < 1e-8 ) {
+    double d0 = arma::norm(x0 - xc);
+    if (d0 < 1e-8) {
         n0 = {
-            0., 0., 0.
+                0., 0., 0.
         };
     } else {
-        n0 = ( x0 - xc ) / d0;
+        n0 = (x0 - xc) / d0;
     }
 
-    F = ( exp( pow(d0 / c, alpha) ) - 1 ) * n0;
+    F = (exp(pow(d0 / c, alpha)) - 1) * n0;
 
     // Compute linear part of force
-    for ( unsigned int i = 0; i < ConnectionCoords.size(); i++ ) {
-        arma :: vec xi = {
-            ConnectionCoords.at(i) [ 0 ], ConnectionCoords.at(i) [ 1 ], ConnectionCoords.at(i) [ 2 ]
+    for (unsigned int i = 0; i < ConnectionCoords.size(); i++) {
+        arma::vec xi = {
+                ConnectionCoords.at(i)[0], ConnectionCoords.at(i)[1], ConnectionCoords.at(i)[2]
         };
-        arma :: vec nj;
-        double dj = arma :: norm(xi - xc);
-        if ( dj < 1e-8 ) {
+        arma::vec nj;
+        double dj = arma::norm(xi - xc);
+        if (dj < 1e-8) {
             nj = {
-                0., 0., 0.,
+                    0., 0., 0.,
             };
         } else {
-            nj = ( xi - xc ) / dj;
+            nj = (xi - xc) / dj;
         }
         F = F + dj * nj / ConnectionCoords.size();
     }
@@ -83,25 +85,28 @@ arma :: vec SpringSmoother::ComputeOutOfBalance(std :: vector< arma::vec3 >Conne
     return F;
 }
 
-arma :: mat  SpringSmoother::ComputeNumericalTangent(std :: vector< arma::vec3 >ConnectionCoords, arma :: vec xc, arma :: vec x0, double alpha, double c)
+arma::mat SpringSmoother::ComputeNumericalTangent(std::vector<arma::vec3> ConnectionCoords, arma::vec xc, arma::vec x0,
+                                                  double alpha, double c)
 {
     double eps = 1e-10;
-    arma :: mat Tangent = arma :: zeros< arma :: mat >(3, 3);
+    arma::mat Tangent = arma::zeros<arma::mat>(3, 3);
 
-    arma :: vec Fval = ComputeOutOfBalance(ConnectionCoords, xc, x0, alpha, c);
+    arma::vec Fval = ComputeOutOfBalance(ConnectionCoords, xc, x0, alpha, c);
 
-    for ( int i = 0; i < 3; i++ ) {
-        arma :: vec xi = xc;
-        xi [ i ] = xi [ i ] + eps;
-        arma :: vec Fvali = ComputeOutOfBalance(ConnectionCoords, xi, x0, alpha, c);
-        arma :: vec dF = ( Fvali - Fval ) / eps;
+    for (int i = 0; i < 3; i++) {
+        arma::vec xi = xc;
+        xi[i] = xi[i] + eps;
+        arma::vec Fvali = ComputeOutOfBalance(ConnectionCoords, xi, x0, alpha, c);
+        arma::vec dF = (Fvali - Fval) / eps;
         Tangent.col(i) = dF;
     }
 
     return Tangent;
 }
 
-arma :: mat SpringSmoother::ComputeAnalyticalTangent(std :: vector< arma::vec3 >ConnectionCoords, arma :: vec xc, arma :: vec x0, double alpha, double c) {
+arma::mat SpringSmoother::ComputeAnalyticalTangent(std::vector<arma::vec3> ConnectionCoords, arma::vec xc, arma::vec x0,
+                                                   double alpha, double c)
+{
     arma::mat Tangent = arma::zeros<arma::mat>(3, 3);
 
     arma::vec a0 = x0 - xc;
@@ -134,16 +139,16 @@ arma :: mat SpringSmoother::ComputeAnalyticalTangent(std :: vector< arma::vec3 >
     return Tangent;
 }
 
-void SpringSmoother :: Smooth(std :: vector< VertexType * >Vertices, MeshData *Mesh)
+void SpringSmoother::Smooth(std::vector<VertexType *> Vertices, MeshData *Mesh)
 {
     double MAXCHANGE = 1e-4 * charlength;
 
     std::vector<std::vector<VertexType *>> Connections = this->GetConnectivityVector(Vertices);
 
     // Create vectors for current and previous positions for all involved vertices (even those vertices connected to a vertex in Vertices vector)
-    std :: map<VertexType *, arma::vec3 >OriginalPositions;
-    std :: map<VertexType *, arma::vec3 >CurrentPositions;
-    std :: map<VertexType *, arma::vec3 >PreviousPositions;
+    std::map<VertexType *, arma::vec3> OriginalPositions;
+    std::map<VertexType *, arma::vec3> CurrentPositions;
+    std::map<VertexType *, arma::vec3> PreviousPositions;
 
     for (std::vector<VertexType *> VertexList: Connections) {
         for (VertexType *v: VertexList) {
@@ -159,14 +164,14 @@ void SpringSmoother :: Smooth(std :: vector< VertexType * >Vertices, MeshData *M
         PreviousPositions[v] = v->get_c_vec();
     }
 
-    this->CheckPenetration(&Vertices, (MeshManipulations*) Mesh);
+    this->CheckPenetration(&Vertices, (MeshManipulations *) Mesh);
 
     double deltamax = 1e8;
 
     while (deltamax > MAXCHANGE) {
 
         deltamax = 0.0;
-        size_t iter=0;
+        size_t iter = 0;
 
         for (VertexType *v: Vertices) {
 
@@ -181,25 +186,25 @@ void SpringSmoother :: Smooth(std :: vector< VertexType * >Vertices, MeshData *M
 
             double err = arma::norm(R);
 
-            while (err>1e-5) {
+            while (err > 1e-5) {
                 arma::mat K = ComputeAnalyticalTangent(ConnectionCoords, xc, x0, alpha, c);
-                arma::vec d = -arma::solve(K,R);
+                arma::vec d = -arma::solve(K, R);
                 xc = xc + d;
                 R = ComputeOutOfBalance(ConnectionCoords, xc, x0, alpha, c);
                 err = arma::norm(R);
             }
 
 
-            for (int i=0; i<3; i++) {
+            for (int i = 0; i < 3; i++) {
                 if (!v->Fixed[i]) {
                     CurrentPositions[v][i] = xc[i];
                     v->set_c(CurrentPositions[v][i], i);
                 }
             }
 
-            double delta = arma::norm(CurrentPositions[v]-PreviousPositions[v]);
+            double delta = arma::norm(CurrentPositions[v] - PreviousPositions[v]);
 
-            for (int i=0; i<3; i++) {
+            for (int i = 0; i < 3; i++) {
                 if (!v->Fixed[i]) {
                     PreviousPositions[v][i] = CurrentPositions[v][i];
                 }
@@ -219,7 +224,7 @@ std::string SpringSmoother::DoOutput() const
 {
     std::string stream;
     stream = "\talpha = " + std::to_string(alpha) + ", " +
-     "c = " + std::to_string(c) + ", c_factor = " + std::to_string(c_factor) + "\n";
+             "c = " + std::to_string(c) + ", c_factor = " + std::to_string(c_factor) + "\n";
     return stream;
 }
 

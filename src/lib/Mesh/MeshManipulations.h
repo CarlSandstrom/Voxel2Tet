@@ -32,7 +32,7 @@ private:
      * @param NewTriangles NewTriangles (out)
      * @return  Status
      */
-    FC_MESH GetFlippedEdgeData(EdgeType *EdgeToFlip, EdgeType *NewEdge, std :: array< TriangleType *, 2 > *NewTriangles);
+    FC_MESH GetFlippedEdgeData(EdgeType *EdgeToFlip, EdgeType *NewEdge, std::array<TriangleType *, 2> *NewTriangles);
 
     /**
      * @brief SortEdgesByLength Sort list of edges according to length
@@ -120,7 +120,7 @@ public:
      * @brief Check if flipping is permitted. For return codes, see CollapseEdge
      * @return Returns wether flipping is permitted
      */
-    FC_MESH CheckFlipNormal(std :: vector< TriangleType * > *OldTriangles, std :: array< TriangleType *, 2 >NewTriangles);
+    FC_MESH CheckFlipNormal(std::vector<TriangleType *> *OldTriangles, std::array<TriangleType *, 2> NewTriangles);
 
     /**
      * @brief Collapses an edge if possible. Returns FC_MESH value
@@ -140,7 +140,9 @@ public:
      * @param RemoveVertexIndex [in] Index in EdgeToCollapse to the vertex about to be collapsed
      * @return FC_MESH type stating if the collapse was a success
      */
-    FC_MESH CollapseEdgeTest(std :: vector< TriangleType * > *TrianglesToSave, std :: vector< TriangleType * > *TrianglesToRemove, std :: vector< TriangleType * > *NewTriangles, EdgeType *EdgeToCollapse, int RemoveVertexIndex);
+    FC_MESH
+    CollapseEdgeTest(std::vector<TriangleType *> *TrianglesToSave, std::vector<TriangleType *> *TrianglesToRemove,
+                     std::vector<TriangleType *> *NewTriangles, EdgeType *EdgeToCollapse, int RemoveVertexIndex);
 
     /**
      * @brief Check if the change in normals of existing triangles are small enough to allow edge collapse
@@ -151,7 +153,7 @@ public:
      * @param NewTriangles Vector of pointers to TriangleTypes
      * @return FC_MESH type stating if collapsing is ok or not
      */
-    FC_MESH CheckCoarsenNormal(std :: vector< TriangleType * > *OldTriangles, std :: vector< TriangleType * > *NewTriangles);
+    FC_MESH CheckCoarsenNormal(std::vector<TriangleType *> *OldTriangles, std::vector<TriangleType *> *NewTriangles);
 
     /**
      * @brief Check if edge collapse results in a too large loss of volume or a too large change in normal.
@@ -167,7 +169,9 @@ public:
      * @param error [out] Accumulated error
      * @return FC_MESH type stating if collapsing is ok or not
      */
-    FC_MESH CheckCoarsenNormalImproved(std :: vector< TriangleType * > *OldTriangles, std :: vector< TriangleType * > *TrianglesToRemove, std :: vector< TriangleType * > *NewTriangles, double &error);
+    FC_MESH CheckCoarsenNormalImproved(std::vector<TriangleType *> *OldTriangles,
+                                       std::vector<TriangleType *> *TrianglesToRemove,
+                                       std::vector<TriangleType *> *NewTriangles, double &error);
 
     /**
      * @brief Check if change in chord is small enough to allow collapsing
@@ -187,7 +191,7 @@ public:
      * @brief Find the set of independet vertices.
      * @return Vector of pointers to VertexType objects
      */
-    std :: vector< VertexType * >FindIndependentSet();
+    std::vector<VertexType *> FindIndependentSet();
 
     /**
      * @brief Perform flipping of edges until no more edges can be flipped. This implies better quality of the mesh.

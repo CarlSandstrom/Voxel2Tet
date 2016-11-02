@@ -5,7 +5,10 @@
 
 namespace voxel2tet
 {
-enum MeshGenerator_Type { MG_TETGEN };
+enum MeshGenerator_Type
+{
+    MG_TETGEN
+};
 
 /**
  * @brief Abstract class for 3D volume mesh generators

@@ -1,5 +1,6 @@
 #ifndef PHASEEDGE_H
 #define PHASEEDGE_H
+
 #include <vector>
 #include <array>
 #include <algorithm>
@@ -36,14 +37,14 @@ private:
      * Fixed vertices are vertices where a PhaseEdge ends, i.e. where it meets one or more new
      * PhaseEdge objects.
      */
-    std :: vector< VertexType * >FixedVertices;
+    std::vector<VertexType *> FixedVertices;
 
 public:
 
     /**
      * @brief EdgeSegments hold all edge segments for this edge
      */
-    std :: vector< std :: array< VertexType *, 2 > >EdgeSegments;
+    std::vector<std::array<VertexType *, 2> > EdgeSegments;
 
     /**
      * @brief Pointer to smoother object for this phase edge.
@@ -61,7 +62,7 @@ public:
      * @brief SortAndFixBrokenEdge Identifies all separate phase edges within this PhaseEdge object and outputs all (new) internally connected phase edges.
      * @param FixedEdges Output. Holds all new, internally connected, phase edges.
      */
-    void SortAndFixBrokenEdge(std :: vector< PhaseEdge * > *FixedEdges);
+    void SortAndFixBrokenEdge(std::vector<PhaseEdge *> *FixedEdges);
 
     /**
      * @brief Creates a list of connected vertices for each vertex in the object as well as an array describing
@@ -72,14 +73,15 @@ public:
      * @param FixedDirections Output. List of fixed directions for each vertex. Each item corresponds to the vertex with
      *                    the same index.
      */
-    void GiveTopologyLists(std :: vector< std :: vector< VertexType * > > *Connections, std :: vector< std :: array< bool, 3 > > *FixedDirections);
+    void GiveTopologyLists(std::vector<std::vector<VertexType *> > *Connections,
+                           std::vector<std::array<bool, 3> > *FixedDirections);
 
     /**
      * @brief Returns the vertices connected to vertex \p v.
      * @param v Input. Vertex to which connected vertices are sought.
      * @return Returns vertices connected to \p v.
      */
-    std :: vector< VertexType * >GiveVerticesConnectedToVertex(VertexType *v);
+    std::vector<VertexType *> GiveVerticesConnectedToVertex(VertexType *v);
 
     /**
      * @brief Perform smoothing on this PhaseEdge.
@@ -104,12 +106,12 @@ public:
      * @brief Returns a list of all vertices in the order they appear on the PhaseEdge.
      * @return List of vertices
      */
-    std :: vector< VertexType * >GetFlatListOfVertices();
+    std::vector<VertexType *> GetFlatListOfVertices();
 
     /**
      * @brief List of all phase IDs ni contact with this phase edge
      */
-    std :: vector< int >Phases;
+    std::vector<int> Phases;
 
     void LogPhaseEdge();
 };

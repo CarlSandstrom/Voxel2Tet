@@ -6,7 +6,8 @@
 #include "H5Cpp.h"
 #include "Importer.h"
 
-namespace voxel2tet {
+namespace voxel2tet
+{
 
 /**
  * @brief The Dream3DDataReader class reads data from a Dream3D file.
@@ -14,9 +15,9 @@ namespace voxel2tet {
 class Dream3DDataReader : public Importer
 {
 private:
-    H5 :: Group *VoxelDataContainer;
-    std :: string DataContainer;
-    std :: string MaterialGroup;
+    H5::Group *VoxelDataContainer;
+    std::string DataContainer;
+    std::string MaterialGroup;
 public:
     Dream3DDataReader();
 
@@ -29,8 +30,9 @@ public:
      * @param DataContainer Name of DataContainer
      * @param MaterialGroup Name of Group
      */
-    Dream3DDataReader(std :: string DataContainer, std :: string MaterialGroup);
-    void LoadFile(std :: string FileName);
+    Dream3DDataReader(std::string DataContainer, std::string MaterialGroup);
+
+    void LoadFile(std::string FileName);
 };
 }
 

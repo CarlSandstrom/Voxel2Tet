@@ -36,33 +36,39 @@ namespace voxel2tet
 class MeshData;
 
 void dolog(const char *functionname, const char *fmt, ...);
+
 void dooutputstat(const char *fmt, ...);
+
 void dooutputlogmesh(MeshData &Mesh, char *filename, ...);
 
-std :: vector< std :: string >SplitString(std :: string Text, char Delimiter);
+std::vector<std::string> SplitString(std::string Text, char Delimiter);
 
-template< typename ... Args >
-std :: string strfmt(const std :: string &format, Args ... args)
+template<typename ... Args>
+std::string strfmt(const std::string &format, Args ... args)
 {
     size_t size = snprintf(nullptr, 0, format.c_str(), args ...) + 1;   // Extra space for '\0'
-    std :: unique_ptr< char[] >buf(new char [ size ]);
+    std::unique_ptr<char[]> buf(new char[size]);
     snprintf(buf.get(), size, format.c_str(), args ...);
-    return std :: string(buf.get(), buf.get() + size - 1); // We don't want the '\0' inside
+    return std::string(buf.get(), buf.get() + size - 1); // We don't want the '\0' inside
 }
 
-std :: array< double, 3 >ComputeNormalizedVector(VertexType *v1, VertexType *v2);
+std::array<double, 3> ComputeNormalizedVector(VertexType *v1, VertexType *v2);
 
-double ComputeAngleBetweenVectors(std :: array< double, 3 >v1, std :: array< double, 3 >v2);
+double ComputeAngleBetweenVectors(std::array<double, 3> v1, std::array<double, 3> v2);
 
 bool CompareTriangleAngles(TriangleType *t1, TriangleType *t2);
 
 bool CompareEdgeLength(EdgeType *e1, EdgeType *e2);
 
 // Operator overloading in order to perform sorting of Vertices and triangles according to ID
-template< typename T > bool SortByID(T obj1, T obj2);
-template< typename T > bool EqualByID(T obj1, T obj2);
+template<typename T>
+bool SortByID(T obj1, T obj2);
 
-template< typename T >std :: vector< int >FindSubsetIndices(std :: vector< T >Container, std :: vector< T >Subset);
+template<typename T>
+bool EqualByID(T obj1, T obj2);
+
+template<typename T>
+std::vector<int> FindSubsetIndices(std::vector<T> Container, std::vector<T> Subset);
 
 }
 

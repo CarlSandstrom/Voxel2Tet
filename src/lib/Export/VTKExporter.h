@@ -30,24 +30,32 @@ namespace voxel2tet
 class VTKExporter : public Exporter
 {
 private:
-    std :: map< VertexType *, int >VertexMap;
+    std::map<VertexType *, int> VertexMap;
 
-    vtkSmartPointer< vtkPoints >SetupVertices();
-    vtkSmartPointer< vtkCellArray >SetupTriangles();
-    vtkSmartPointer< vtkCellArray >SetupTetrahedrons();
+    vtkSmartPointer<vtkPoints> SetupVertices();
 
-    vtkSmartPointer< vtkIntArray >SetupVertexField( std :: string Name, int ( VertexType :: *FieldPtr ) );
-    vtkSmartPointer< vtkFloatArray >SetupVertexField( std :: string Name, double ( VertexType :: *FieldPtr ) );
-    vtkSmartPointer< vtkIntArray >SetupTriangleField(std :: string Name, int TriangleType :: *FieldPtr);
-    vtkSmartPointer< vtkIntArray >SetupTetField(std :: string Name, int TetType :: *FieldPtr);
+    vtkSmartPointer<vtkCellArray> SetupTriangles();
+
+    vtkSmartPointer<vtkCellArray> SetupTetrahedrons();
+
+    vtkSmartPointer<vtkIntArray> SetupVertexField(std::string Name, int ( VertexType::*FieldPtr ));
+
+    vtkSmartPointer<vtkFloatArray> SetupVertexField(std::string Name, double ( VertexType::*FieldPtr ));
+
+    vtkSmartPointer<vtkIntArray> SetupTriangleField(std::string Name, int TriangleType::*FieldPtr);
+
+    vtkSmartPointer<vtkIntArray> SetupTetField(std::string Name, int TetType::*FieldPtr);
 
 public:
     /**
      * @copydoc Exporter::Exporter
      */
-    VTKExporter(std :: vector< TriangleType * > *Triangles, std :: vector< VertexType * > *Vertices, std :: vector< EdgeType * > *Edges, std :: vector< TetType * > *Tets);
-    void WriteSurfaceData(std :: string Filename);
-    void WriteVolumeData(std :: string Filename);
+    VTKExporter(std::vector<TriangleType *> *Triangles, std::vector<VertexType *> *Vertices,
+                std::vector<EdgeType *> *Edges, std::vector<TetType *> *Tets);
+
+    void WriteSurfaceData(std::string Filename);
+
+    void WriteVolumeData(std::string Filename);
 };
 }
 

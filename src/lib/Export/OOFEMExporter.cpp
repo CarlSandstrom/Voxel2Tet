@@ -9,17 +9,18 @@
 namespace voxel2tet
 {
 
-OOFEMExporter :: OOFEMExporter(std :: vector< TriangleType * > *Triangles, std :: vector< VertexType * > *Vertices, std :: vector< EdgeType * > *Edges, std :: vector< TetType * > *Tets) :
-    Exporter(Triangles, Vertices, Edges, Tets)
+OOFEMExporter::OOFEMExporter(std::vector<TriangleType *> *Triangles, std::vector<VertexType *> *Vertices,
+                             std::vector<EdgeType *> *Edges, std::vector<TetType *> *Tets) :
+        Exporter(Triangles, Vertices, Edges, Tets)
 {
     LOG("Create OOFEMExporter object\n", 0);
 }
 
 
-void OOFEMExporter :: WriteVolumeData(std :: string Filename)
+void OOFEMExporter::WriteVolumeData(std::string Filename)
 {
-    STATUS( "Write .in (oofem) file %s\n", Filename.c_str() );
-    std :: ofstream OOFEMFile;
+    STATUS("Write .in (oofem) file %s\n", Filename.c_str());
+    std::ofstream OOFEMFile;
     OOFEMFile.open(Filename);
 
     // Prepare information
@@ -48,22 +49,22 @@ void OOFEMExporter :: WriteVolumeData(std :: string Filename)
     OOFEMFile << "domain 3d\n";
     OOFEMFile << "OutputManager tstep_all dofman_all element_all\n";
     OOFEMFile << "ndofman " << UsedVertices.size() << " nelem " << this->Tets->size() << " ncrosssect 1 nmat " \
-              << Self2OofemMaterials.size() << " nbc 1 nic 1 nltf 1 nset 15 nxfemman 0\n";
+ << Self2OofemMaterials.size() << " nbc 1 nic 1 nltf 1 nset 15 nxfemman 0\n";
 
     // Write vertices
 
-    for ( size_t i = 0; i < this->Vertices->size(); i++ ) {
+    for (size_t i = 0; i < this->Vertices->size(); i++) {
         OOFEMFile << "node " << i + 1 << "\tcoords 3 " << UsedVertices.at(i)->get_c(0) << "\t" \
-                  << UsedVertices.at(i)->get_c(1) << "\t" << UsedVertices.at(i)->get_c(2) << "\n";
+ << UsedVertices.at(i)->get_c(1) << "\t" << UsedVertices.at(i)->get_c(2) << "\n";
     }
 
     // Write elements
 
-    for ( size_t i = 0; i < this->Tets->size(); i++ ) {
+    for (size_t i = 0; i < this->Tets->size(); i++) {
         TetType *t = this->Tets->at(i);
-        OOFEMFile << "ltrspace " << i + 1 << "\tnodes 4\t" << t->Vertices [ 0 ]->tag + 1 \
-                  << "\t" << t->Vertices [ 1 ]->tag + 1 << "\t" << t->Vertices [ 2 ]->tag + 1 << "\t" << t->Vertices [ 3 ]->tag + 1 \
-                  << "\tcrosssect 1 \tmat " << Self2OofemMaterials [ t->MaterialID ] << "\n";
+        OOFEMFile << "ltrspace " << i + 1 << "\tnodes 4\t" << t->Vertices[0]->tag + 1 \
+ << "\t" << t->Vertices[1]->tag + 1 << "\t" << t->Vertices[2]->tag + 1 << "\t" << t->Vertices[3]->tag + 1 \
+ << "\tcrosssect 1 \tmat " << Self2OofemMaterials[t->MaterialID] << "\n";
     }
 
     // Write cross-section
@@ -71,7 +72,7 @@ void OOFEMExporter :: WriteVolumeData(std :: string Filename)
 
     // Write Materials
     int i = 1;
-    for ( auto test : Self2OofemMaterials ) {
+    for (auto test : Self2OofemMaterials) {
         OOFEMFile << "# Material " << test.first << " in source file\n";
         //OOFEMFile << "hyperelmat " << i++ << " d 1 k " << 100 + i*10 << " g " << 100 + i*10 << "\n";
         OOFEMFile << "IsoLE " << i << " d 1.0 E " << 200 + i * 10 << "e9 n 0.3 tAlpha 0.0\n";
@@ -80,9 +81,10 @@ void OOFEMExporter :: WriteVolumeData(std :: string Filename)
     }
 
     // Write boundary conditions
-    std :: array< double, 3 >center = { { ( MaxCoords [ 0 ] + MinCoords [ 0 ] ) / 2.0, ( MaxCoords [ 1 ] + MinCoords [ 1 ] ) / 2.0, ( MaxCoords [ 2 ] + MinCoords [ 2 ] ) / 2.0 } };
-    OOFEMFile << "PrescribedGradient 1 loadTimeFunction 1 ccoord 3 " << center [ 0 ] << " " \
-              << center [ 1 ] << " " << center [ 2 ] << " gradient 3 3 {0.2 0.0 0.0;0.0 0.0 0.0;0.0 0.0 0.0} set 2 dofs 3 1 2 3\n";
+    std::array<double, 3> center = {{(MaxCoords[0] + MinCoords[0]) / 2.0, (MaxCoords[1] + MinCoords[1]) / 2.0,
+                                            (MaxCoords[2] + MinCoords[2]) / 2.0}};
+    OOFEMFile << "PrescribedGradient 1 loadTimeFunction 1 ccoord 3 " << center[0] << " " \
+ << center[1] << " " << center[2] << " gradient 3 3 {0.2 0.0 0.0;0.0 0.0 0.0;0.0 0.0 0.0} set 2 dofs 3 1 2 3\n";
 
     // Write initial condition and load function
     OOFEMFile << "InitialCondition 1 Conditions 0 set 0\n";
@@ -95,43 +97,45 @@ void OOFEMExporter :: WriteVolumeData(std :: string Filename)
     // Volume set
     OOFEMFile << "# Volume set\n";
     OOFEMFile << "set " << setid++ << " elements " << this->Tets->size();
-    for ( size_t i = 0; i < this->Tets->size(); i++ ) {
+    for (size_t i = 0; i < this->Tets->size(); i++) {
         OOFEMFile << " " << i + 1;
     }
     OOFEMFile << "\n";
 
     // Boundary set
     OOFEMFile << "# Complete node boundary set\n";
-    OOFEMFile << "set " << setid++ << " nodes " << ( MaxNodes [ 0 ].size() + MaxNodes [ 1 ].size() + MaxNodes [ 2 ].size() + MinNodes [ 0 ].size() + MinNodes [ 1 ].size() + MinNodes [ 2 ].size() );
-    for ( int i = 0; i < 3; i++ ) {
+    OOFEMFile << "set " << setid++ << " nodes "
+              << (MaxNodes[0].size() + MaxNodes[1].size() + MaxNodes[2].size() + MinNodes[0].size() +
+                  MinNodes[1].size() + MinNodes[2].size());
+    for (int i = 0; i < 3; i++) {
         // Write max nodes
-        for ( size_t j = 0; j < MaxNodes [ i ].size(); j++ ) {
-            OOFEMFile << " " << MaxNodes [ i ].at(j)->tag + 1;
+        for (size_t j = 0; j < MaxNodes[i].size(); j++) {
+            OOFEMFile << " " << MaxNodes[i].at(j)->tag + 1;
         }
         // Write min nodes
-        for ( size_t j = 0; j < MinNodes [ i ].size(); j++ ) {
-            OOFEMFile << " " << MinNodes [ i ].at(j)->tag + 1;
+        for (size_t j = 0; j < MinNodes[i].size(); j++) {
+            OOFEMFile << " " << MinNodes[i].at(j)->tag + 1;
         }
     }
     OOFEMFile << "\n";
 
     // Individual max and min sets in all directions
-    std :: array< std :: string, 3 >MaxComments = { { "# Max X", "# Max Y", "# Max Z" } };
-    std :: array< std :: string, 3 >MinComments = { { "# Min X", "# Min Y", "# Min Z" } };
-    for ( int i = 0; i < 3; i++ ) {
+    std::array<std::string, 3> MaxComments = {{"# Max X", "# Max Y", "# Max Z"}};
+    std::array<std::string, 3> MinComments = {{"# Min X", "# Min Y", "# Min Z"}};
+    for (int i = 0; i < 3; i++) {
         // Write max nodes
-        OOFEMFile << MaxComments [ i ] << " nodes\n";
-        OOFEMFile << "set " << setid++ << " nodes " << MaxNodes [ i ].size();
-        for ( size_t j = 0; j < MaxNodes [ i ].size(); j++ ) {
-            OOFEMFile << " " << MaxNodes [ i ].at(j)->tag + 1;
+        OOFEMFile << MaxComments[i] << " nodes\n";
+        OOFEMFile << "set " << setid++ << " nodes " << MaxNodes[i].size();
+        for (size_t j = 0; j < MaxNodes[i].size(); j++) {
+            OOFEMFile << " " << MaxNodes[i].at(j)->tag + 1;
         }
         OOFEMFile << "\n";
 
         // Write min nodes
-        OOFEMFile << MinComments [ i ] << " nodes\n";
-        OOFEMFile << "set " << setid++ << " nodes " << MinNodes [ i ].size();
-        for ( size_t j = 0; j < MinNodes [ i ].size(); j++ ) {
-            OOFEMFile << " " << MinNodes [ i ].at(j)->tag + 1;
+        OOFEMFile << MinComments[i] << " nodes\n";
+        OOFEMFile << "set " << setid++ << " nodes " << MinNodes[i].size();
+        for (size_t j = 0; j < MinNodes[i].size(); j++) {
+            OOFEMFile << " " << MinNodes[i].at(j)->tag + 1;
         }
         OOFEMFile << "\n";
     }
@@ -140,20 +144,20 @@ void OOFEMExporter :: WriteVolumeData(std :: string Filename)
 
     // Complete boundary by element sides
     int ecount = 0;
-    for ( std :: vector< int >s : MaxSide ) {
+    for (std::vector<int> s : MaxSide) {
         ecount = ecount + s.size();
     }
-    for ( std :: vector< int >s : MinSide ) {
+    for (std::vector<int> s : MinSide) {
         ecount = ecount + s.size();
     }
 
     OOFEMFile << "# Complete boundary by element sides\n";
     OOFEMFile << "set " << setid++ << " elementboundaries " << ecount * 2;
-    for ( int k = 0; k < 2; k++ ) {
-        std :: array< std :: vector< TetType * >, 3 > *Elements = ( k == 0 ) ? & MaxElements : & MinElements;
-        std :: array< std :: vector< int >, 3 > *Sides = ( k == 0 ) ? & MaxSide : & MinSide;
-        for ( int i = 0; i < 3; i++ ) {
-            for ( size_t j = 0; j < Elements->at(i).size(); j++ ) {
+    for (int k = 0; k < 2; k++) {
+        std::array<std::vector<TetType *>, 3> *Elements = (k == 0) ? &MaxElements : &MinElements;
+        std::array<std::vector<int>, 3> *Sides = (k == 0) ? &MaxSide : &MinSide;
+        for (int i = 0; i < 3; i++) {
+            for (size_t j = 0; j < Elements->at(i).size(); j++) {
                 OOFEMFile << " " << Elements->at(i).at(j)->ID + 1 << " " << Sides->at(i).at(j);
             }
         }
@@ -161,15 +165,15 @@ void OOFEMExporter :: WriteVolumeData(std :: string Filename)
     OOFEMFile << "\n";
 
     // Boundaries in all directions
-    for ( int k = 0; k < 2; k++ ) {
-        std :: array< std :: string, 3 > *Comments = ( k == 0 ) ? & MaxComments : & MinComments;
-        std :: array< std :: vector< TetType * >, 3 > *Elements = ( k == 0 ) ? & MaxElements : & MinElements;
-        std :: array< std :: vector< int >, 3 > *Sides = ( k == 0 ) ? & MaxSide : & MinSide;
+    for (int k = 0; k < 2; k++) {
+        std::array<std::string, 3> *Comments = (k == 0) ? &MaxComments : &MinComments;
+        std::array<std::vector<TetType *>, 3> *Elements = (k == 0) ? &MaxElements : &MinElements;
+        std::array<std::vector<int>, 3> *Sides = (k == 0) ? &MaxSide : &MinSide;
 
-        for ( int i = 0; i < 3; i++ ) {
+        for (int i = 0; i < 3; i++) {
             OOFEMFile << Comments->at(i) << " element boundaries\n";
             OOFEMFile << "set " << setid++ << " elementboundaries " << Elements->at(i).size() + Sides->at(i).size();
-            for ( size_t j = 0; j < Elements->at(i).size(); j++ ) {
+            for (size_t j = 0; j < Elements->at(i).size(); j++) {
                 OOFEMFile << " " << Elements->at(i).at(j)->ID + 1 << " " << Sides->at(i).at(j);
             }
             OOFEMFile << "\n";

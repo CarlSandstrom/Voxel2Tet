@@ -15,7 +15,8 @@ namespace voxel2tet
 {
 
 
-enum FC_MESH {
+enum FC_MESH
+{
     FC_OK, FC_FIXEDVERTEX, FC_NORMAL, FC_CHORD, FC_SMALLAREA, FC_AREACHANGETOOLARGE, FC_TOOMANYTRIANGLES,
     FC_WORSEMINANGLE, FC_VERTICESONDIFFERENTSHAPES, FC_TRIANGLESINTERSECT, FC_DUPLICATETRIANGLE, FC_INVALIDEDGE,
     FC_DIFFERENTSURFACES, FC_ANGLESNOTIMPROVED, FC_TOOLARGEERROR, FC_SMALLANGLE
@@ -46,22 +47,22 @@ public:
     /**
      * @brief List of all triangles in the mesh
      */
-    std :: vector< TriangleType * >Triangles;
+    std::vector<TriangleType *> Triangles;
 
     /**
      * @brief List of all vertices in the mesh
      */
-    std :: vector< VertexType * >Vertices;
+    std::vector<VertexType *> Vertices;
 
     /**
      * @brief List of all edges in the mesh
      */
-    std :: vector< EdgeType * >Edges;
+    std::vector<EdgeType *> Edges;
 
     /**
      * @brief List of all tetrahedrons in the mesh
      */
-    std :: vector< TetType * >Tets;
+    std::vector<TetType *> Tets;
 
     /**
      * @brief VertexOctreeNode root object for all vertices. Uses octree algorithm for performance.
@@ -81,7 +82,7 @@ public:
      * @param FileName Name of file
      * @param FileType Type of file
      */
-    void ExportSurface(std :: string FileName, Exporter_FileTypes FileType);
+    void ExportSurface(std::string FileName, Exporter_FileTypes FileType);
 
 
     /**
@@ -89,7 +90,7 @@ public:
      * @param FileName Name of file
      * @param FileType Type of file
      */
-    void ExportVolume(std :: string FileName, Exporter_FileTypes FileType);
+    void ExportVolume(std::string FileName, Exporter_FileTypes FileType);
 
     /**
      * @brief Adds an Edge object to Edges given vertex IDs
@@ -101,7 +102,7 @@ public:
      * @param VertexIDs Vertex indices
      * @return Reference to EdgeType object
      */
-    EdgeType *AddEdge(std :: array< int, 2 >VertexIDs);
+    EdgeType *AddEdge(std::array<int, 2> VertexIDs);
 
     // Adds and edge object to list and update vertices
     /**
@@ -132,14 +133,14 @@ public:
      * @param v2 Coordinates of vertex 2
      * @return If triangle already exists, a pointer to that object is returned. If not, a pointer to the newly created object is returned.
      */
-    TriangleType *AddTriangle(std :: array< double, 3 >v0, std :: array< double, 3 >v1, std :: array< double, 3 >v2);
+    TriangleType *AddTriangle(std::array<double, 3> v0, std::array<double, 3> v1, std::array<double, 3> v2);
 
     /**
      * @brief Adds a TriangleType object to Triangles list given vertex IDs
      * @param VertexIDs Array of vertex IDs
      * @return If triangle already exists, a pointer to that object is returned. If not, a pointer to the newly created object is returned.
      */
-    TriangleType *AddTriangle(std :: array< int, 3 >VertexIDs);
+    TriangleType *AddTriangle(std::array<int, 3> VertexIDs);
 
     /**
      * @brief Adds a TriangleType object to Triangles list given a pointer to an TriangleType object
@@ -153,7 +154,7 @@ public:
      * @param VertexIDs Array of vertex IDs
      * @return Returns pointer to the added TetType object
      */
-    TetType *AddTetrahedron(std :: array< int, 4 >VertexIDs);
+    TetType *AddTetrahedron(std::array<int, 4> VertexIDs);
 
     /**
      * @brief Adds a TetType object to the Tets list given a pointer to a TetType object
@@ -174,7 +175,7 @@ public:
      * @param r [in] Radius of sphere
      * @return List of triangles
      */
-    std :: vector< TriangleType * >GetTrianglesAround(std :: array< double, 3 >c, double r);
+    std::vector<TriangleType *> GetTrianglesAround(std::array<double, 3> c, double r);
 
     /**
      * @brief CheckSameOrientation tells if two neighbouring triangles are oriented in the same
@@ -204,7 +205,8 @@ public:
      * @param sharedvertices Number of shared vertices
      * @return FC_MESH type determining the status of the intersection of the two triangles
      */
-    FC_MESH CheckTrianglePenetration(std :: array< VertexType *, 3 >t1, std :: array< VertexType *, 3 >t2, int &sharedvertices);
+    FC_MESH
+    CheckTrianglePenetration(std::array<VertexType *, 3> t1, std::array<VertexType *, 3> t2, int &sharedvertices);
 };
 }
 #endif // MESHDATA_H

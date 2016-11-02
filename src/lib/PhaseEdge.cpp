@@ -2,42 +2,42 @@
 
 namespace voxel2tet
 {
-PhaseEdge :: PhaseEdge(Options *Opt, Smoother *EdgeSmoother)
+PhaseEdge::PhaseEdge(Options *Opt, Smoother *EdgeSmoother)
 {
     this->Opt = Opt;
     this->EdgeSmoother = EdgeSmoother;
 }
 
-std :: vector< VertexType * >PhaseEdge :: GetFlatListOfVertices()
+std::vector<VertexType *> PhaseEdge::GetFlatListOfVertices()
 {
     // TODO: If we assume that the lists are ordered, this can be optimized
-    std :: vector< VertexType * >FlatList;
+    std::vector<VertexType *> FlatList;
 
-    for ( auto e : this->EdgeSegments ) {
-        FlatList.push_back( e.at(0) );
-        FlatList.push_back( e.at(1) );
+    for (auto e : this->EdgeSegments) {
+        FlatList.push_back(e.at(0));
+        FlatList.push_back(e.at(1));
     }
 
     // Uniquify
-    FlatList.erase( std :: unique( FlatList.begin(), FlatList.end() ), FlatList.end() );
+    FlatList.erase(std::unique(FlatList.begin(), FlatList.end()), FlatList.end());
     return FlatList;
 }
 
-std :: vector< VertexType * >PhaseEdge :: GiveVerticesConnectedToVertex(VertexType *v)
+std::vector<VertexType *> PhaseEdge::GiveVerticesConnectedToVertex(VertexType *v)
 {
-    std :: vector< VertexType * >ResultsList;
-    for ( std :: array< VertexType *, 2 >e : this->EdgeSegments ) {
-        if ( e [ 0 ] == v ) {
-            ResultsList.push_back(e [ 1 ]);
+    std::vector<VertexType *> ResultsList;
+    for (std::array<VertexType *, 2> e : this->EdgeSegments) {
+        if (e[0] == v) {
+            ResultsList.push_back(e[1]);
         }
-        if ( e [ 1 ] == v ) {
-            ResultsList.push_back(e [ 0 ]);
+        if (e[1] == v) {
+            ResultsList.push_back(e[0]);
         }
     }
     return ResultsList;
 }
 
-void PhaseEdge :: SortAndFixBrokenEdge(std :: vector< PhaseEdge * > *FixedEdges)
+void PhaseEdge::SortAndFixBrokenEdge(std::vector<PhaseEdge *> *FixedEdges)
 {
     // For each EdgeSegment find the two connecting segments until all segments has been processed. If links
     // to the end vertices of a chain of segments cannot be found while there are segments in the list, a new
@@ -45,8 +45,8 @@ void PhaseEdge :: SortAndFixBrokenEdge(std :: vector< PhaseEdge * > *FixedEdges)
 
     FixedEdges->clear();
 
-    while ( this->EdgeSegments.size() > 0 ) {
-        std :: array< VertexType *, 2 >ThisLink = this->EdgeSegments.at(0);
+    while (this->EdgeSegments.size() > 0) {
+        std::array<VertexType *, 2> ThisLink = this->EdgeSegments.at(0);
         this->EdgeSegments.erase(this->EdgeSegments.begin(), this->EdgeSegments.begin() + 1);
 
         LOG("Find connections for vertices (%u, %u)\n", ThisLink.at(0)->ID, ThisLink.at(1)->ID);
@@ -57,18 +57,20 @@ void PhaseEdge :: SortAndFixBrokenEdge(std :: vector< PhaseEdge * > *FixedEdges)
         FixedEdges->push_back(NewPhaseEdge);
 
         // Find next link, i.e. the link containing the i:th vertex of the current segment
-        for ( int i = 0; i < 2; i++ ) {
+        for (int i = 0; i < 2; i++) {
             VertexType *VertexToFind = ThisLink.at(i);
 
             bool LastConnectionFound = false;
-            while ( !LastConnectionFound ) {
+            while (!LastConnectionFound) {
                 // Remove self from list of PhaseEdges
 
-                std :: array< VertexType *, 2 >NextLink;
+                std::array<VertexType *, 2> NextLink;
                 bool NextLinkFound = false;
-                for ( unsigned int j = 0; j < this->EdgeSegments.size(); j++ ) {
-                    if ( ( this->EdgeSegments.at(j).at(0) == VertexToFind ) | ( this->EdgeSegments.at(j).at(1) == VertexToFind ) ) {
-                        LOG( "Next link found (%p, %p)\n", this->EdgeSegments.at(j).at(0), this->EdgeSegments.at(j).at(1) );
+                for (unsigned int j = 0; j < this->EdgeSegments.size(); j++) {
+                    if ((this->EdgeSegments.at(j).at(0) == VertexToFind) |
+                        (this->EdgeSegments.at(j).at(1) == VertexToFind)) {
+                        LOG("Next link found (%p, %p)\n", this->EdgeSegments.at(j).at(0),
+                            this->EdgeSegments.at(j).at(1));
 
                         NextLink = this->EdgeSegments.at(j);
                         NextLinkFound = true;
@@ -77,26 +79,26 @@ void PhaseEdge :: SortAndFixBrokenEdge(std :: vector< PhaseEdge * > *FixedEdges)
                     }
                 }
 
-                if ( NextLinkFound ) {
-                    std :: array< VertexType *, 2 > *NewEdgeSegment;
+                if (NextLinkFound) {
+                    std::array<VertexType *, 2> *NewEdgeSegment;
                     VertexType *NextLastVertex;
 
-                    if ( NextLink.at(0) == VertexToFind ) {
+                    if (NextLink.at(0) == VertexToFind) {
                         NextLastVertex = NextLink.at(1);
                     } else {
                         NextLastVertex = NextLink.at(0);
                     }
 
-                    if ( i == 0 ) {
-                        NewEdgeSegment = new std :: array< VertexType *, 2 > { {
-                                                                                   NextLastVertex, VertexToFind
-                                                                               } };
-                        NewPhaseEdge->EdgeSegments.insert(NewPhaseEdge->EdgeSegments.begin(), * NewEdgeSegment);
+                    if (i == 0) {
+                        NewEdgeSegment = new std::array<VertexType *, 2>{{
+                                                                                 NextLastVertex, VertexToFind
+                                                                         }};
+                        NewPhaseEdge->EdgeSegments.insert(NewPhaseEdge->EdgeSegments.begin(), *NewEdgeSegment);
                     } else {
-                        NewEdgeSegment = new std :: array< VertexType *, 2 > { {
-                                                                                   VertexToFind, NextLastVertex
-                                                                               } };
-                        NewPhaseEdge->EdgeSegments.push_back(* NewEdgeSegment);
+                        NewEdgeSegment = new std::array<VertexType *, 2>{{
+                                                                                 VertexToFind, NextLastVertex
+                                                                         }};
+                        NewPhaseEdge->EdgeSegments.push_back(*NewEdgeSegment);
                     }
 
                     VertexToFind = NextLastVertex;
@@ -110,16 +112,16 @@ void PhaseEdge :: SortAndFixBrokenEdge(std :: vector< PhaseEdge * > *FixedEdges)
             std::vector<VertexType *> Vertices = NewPhaseEdge->GetFlatListOfVertices();
 
             for (VertexType *v: Vertices) {
-                v->PhaseEdges.erase( std::remove(v->PhaseEdges.begin(), v->PhaseEdges.end(), this), v->PhaseEdges.end() );
+                v->PhaseEdges.erase(std::remove(v->PhaseEdges.begin(), v->PhaseEdges.end(), this), v->PhaseEdges.end());
                 v->PhaseEdges.push_back(NewPhaseEdge);
             }
 
             // If no EdgeSegments are left, exit
-            if ( this->EdgeSegments.size() == 0 ) {
+            if (this->EdgeSegments.size() == 0) {
                 break;
             }
         }
-        if ( this->EdgeSegments.size() > 0 ) {
+        if (this->EdgeSegments.size() > 0) {
             LOG("Items left, split\n", 0);
         } else {
             LOG("No items left. \n", 0);
@@ -127,82 +129,84 @@ void PhaseEdge :: SortAndFixBrokenEdge(std :: vector< PhaseEdge * > *FixedEdges)
     }
 }
 
-bool PhaseEdge :: IsClosed()
+bool PhaseEdge::IsClosed()
 {
     return this->EdgeSegments.at(0).at(0) == this->EdgeSegments.at(this->EdgeSegments.size() - 1).at(1);
 }
 
-void PhaseEdge :: GiveTopologyLists(std :: vector< std :: vector< VertexType * > > *Connections, std :: vector< std :: array< bool, 3 > > *FixedDirectionsList) // TODO: Should this really supply the FixedDirectionList? Is it used?
+void PhaseEdge::GiveTopologyLists(std::vector<std::vector<VertexType *> > *Connections,
+                                  std::vector<std::array<bool, 3> > *FixedDirectionsList) // TODO: Should this really supply the FixedDirectionList? Is it used?
 {
     Connections->clear();
     FixedDirectionsList->clear();
 
     // Push end vertices to FixedVertices.
-    if ( this->EdgeSegments.at(0).at(0) != this->EdgeSegments.at(this->EdgeSegments.size() - 1).at(1) ) {
-        this->FixedVertices.push_back( this->EdgeSegments.at(0).at(0) );
-        this->FixedVertices.push_back( this->EdgeSegments.at(this->EdgeSegments.size() - 1).at(1) );
+    if (this->EdgeSegments.at(0).at(0) != this->EdgeSegments.at(this->EdgeSegments.size() - 1).at(1)) {
+        this->FixedVertices.push_back(this->EdgeSegments.at(0).at(0));
+        this->FixedVertices.push_back(this->EdgeSegments.at(this->EdgeSegments.size() - 1).at(1));
     }
 
-    std :: vector< VertexType * >FlatList = this->GetFlatListOfVertices();
+    std::vector<VertexType *> FlatList = this->GetFlatListOfVertices();
     bool closed = this->IsClosed();
 
     // Build connection matrix
-    for ( unsigned int i = 0; i < FlatList.size(); i++ ) {
-        std :: vector< VertexType * >MyConnections;
+    for (unsigned int i = 0; i < FlatList.size(); i++) {
+        std::vector<VertexType *> MyConnections;
 
         signed int previndex = i - 1;
         unsigned int nextindex = i + 1;
 
-        if ( closed ) {
-            if ( i == 0 ) {
+        if (closed) {
+            if (i == 0) {
                 previndex = FlatList.size() - 1;
                 nextindex = i + 1;
-            } else if ( i == FlatList.size() - 1 ) {
+            } else if (i == FlatList.size() - 1) {
                 previndex = i - 1;
                 nextindex = 0;
             }
         }
 
-        if ( previndex != -1 ) {
-            MyConnections.push_back( FlatList.at(previndex) );
+        if (previndex != -1) {
+            MyConnections.push_back(FlatList.at(previndex));
         }
-        if ( nextindex != FlatList.size() ) {
-            MyConnections.push_back( FlatList.at(nextindex) );
+        if (nextindex != FlatList.size()) {
+            MyConnections.push_back(FlatList.at(nextindex));
         }
 
         // Ignore edges not aligned with the principal axes
         Connections->push_back(MyConnections);
 
-        std :: array< bool, 3 >FixedDirections;
+        std::array<bool, 3> FixedDirections;
 
         // Set start and end points to fixed
-        if ( std :: find( this->FixedVertices.begin(), this->FixedVertices.end(), FlatList.at(i) ) == this->FixedVertices.end() ) {
-            FixedDirections = { { false, false, false } };
+        if (std::find(this->FixedVertices.begin(), this->FixedVertices.end(), FlatList.at(i)) ==
+            this->FixedVertices.end()) {
+            FixedDirections = {{false, false, false}};
         } else {
-            FixedDirections = { { true, true, true } };
+            FixedDirections = {{true, true, true}};
         }
 
         FixedDirectionsList->push_back(FixedDirections);
     }
 }
 
-void PhaseEdge :: Smooth(MeshData *Mesh)
+void PhaseEdge::Smooth(MeshData *Mesh)
 {
-    if ( this->EdgeSegments.size() == 1 ) {
+    if (this->EdgeSegments.size() == 1) {
         return;
     }
 
-    std :: vector< VertexType * >FlatList = this->GetFlatListOfVertices();
+    std::vector<VertexType *> FlatList = this->GetFlatListOfVertices();
 
     this->EdgeSmoother->Smooth(FlatList, Mesh);
 }
 
-void PhaseEdge :: AddPhaseEdgeSegment(VertexType *v1, VertexType *v2)
+void PhaseEdge::AddPhaseEdgeSegment(VertexType *v1, VertexType *v2)
 {
-    EdgeSegments.push_back({ { v1, v2 } });
+    EdgeSegments.push_back({{v1, v2}});
 }
 
-void PhaseEdge :: LogPhaseEdge()
+void PhaseEdge::LogPhaseEdge()
 {
 #if LOGOUTPUT == 1
     std::ostringstream Printout;
