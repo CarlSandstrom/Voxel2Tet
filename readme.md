@@ -104,6 +104,7 @@ Flag|Meaning
 -datacontainer _name_	| (Dream3D input) Name of data group, default 'VoxelDataContainer'. Note that this is used for compatibility with older versions of Dream3D.
 -materialid _name_ 	| (Dream3D input) Field containing an identifier for the phase, default 'GrainIds'.  Note that this is used for compatibility with older versions of Dream3D.
 -voxelcutout _arg_ | Only consider the subset of the input contained within the boundingbox defined by _arg_. Here, _arg_="[xmin ymin zmin xmax ymax zmax]" (include citations and brackets) where all data are integers.
+-treatzeroasvoid   | Treats a material with ID 0 as void. By default, this is considered a solid.
 
 Some more advanced flags for determining the behavior the smoothening algorithm are also available. For clarity, we first want to inform the reader that the smoothening algorithm consists of two parts. The first part is the smoothening part, where all vertices are moved in order to produce a smooth surface. Note that here all vertices are preserved. The second part is the mesh coarsening part where triangles are collapsed in order to reduce the number of vertices used and to smooth the surface further.
 

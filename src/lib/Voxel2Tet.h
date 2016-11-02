@@ -76,6 +76,8 @@ public:
 
     ~Voxel2TetClass();
 
+    bool TreatZeroAsVoid = false;
+
     /**
      * @brief MeshManipulations object for accessing and modifying the mesh.
      */

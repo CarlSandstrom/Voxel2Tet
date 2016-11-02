@@ -40,6 +40,14 @@ Voxel2TetClass::Voxel2TetClass(Options *Opt)
     this->Opt->AddDefaultMap("exportabaqus", "0");
     this->Opt->AddDefaultMap("exportsteps", "0");
 
+    //Treat zero as void
+    if (this->Opt->has_key("treatzeroasvoid")) {
+        TreatZeroAsVoid = true;
+    } else {
+        TreatZeroAsVoid = false;
+    }
+
+
     // Input/output
     if (!this->Opt->has_key("output")) {
         std::string inputname = this->Opt->GiveStringValue("input");
@@ -77,23 +85,64 @@ void Voxel2TetClass::PrintHelp()
     printf("\nArguments:");
     printf("\n\tfilename\t name of file containing voxel data");
     printf("\n\toptions");
-    printf("\n\t\t-output filename  \tFollowed by the name of the output file (without extension)");
-    printf("\n\t\t-exportvtksurface \tExport the final surface in VTK format");
-    printf("\n\t\t-exportvtkvolume  \tExport the final volume in VTK format");
-    printf("\n\t\t-exportoff        \tExport the funal surface in .OFF format");
-    printf("\n\t\t-exportoofem      \tExport final volume as input file for OOFEM");
-    printf("\n\t\t-exportabaqus     \tExport final volume as input file for Abaqus");
-    printf("\n\t\t-exportsteps      \tExport the result of each step in VTK format (mainly for debugging purposes)");
-    printf("\n\t\t-datacontainer name\t(Dream3D input) Name of data group, default 'VoxelDataContainer'");
-    printf("\n\t\t-materialid name  \t(Dream3D input) Field containing an identifier for the phase, default 'GrainIds'");
-    printf("\n\t\t-voxelcutout arg) \tOnly consider the subset of the input contained within the boundingbox defined by arg. Here, arg=\"[xmin ymin zmin xmax ymax zmax]\" (include citations and brackets)");
-
-
-    printf("\n\t\t-");
-    printf("\n\t\t-");
-    printf("\n\t\t-");
-    printf("\n\t\t-");
-
+    printf("\n\t\t-output filename");
+    printf("\n\t\t\tFollowed by the name of the output file (without extension)");
+    printf("\n\t\t-exportvtksurface");
+    printf("\n\t\t\tExport the final surface in VTK format");
+    printf("\n\t\t-exportvtkvolume");
+    printf("\n\t\t\tExport the final volume in VTK format");
+    printf("\n\t\t-exportoff");
+    printf("\n\t\t\tExport the funal surface in .OFF format");
+    printf("\n\t\t-exportoofem");
+    printf("\n\t\t\tExport final volume as input file for OOFEM");
+    printf("\n\t\t-exportabaqus");
+    printf("\n\t\t\tExport final volume as input file for Abaqus");
+    printf("\n\t\t-exportsteps");
+    printf("\n\t\t\tExport the result of each step in VTK format (mainly for debugging purposes)");
+    printf("\n\t\t-datacontainer name");
+    printf("\n\t\t\t(Dream3D input) Name of data group, default 'VoxelDataContainer'");
+    printf("\n\t\t-materialid name");
+    printf("\n\t\t\t(Dream3D input) Field containing an identifier for the phase, default 'GrainIds'");
+    printf("\n\t\t-voxelcutout arg");
+    printf("\n\t\t\tOnly consider the subset of the input contained within the boundingbox defined by arg. Here, arg=\"[xmin ymin zmin xmax ymax zmax]\" (include citations and brackets)");
+    printf("\n\t\t-treatzreoasvoid");
+    printf("\n\t\t\tTreats a material with ID 0 as void. By default, this is considered a solid.");
+    printf("\n\t\t-spring_c value");
+    printf("\n\t\t\tDetermines how far a vertex can be displaced before penalized. Default depends on voxel size");
+    printf("\n\t\t-spring_c_factor value");
+    printf("\n\t\t\tChanges the value of spring_c to fit a multiple value of the characteristic length of a voxel. Default is 1.");
+    printf("\n\t\t-spring_alpha value");
+    printf("\n\t\t\tDetermines penalization for vertices moving too far from the original position. Default is 2.");
+    printf("\n\t\t-edge_spring_c value");
+    printf("\n\t\t\tSee spring_c flag.");
+    printf("\n\t\t-edge_spring_factor value");
+    printf("\n\t\t\tSee spring_factor flag. Default is 1.");
+    printf("\n\t\t-edge_spring_alpha value");
+    printf("\n\t\t\tSee spring_alpha flag. Default is 3.");
+    printf("\n\t\t-TOL_FLIP_MAXAREACHANGE value");
+    printf("\n\t\t\tLargest change in area due to a flip of a shared edge. Default is 1e-2.");
+    printf("\n\t\t-TOL_FLIP_SMALLESTAREA value");
+    printf("\n\t\t\tSmallest allowed area of a triangle after a flip. Default is 1e-8.");
+    printf("\n\t\t-TOL_FLIP_MAXNORMALCHANGE value");
+    printf("\n\t\t\tLargest change in direction of normal of triangles due to a flip (radians). Default is 0.35.");
+    printf("\n\t\t-TOL_FLIP_MAXNORMALDIFFERENCE value");
+    printf("\n\t\t\tMaximum angle of normals of two triangle to allow flipping (radians). Default is 0.175");
+    printf("\n\t\t-TOL_COL_SMALLESTAREA value");
+    printf("\n\t\t\tSmallest allowed area of a triangle after collapsing. Default is 1e-8.");
+    printf("\n\t\t-TOL_COL_MINANGLE value");
+    printf("\n\t\t\tSmallest inner angle of a triangle after collapsing (radians). Default is 0.35.");
+    printf("\n\t\t-TOL_COL_MAXNORMALCHANGE value");
+    printf("\n\t\t\tMaximum change in normal direction due to a collapse (radians). Default is 0.35.");
+    printf("\n\t\t-TOL_COL_CHORD_MAXNORMALCHANGE value");
+    printf("\n\t\t\tMaximum change in normal of a chord due to a collapse (radians). Default is 0.175.");
+    printf("\n\t\t-TOL_COL_MAXVOLUMECHANGE value");
+    printf("\n\t\t\tMaximum change in volume due to one collapse. Default is 2 voxels.");
+    printf("\n\t\t-TOL_COL_MAXERROR value");
+    printf("\n\t\t\tLargest accumulated error in a vertex. Default is 10 voxels.");
+    printf("\n\t\t-TOL_COL_MAXVOLUMECHANGE_FACTOR value");
+    printf("\n\t\t\tChanges the default value of TOL_COL_MAXVOLUMECHANGE such that the value is value times the size of a voxel. Default is 1.");
+    printf("\n\t\t-TOL_COL_MAXERROR_FACTOR value");
+    printf("\n\t\t\tChanges the default value of TOL_COL_MAXERROR such that the value is value times the size of a voxel. Default is 1.");
     printf("\n\n");
 }
 
@@ -328,7 +377,6 @@ void Voxel2TetClass::ExportVolume(std::string FileName, Exporter_FileTypes FileT
 void Voxel2TetClass::FindSurfaces()
 {
 
-
     STATUS("\tFind surfaces\n", 0);
 
     int dim[3];
@@ -395,13 +443,13 @@ void Voxel2TetClass::FindSurfaces()
                         SamePhase = (ThisPhase == NeighboringPhase);
                     } else {
                         // If we are comparing with the outside, take into account that a we might have void (i.e. 0) in both voxels
-                        if (ThisPhase != 0) {
-                            SamePhase = false;
-                            NeighboringPhase = this->Imp->GiveMaterialIDByIndex(testi, testj, testk);
-                        } else {
+                        if ((ThisPhase == 0) & (TreatZeroAsVoid)) {
                             // Void-to-void connection
                             SamePhase = true;
                             NeighboringPhase = ThisPhase;
+                        } else {
+                            SamePhase = false;
+                            NeighboringPhase = this->Imp->GiveMaterialIDByIndex(testi, testj, testk);
                         }
                     }
 
