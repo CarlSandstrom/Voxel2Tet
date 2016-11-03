@@ -49,7 +49,7 @@ void OOFEMExporter::WriteVolumeData(std::string Filename)
     OOFEMFile << "domain 3d\n";
     OOFEMFile << "OutputManager tstep_all dofman_all element_all\n";
     OOFEMFile << "ndofman " << UsedVertices.size() << " nelem " << this->Tets->size() << " ncrosssect 1 nmat " \
- << Self2OofemMaterials.size() << " nbc 1 nic 1 nltf 1 nset 15 nxfemman 0\n";
+ << MapSelfMaterials.size() << " nbc 1 nic 1 nltf 1 nset 15 nxfemman 0\n";
 
     // Write vertices
 
@@ -64,7 +64,7 @@ void OOFEMExporter::WriteVolumeData(std::string Filename)
         TetType *t = this->Tets->at(i);
         OOFEMFile << "ltrspace " << i + 1 << "\tnodes 4\t" << t->Vertices[0]->tag + 1 \
  << "\t" << t->Vertices[1]->tag + 1 << "\t" << t->Vertices[2]->tag + 1 << "\t" << t->Vertices[3]->tag + 1 \
- << "\tcrosssect 1 \tmat " << Self2OofemMaterials[t->MaterialID] << "\n";
+ << "\tcrosssect 1 \tmat " << MapSelfMaterials[t->MaterialID] << "\n";
     }
 
     // Write cross-section
@@ -72,7 +72,7 @@ void OOFEMExporter::WriteVolumeData(std::string Filename)
 
     // Write Materials
     int i = 1;
-    for (auto test : Self2OofemMaterials) {
+    for (auto test : MapSelfMaterials) {
         OOFEMFile << "# Material " << test.first << " in source file\n";
         //OOFEMFile << "hyperelmat " << i++ << " d 1 k " << 100 + i*10 << " g " << 100 + i*10 << "\n";
         OOFEMFile << "IsoLE " << i << " d 1.0 E " << 200 + i * 10 << "e9 n 0.3 tAlpha 0.0\n";

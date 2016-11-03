@@ -38,7 +38,7 @@ private:
 
     vtkSmartPointer<vtkCellArray> SetupTetrahedrons();
 
-    vtkSmartPointer<vtkIntArray> SetupVertexField(std::string Name, int ( VertexType::*FieldPtr ));
+    vtkSmartPointer<vtkIntArray> SetupVertexField(std::string Name, int VertexType::*FieldPtr );
 
     vtkSmartPointer<vtkFloatArray> SetupVertexField(std::string Name, double ( VertexType::*FieldPtr ));
 

@@ -43,8 +43,8 @@ void Exporter::UpdateUsedVertices()
 void Exporter::UpdateMaterialsMapping()
 {
     for (TetType *t : *this->Tets) {
-        if (Self2OofemMaterials.find(t->MaterialID) == Self2OofemMaterials.end()) {
-            Self2OofemMaterials[t->MaterialID] = Self2OofemMaterials.size();
+        if (MapSelfMaterials.find(t->MaterialID) == MapSelfMaterials.end()) {
+            MapSelfMaterials[t->MaterialID] = MapSelfMaterials.size();
         }
     }
 }

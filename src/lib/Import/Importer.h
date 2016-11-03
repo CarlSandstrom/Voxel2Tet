@@ -95,8 +95,14 @@ public:
     Importer()
     { UseCutOut = false; }
 
+    /**
+     * Tells if only a cutout of the data should be converted
+     */
     bool UseCutOut;
 
+    /**
+     * Contains the voxel coordinates of the cutout
+     */
     VoxelBoundingBoxType CutOut;
 
     /**
@@ -154,6 +160,13 @@ public:
      */
     virtual void GiveCoordinateByIndices(int xi, int yi, int zi, DoubleTriplet Coordinate);
 
+    /**
+     * Converts a coordinate to the index in the list of voxels
+     * @param x
+     * @param y
+     * @param z
+     * @param Indices
+     */
     virtual void GiveIndicesByCoordinate(double x, double y, double z, IntTriplet Indices);
 
     /**

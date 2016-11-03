@@ -76,6 +76,9 @@ public:
 
     ~Voxel2TetClass();
 
+    /**
+     * Determines if a 0 is a void or solid
+     */
     bool TreatZeroAsVoid = false;
 
     /**

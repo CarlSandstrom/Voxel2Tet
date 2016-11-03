@@ -113,6 +113,9 @@ public:
      */
     std::vector<int> Phases;
 
+    /**
+     * If logging is turned on, this function outputs the chain in the PhaseEdge
+     */
     void LogPhaseEdge();
 };
 }

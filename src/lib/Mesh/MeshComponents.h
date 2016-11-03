@@ -115,12 +115,16 @@ public:
     std::array<double, 3> get_c();
 
     /**
-     * @brief Retrieve coordina
+     * @brief Retrieve coordinate by index
      * @param index Index of coordinate. 0 is X, 1 is Y and 2 is Z.
      * @return Coordinate value
      */
     double get_c(int index);
 
+    /**
+     * Gives coordinate as arma::vec
+     * @return Coordinate
+     */
     arma::vec get_c_vec();
 
     /**
@@ -178,6 +182,9 @@ public:
 class EdgeType
 {
 public:
+    /**
+     * True if the edge is a transverse, i.e. a diagonal of a square. Edges that are transverse should no cound as a spring during smoothing
+     */
     bool IsTransverse;
 
     /**
@@ -358,7 +365,7 @@ public:
 };
 
 /**
- * @brief The TetType class contains information on tetrahedral elements
+ * @brief The TetType class contains information on a tetrahedral element
  */
 class TetType
 {
@@ -409,12 +416,30 @@ public:
      */
     double GiveSmallestDihedralAngle(int &angle);
 
+    /**
+     * Computes the angle between two planes.
+     * @param index Index of the pair of faces as given in MeshComponent::FacePairs
+     * @return Angle
+     */
     double GiveDihedralAngle(int index);
 
+    /**
+     * Computes normal of face
+     * @param index Index of face
+     * @return Normal vector
+     */
     arma::vec GiveNormalOfFace(int index);
 
+    /**
+     * Compute volume of element
+     * @return Volume
+     */
     double GiveVolume();
 
+    /**
+     * Fins the index of the shortest edge
+     * @return Index of shortest edge
+     */
     int GiveShortestEdgeIndex();
 
 };

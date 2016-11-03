@@ -101,6 +101,9 @@ public:
      */
     double TOL_COL_MAXERROR_ACCUMULATED;
 
+    /**
+     * Smallest allowed angle on new triangles
+     */
     double TOL_COL_MINANGLE;
 
     /**
@@ -112,6 +115,7 @@ public:
     /**
      * @brief Flips edge if permitted
      * @param Edge [in] Edge to be flipped
+     * @param SkipIntersectionCheck Determines if intersection test should be performed or not. False by default.
      * @return Value depends on success of flip
      */
     FC_MESH FlipEdge(EdgeType *Edge, bool SkipIntersectionCheck = false);
@@ -199,10 +203,24 @@ public:
      */
     int FlipAll(bool SkipIntersectionCheck = false);
 
+    /**
+     * Performs cleanup of tetrahedrons. I.e. removes small/bad elements.
+     * @return
+     */
     int CleanupTetrahedrals();
 
+    /**
+     * Removes tetrahedron by index
+     * @param index Index of tetrahedron
+     * @return True if successful, otherwise false
+     */
     bool RemoveTetrahedron(int index);
 
+    /**
+     * Removes tetrahedron
+     * @param t Tetrahedron to remove
+     * @return True if successful, otherwise false
+     */
     bool RemoveTetrahedron(TetType *t);
 };
 }

@@ -62,7 +62,7 @@ void AbaqusExporter::WriteVolumeData(std::string Filename)
 
     int LastElementID = 0;
 
-    for (auto a: Self2OofemMaterials) {
+    for (auto a: MapSelfMaterials) {
         AbaqusFile << "*ELEMENT, TYPE=C3D4, ELSET=SOLID_" << a.first << "\n";
         for (TetType *t: *this->Tets) {
             if (t->MaterialID == a.first) {
@@ -87,13 +87,13 @@ void AbaqusExporter::WriteVolumeData(std::string Filename)
     AbaqusFile << "\n";
 
     AbaqusFile << "**\n** SECTION DATA\n**\n";
-    for (auto a: Self2OofemMaterials) {
+    for (auto a: MapSelfMaterials) {
         AbaqusFile << "*SOLID SECTION, ELSET=SOLID_" << a.first << ", MATERIAL=MATERIAL_" << a.first << "\n";
     }
 
     AbaqusFile << "**\n** MATERIALS\n**\n";
     int i = 1;
-    for (auto a: Self2OofemMaterials) {
+    for (auto a: MapSelfMaterials) {
         AbaqusFile << "*MATERIAL, NAME=MATERIAL_" << a.first << "\n";
         AbaqusFile << "*DENSITY\n\t1,\n";
         AbaqusFile << "*ELASTIC, TYPE=ISOTROPIC\n\t " << (200e9 + i * 10e9) << ",\t0.3\n";
