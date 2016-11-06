@@ -1059,8 +1059,8 @@ void Voxel2TetClass::Process()
     Timer.StopTimer();
 
     if (this->Opt->GiveBooleanValue("exportsteps")) {
-        this->Mesh->ExportSurface(
-                strfmt("%s_step_%u.simple", this->Opt->GiveStringValue("output").c_str(), outputindex), FT_SIMPLE);
+//        this->Mesh->ExportSurface(
+//                strfmt("%s_step_%u.simple", this->Opt->GiveStringValue("output").c_str(), outputindex), FT_SIMPLE);
         this->Mesh->ExportSurface(
                 strfmt("%s_step_%u.vtp", this->Opt->GiveStringValue("output").c_str(), outputindex++), FT_VTK);
     }
@@ -1077,12 +1077,13 @@ void Voxel2TetClass::Process()
         UpdateFixed();
         this->SurfaceSmoother->Smooth(this->Mesh->Vertices, this->Mesh);
         if (this->Opt->GiveBooleanValue("exportsteps")) {
-            this->Mesh->ExportSurface(
-                    strfmt("%s_step_%u.simple", this->Opt->GiveStringValue("output").c_str(), outputindex),
-                    FT_SIMPLE);
+//            this->Mesh->ExportSurface(
+//                    strfmt("%s_step_%u.simple", this->Opt->GiveStringValue("output").c_str(), outputindex), FT_SIMPLE);
             this->Mesh->ExportSurface(
                     strfmt("%s_step_%u.vtp", this->Opt->GiveStringValue("output").c_str(), outputindex++), FT_VTK);
         }
+        GetListOfVolumes(CurrentVolumes, PhaseList);
+        PhaseVolumes.push_back(CurrentVolumes);
 
     } else {
         this->SmoothEdgesSimultaneously();
@@ -1098,9 +1099,9 @@ void Voxel2TetClass::Process()
         PhaseVolumes.push_back(CurrentVolumes);
 
         if (this->Opt->GiveBooleanValue("exportsteps")) {
-            this->Mesh->ExportSurface(
-                    strfmt("%s_step_%u.simple", this->Opt->GiveStringValue("output").c_str(), outputindex),
-                    FT_SIMPLE);
+//            this->Mesh->ExportSurface(
+//                    strfmt("%s_step_%u.simple", this->Opt->GiveStringValue("output").c_str(), outputindex),
+//                    FT_SIMPLE);
             this->Mesh->ExportSurface(
                     strfmt("%s_step_%u.vtp", this->Opt->GiveStringValue("output").c_str(), outputindex++), FT_VTK);
         }
@@ -1113,9 +1114,9 @@ void Voxel2TetClass::Process()
         PhaseVolumes.push_back(CurrentVolumes);
 
         if (this->Opt->GiveBooleanValue("exportsteps")) {
-            this->Mesh->ExportSurface(
-                    strfmt("%s_step_%u.simple", this->Opt->GiveStringValue("output").c_str(), outputindex),
-                    FT_SIMPLE);
+//            this->Mesh->ExportSurface(
+//                    strfmt("%s_step_%u.simple", this->Opt->GiveStringValue("output").c_str(), outputindex),
+//                    FT_SIMPLE);
             this->Mesh->ExportSurface(
                     strfmt("%s_step_%u.vtp", this->Opt->GiveStringValue("output").c_str(), outputindex++), FT_VTK);
         }
@@ -1130,8 +1131,8 @@ void Voxel2TetClass::Process()
     this->Mesh->FlipAll(false);
 
     if (this->Opt->GiveBooleanValue("exportsteps")) {
-        this->Mesh->ExportSurface(
-                strfmt("%s_step_%u.simple", this->Opt->GiveStringValue("output").c_str(), outputindex), FT_SIMPLE);
+//        this->Mesh->ExportSurface(
+//                strfmt("%s_step_%u.simple", this->Opt->GiveStringValue("output").c_str(), outputindex), FT_SIMPLE);
         this->Mesh->ExportSurface(
                 strfmt("%s_step_%u.vtp", this->Opt->GiveStringValue("output").c_str(), outputindex++), FT_VTK);
     }
@@ -1148,8 +1149,8 @@ void Voxel2TetClass::Process()
     PhaseVolumes.push_back(CurrentVolumes);
 
     if (this->Opt->GiveBooleanValue("exportsteps")) {
-        this->Mesh->ExportSurface(
-                strfmt("%s_step_%u.simple", this->Opt->GiveStringValue("output").c_str(), outputindex), FT_SIMPLE);
+//        this->Mesh->ExportSurface(
+//                strfmt("%s_step_%u.simple", this->Opt->GiveStringValue("output").c_str(), outputindex), FT_SIMPLE);
         this->Mesh->ExportSurface(
                 strfmt("%s_step_%u.vtp", this->Opt->GiveStringValue("output").c_str(), outputindex++), FT_VTK);
     }
@@ -1164,8 +1165,8 @@ void Voxel2TetClass::Process()
     PhaseVolumes.push_back(CurrentVolumes);
 
     if (this->Opt->GiveBooleanValue("exportsteps")) {
-        this->Mesh->ExportSurface(
-                strfmt("%s_step_%u.simple", this->Opt->GiveStringValue("output").c_str(), outputindex), FT_SIMPLE);
+//        this->Mesh->ExportSurface(
+//                strfmt("%s_step_%u.simple", this->Opt->GiveStringValue("output").c_str(), outputindex), FT_SIMPLE);
         this->Mesh->ExportSurface(
                 strfmt("%s_step_%u.vtp", this->Opt->GiveStringValue("output").c_str(), outputindex++), FT_VTK);
     }
@@ -1176,8 +1177,8 @@ void Voxel2TetClass::Process()
     PhaseVolumes.push_back(CurrentVolumes);
 
     if (this->Opt->GiveBooleanValue("exportsteps")) {
-        this->Mesh->ExportSurface(
-                strfmt("%s_step_%u.simple", this->Opt->GiveStringValue("output").c_str(), outputindex), FT_SIMPLE);
+//        this->Mesh->ExportSurface(
+//                strfmt("%s_step_%u.simple", this->Opt->GiveStringValue("output").c_str(), outputindex), FT_SIMPLE);
         this->Mesh->ExportSurface(
                 strfmt("%s_step_%u.vtp", this->Opt->GiveStringValue("output").c_str(), outputindex++), FT_VTK);
     }
@@ -1289,6 +1290,11 @@ void Voxel2TetClass::ExportStatistics()
     for (size_t j = 0; j < PhaseVolumes.at(0).size(); j++) {
         StatFile << PhaseVolumes.at(0).at(j) << "\t";
         Vtot = Vtot + PhaseVolumes.at(0).at(j);
+    }
+
+    StatFile << "\nSmooth\t";
+    for (size_t j = 0; j < PhaseVolumes.at(1).size(); j++) {
+        StatFile << PhaseVolumes.at(1).at(j) << "\t";
     }
 
     StatFile << "\nTet  \t";
