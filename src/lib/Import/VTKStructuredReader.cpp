@@ -11,7 +11,7 @@ void VTKStructuredReader::LoadFile(std::string FileName)
     Input.open(FileName, std::ios::in);
 
     if (!Input.is_open()) {
-        LOG("Cound not open input file %s\n", FileName.c_str());
+        STATUS("Cound not open input file %s\n", FileName.c_str());
         exit(-1);
     }
 

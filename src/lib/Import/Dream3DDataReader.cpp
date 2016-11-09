@@ -23,10 +23,17 @@ Dream3DDataReader::Dream3DDataReader(std::string DataContainer, std::string Mate
 void Dream3DDataReader::LoadFile(std::string FileName)
 {
     LOG("Open file %s\n", FileName.c_str());
-    H5::H5File file(FileName, H5F_ACC_RDONLY);
+    H5::H5File *file = NULL;
+
+    try {
+        file = new H5::H5File (FileName, H5F_ACC_RDONLY);
+    } catch (...) {
+        STATUS("Cound not open input file %s\n", FileName.c_str());
+        exit(-1);
+    }
     H5::Group DataContainers;
 
-    DataContainers = H5::Group(file.openGroup("DataContainers"));
+    DataContainers = H5::Group(file->openGroup("DataContainers"));
     VoxelDataContainer = new H5::Group(DataContainers.openGroup(this->DataContainer));
 
 
