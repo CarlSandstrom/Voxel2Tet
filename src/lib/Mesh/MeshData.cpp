@@ -408,13 +408,10 @@ TriangleType *MeshData::AddTriangle(TriangleType *NewTriangle)
     NewTriangle->ID = TriangleCounter;
     LOG("Add triangle %u to set\n", NewTriangle->ID);
 
-    if (NewTriangle->PosNormalMatID > 100000) {
-        LOG("\n", 0);
-    }
-
     for (VertexType *v : NewTriangle->Vertices) {
         v->AddTriangle(NewTriangle);
     }
+
     TriangleCounter++;
     this->Triangles.push_back(NewTriangle);
     return NewTriangle;
