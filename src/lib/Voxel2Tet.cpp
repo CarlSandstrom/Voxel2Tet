@@ -987,7 +987,7 @@ void Voxel2TetClass::AddSurfaceSquare(std::vector<int> VertexIDs, std::vector<in
     // Check phases - This is kind of a dirty hack. Should not be neccessary to check the phase on the positive side once again.
 
     std::array<double, 3> cm = triangle1->GiveCenterOfMass();
-    std::array<double, 3> normal = triangle0->GiveNormal();
+    std::array<double, 3> normal = triangle0->GiveUnitNormal();
     double spacing[3];
     this->Imp->GiveSpacing(spacing);
 
