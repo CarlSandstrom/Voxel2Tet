@@ -12,16 +12,23 @@ SpringSmoother::SpringSmoother(double VoxelCharLength, double c, double alpha, d
     this->c_factor = c_factor;
 
     if (compute_c) {
-        this->c = this->Compute_c(VoxelCharLength * c_factor, this->alpha);
+        this->c = this->Compute_c(VoxelCharLength * c_factor, this->alpha, VoxelCharLength);
     } else {
         this->c = c;
     }
 
 }
 
-double SpringSmoother::Compute_c(double l, double alpha)
+double SpringSmoother::Compute_c(double l, double alpha, double InitialGuess)
 {
-    double c = l; // Initial guess
+    double c;
+
+    // Initial guess
+    if (InitialGuess!=0) {
+        c = InitialGuess;
+    } else {
+        c = l;
+    }
     double R = exp(pow(l / c, alpha)) - 1 - l;
     double err = fabs(R);
     int iter = 0;

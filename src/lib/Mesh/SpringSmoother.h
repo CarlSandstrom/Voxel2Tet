@@ -83,7 +83,7 @@ private:
      * @param alpha See SpringSmoother::alpha
      * @return Value of c
      */
-    double Compute_c(double l, double alpha);
+    double Compute_c(double l, double alpha, double InitialGuess = 0);
 
     /**
      * Computes the tangent for the out-of-balance force using numerical differentiation
