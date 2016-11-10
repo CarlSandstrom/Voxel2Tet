@@ -295,12 +295,12 @@ void Voxel2TetClass::FinalizeLoad()
 
     if (!this->Opt->has_key("TOL_COL_MAXVOLUMECHANGE")) {
         this->Opt->AddDefaultMap("TOL_COL_MAXVOLUMECHANGE", cellspace[0] * cellspace[1] * cellspace[2] *
-                                                            this->Opt->GiveIntegerValue(
+                                                            this->Opt->GiveDoubleValue(
                                                                     "TOL_COL_MAXVOLUMECHANGE_FACTOR"));
     }
     if (!this->Opt->has_key("TOL_COL_MAXERROR_ACCUMULATED")) {
         this->Opt->AddDefaultMap("TOL_COL_MAXERROR_ACCUMULATED", cellspace[0] * cellspace[1] * cellspace[2] *
-                                                                 this->Opt->GiveIntegerValue(
+                                                                 this->Opt->GiveDoubleValue(
                                                                          "TOL_COL_MAXERROR_ACCUMULATED_FACTOR"));
     }
 
