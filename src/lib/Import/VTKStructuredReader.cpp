@@ -10,6 +10,8 @@ void VTKStructuredReader::LoadFile(std::string FileName)
     std::ifstream Input;
     Input.open(FileName, std::ios::in);
 
+    bool IsCellData = false;
+
     if (!Input.is_open()) {
         STATUS("Cound not open input file %s\n", FileName.c_str());
         exit(-1);
@@ -54,9 +56,11 @@ void VTKStructuredReader::LoadFile(std::string FileName)
                                     this->origin_data[i] + this->dimensions_data[i] * this->spacing_data[i];
                         }
                     } else if (strcasecmp(Strings[0].c_str(), "CELL_DATA") == 0) {
+                        IsCellData = true;
                         this->celldata = std::stoi(Strings[1]);
                         this->GrainIdsData = (int *) malloc(sizeof(int) * this->celldata);
                     } else if (strcasecmp(Strings[0].c_str(), "POINT_DATA") == 0) {
+                        IsCellData = false;
                         this->celldata = std::stoi(Strings[1]);
                         this->GrainIdsData = (int *) malloc(sizeof(int) * this->celldata);
                     } else if (strcasecmp(Strings[0].c_str(), "SCALARS") == 0) {
@@ -87,5 +91,14 @@ void VTKStructuredReader::LoadFile(std::string FileName)
             linecount++;
         }
     }
+
+    // If we are given points, move origin and change dimensions
+    if (!IsCellData) {
+        for (int i=0; i<3; i++) {
+            this->dimensions_data[i] = this->dimensions_data[i] + 1;
+            this->origin_data[i] = this->origin_data[i] - this->spacing_data[i]/2.0;
+        }
+    }
+
 }
 }
