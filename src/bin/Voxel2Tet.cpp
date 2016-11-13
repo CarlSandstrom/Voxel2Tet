@@ -14,7 +14,7 @@ int main(int argc, char *argv[])
 
     voxel2tet::Voxel2TetClass v2t(Options);
 
-    if (Options->has_key("help")) {
+    if (Options->has_key("help") | argc==1) {
         v2t.PrintHelp();
         exit(0);
     }

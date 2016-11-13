@@ -28,6 +28,8 @@ Voxel2TetClass::Voxel2TetClass(Options *Opt)
     this->Opt->AddDefaultMap("edge_spring_c_factor", "1");
     this->Opt->AddDefaultMap("edge_spring_alpha", "4");
 
+    this->Opt->AddDefaultMap("nocoarsening", "0");
+
     // Dream3D options
     this->Opt->AddDefaultMap("DataContainer", "VoxelDataContainer");
     this->Opt->AddDefaultMap("MaterialId", "GrainIds");
@@ -105,8 +107,10 @@ void Voxel2TetClass::PrintHelp()
     printf("\n\t\t\t(Dream3D input) Field containing an identifier for the phase, default 'GrainIds'");
     printf("\n\t\t-voxelcutout arg");
     printf("\n\t\t\tOnly consider the subset of the input contained within the boundingbox defined by arg. Here, arg=\"[xmin ymin zmin xmax ymax zmax]\" (include citations and brackets)");
-    printf("\n\t\t-treatzreoasvoid");
+    printf("\n\t\t-treatzeroasvoid");
     printf("\n\t\t\tTreats a material with ID 0 as void. By default, this is considered a solid.");
+    printf("\n\t\t-nocoarsening");
+    printf("\n\t\t\tSkip coarsening step.");
     printf("\n\t\t-spring_c value");
     printf("\n\t\t\tDetermines how far a vertex can be displaced before penalized. Default depends on voxel size");
     printf("\n\t\t-spring_c_factor value");
@@ -216,34 +220,34 @@ void Voxel2TetClass::FinalizeLoad()
 
         if (this->Opt->has_key("spring_c")) {
             this->SurfaceSmoother = new SpringSmootherPenalty(cellspace[0], Opt->GiveDoubleValue("spring_c"),
-                                                              Opt->GiveDoubleValue("spring_alpha"),
-                                                              Opt->GiveDoubleValue("spring_c_factor"), false);
+                    Opt->GiveDoubleValue("spring_alpha"),
+                    Opt->GiveDoubleValue("spring_c_factor"), false);
         } else {
             this->SurfaceSmoother = new SpringSmootherPenalty(cellspace[0], Opt->GiveDoubleValue("spring_c"),
-                                                              Opt->GiveDoubleValue("spring_alpha"),
-                                                              Opt->GiveDoubleValue("spring_c_factor"), true);
+                    Opt->GiveDoubleValue("spring_alpha"),
+                    Opt->GiveDoubleValue("spring_c_factor"), true);
         }
 
     } else {
         // Setup smoothing classes
         if (this->Opt->has_key("spring_c")) {
             this->SurfaceSmoother = new SpringSmoother(cellspace[0], Opt->GiveDoubleValue("spring_c"),
-                                                       Opt->GiveDoubleValue("spring_alpha"),
-                                                       Opt->GiveDoubleValue("spring_c_factor"), false);
+                    Opt->GiveDoubleValue("spring_alpha"),
+                    Opt->GiveDoubleValue("spring_c_factor"), false);
         } else {
             this->SurfaceSmoother = new SpringSmoother(cellspace[0], Opt->GiveDoubleValue("spring_c"),
-                                                       Opt->GiveDoubleValue("spring_alpha"),
-                                                       Opt->GiveDoubleValue("spring_c_factor"), true);
+                    Opt->GiveDoubleValue("spring_alpha"),
+                    Opt->GiveDoubleValue("spring_c_factor"), true);
         }
 
         if (this->Opt->has_key("edge_spring_c")) {
             this->EdgeSmoother = new SpringSmoother(cellspace[0], Opt->GiveDoubleValue("edge_spring_c"),
-                                                    Opt->GiveDoubleValue("edge_spring_alpha"),
-                                                    Opt->GiveDoubleValue("edge_spring_c_factor"), false);
+                    Opt->GiveDoubleValue("edge_spring_alpha"),
+                    Opt->GiveDoubleValue("edge_spring_c_factor"), false);
         } else {
             this->EdgeSmoother = new SpringSmoother(cellspace[0], Opt->GiveDoubleValue("edge_spring_c"),
-                                                    Opt->GiveDoubleValue("edge_spring_alpha"),
-                                                    Opt->GiveDoubleValue("edge_spring_c_factor"), true);
+                    Opt->GiveDoubleValue("edge_spring_alpha"),
+                    Opt->GiveDoubleValue("edge_spring_c_factor"), true);
         }
         SmoothSimultaneously = false;
     }
@@ -295,13 +299,13 @@ void Voxel2TetClass::FinalizeLoad()
 
     if (!this->Opt->has_key("TOL_COL_MAXVOLUMECHANGE")) {
         this->Opt->AddDefaultMap("TOL_COL_MAXVOLUMECHANGE", cellspace[0] * cellspace[1] * cellspace[2] *
-                                                            this->Opt->GiveDoubleValue(
-                                                                    "TOL_COL_MAXVOLUMECHANGE_FACTOR"));
+                this->Opt->GiveDoubleValue(
+                    "TOL_COL_MAXVOLUMECHANGE_FACTOR"));
     }
     if (!this->Opt->has_key("TOL_COL_MAXERROR_ACCUMULATED")) {
         this->Opt->AddDefaultMap("TOL_COL_MAXERROR_ACCUMULATED", cellspace[0] * cellspace[1] * cellspace[2] *
-                                                                 this->Opt->GiveDoubleValue(
-                                                                         "TOL_COL_MAXERROR_ACCUMULATED_FACTOR"));
+                this->Opt->GiveDoubleValue(
+                    "TOL_COL_MAXERROR_ACCUMULATED_FACTOR"));
     }
 
     // Create mesh managing object
@@ -388,7 +392,7 @@ void Voxel2TetClass::FindSurfaces()
     STATUS("\tTotal volume: %f\n", dim[0] * spacing[0] * dim[1] * spacing[1] * dim[2] * spacing[2]);
 
     std::vector<double> signs = {
-            1, -1
+        1, -1
     };
 
 
@@ -438,7 +442,7 @@ void Voxel2TetClass::FindSurfaces()
 
                     // If comparing inside the domain, simply compare
                     if ((testi >= 0) & (testj >= 0) & (testk >= 0) & (testi < dim[0]) & (testj < dim[1]) &
-                        (testk < dim[2])) {
+                            (testk < dim[2])) {
                         NeighboringPhase = this->Imp->GiveMaterialIDByIndex(testi, testj, testk);
                         SamePhase = (ThisPhase == NeighboringPhase);
                     } else {
@@ -457,11 +461,11 @@ void Voxel2TetClass::FindSurfaces()
                         // Compute centre off square
                         double c[3];
                         c[0] = (double(i) + double(testdirections.at(m).at(0)) / 2.0) * spacing[0] + origin[0] +
-                               spacing[0] / 2.0;
+                                spacing[0] / 2.0;
                         c[1] = (double(j) + double(testdirections.at(m).at(1)) / 2.0) * spacing[1] + origin[1] +
-                               spacing[1] / 2.0;
+                                spacing[1] / 2.0;
                         c[2] = (double(k) + double(testdirections.at(m).at(2)) / 2.0) * spacing[2] + origin[2] +
-                               spacing[2] / 2.0;
+                                spacing[2] / 2.0;
 
                         // Compute coordinate of corner point
                         double delta[3];
@@ -485,9 +489,9 @@ void Voxel2TetClass::FindSurfaces()
                                         newvertex[vindex.at(m).at(1)] + s2 * delta[vindex.at(m)[1]];
 
                                 int id = Mesh->VertexOctreeRoot->AddVertex(newvertex[0], newvertex[1],
-                                                                           newvertex[2]);
+                                        newvertex[2]);
                                 LOG("Corner (id=%u) at (%f, %f, %f)\n", id, newvertex[0], newvertex[1],
-                                    newvertex[2]);
+                                        newvertex[2]);
                                 VoxelIDs.push_back(id);
                             }
                         }
@@ -609,7 +613,7 @@ void Voxel2TetClass::FindEdges()
                                              {0, 2},
                                              {0, 1}};
     std::vector<double> signs = {
-            1, -1
+        1, -1
     };
 
     double spacing[3];
@@ -850,7 +854,7 @@ void Voxel2TetClass::SmoothEdgesSimultaneously()
         // Determine which directions are locked TODO: This should be done elsewhere
         for (int j = 0; j < 3; j++) {
             if ((v->get_c(j) > (this->Imp->GiveBoundingBox().maxvalues[j] - eps)) |
-                (v->get_c(j) < (this->Imp->GiveBoundingBox().minvalues[j] + eps))) {
+                    (v->get_c(j) < (this->Imp->GiveBoundingBox().minvalues[j] + eps))) {
                 v->Fixed[j] = true;
             } else {
                 v->Fixed[j] = false;
@@ -873,7 +877,7 @@ void Voxel2TetClass::UpdateFixed()
 
             // If the node is located on the surface in the j:th direction, fix it in that direction
             if ((v->get_c(j) > (this->Imp->GiveBoundingBox().maxvalues[j] - eps)) |
-                (v->get_c(j) < (this->Imp->GiveBoundingBox().minvalues[j] + eps))) {
+                    (v->get_c(j) < (this->Imp->GiveBoundingBox().minvalues[j] + eps))) {
                 v->Fixed[j] = true;
             } else {
                 v->Fixed[j] = false;
@@ -943,8 +947,8 @@ void Voxel2TetClass::AddSurfaceSquare(std::vector<int> VertexIDs, std::vector<in
     for (unsigned int i = 0; i < this->Surfaces.size(); i++) {
         if (((this->Surfaces.at(i)->Phases[0] == phases.at(0)) &
              (this->Surfaces.at(i)->Phases[1] == phases.at(1))) |
-            ((this->Surfaces.at(i)->Phases[0] == phases.at(1)) &
-             (this->Surfaces.at(i)->Phases[1] == phases.at(0)))) {
+                ((this->Surfaces.at(i)->Phases[0] == phases.at(1)) &
+                 (this->Surfaces.at(i)->Phases[1] == phases.at(0)))) {
             ThisSurface = this->Surfaces.at(i);
             SurfaceID = i;
             break;
@@ -1059,10 +1063,10 @@ void Voxel2TetClass::Process()
     Timer.StopTimer();
 
     if (this->Opt->GiveBooleanValue("exportsteps")) {
-//        this->Mesh->ExportSurface(
-//                strfmt("%s_step_%u.simple", this->Opt->GiveStringValue("output").c_str(), outputindex), FT_SIMPLE);
+        //        this->Mesh->ExportSurface(
+        //                strfmt("%s_step_%u.simple", this->Opt->GiveStringValue("output").c_str(), outputindex), FT_SIMPLE);
         this->Mesh->ExportSurface(
-                strfmt("%s_step_%u.vtp", this->Opt->GiveStringValue("output").c_str(), outputindex++), FT_VTK);
+                    strfmt("%s_step_%u.vtp", this->Opt->GiveStringValue("output").c_str(), outputindex++), FT_VTK);
     }
 
     Timer.StartTimer("Find edges");
@@ -1077,10 +1081,10 @@ void Voxel2TetClass::Process()
         UpdateFixed();
         this->SurfaceSmoother->Smooth(this->Mesh->Vertices, this->Mesh);
         if (this->Opt->GiveBooleanValue("exportsteps")) {
-//            this->Mesh->ExportSurface(
-//                    strfmt("%s_step_%u.simple", this->Opt->GiveStringValue("output").c_str(), outputindex), FT_SIMPLE);
+            //            this->Mesh->ExportSurface(
+            //                    strfmt("%s_step_%u.simple", this->Opt->GiveStringValue("output").c_str(), outputindex), FT_SIMPLE);
             this->Mesh->ExportSurface(
-                    strfmt("%s_step_%u.vtp", this->Opt->GiveStringValue("output").c_str(), outputindex++), FT_VTK);
+                        strfmt("%s_step_%u.vtp", this->Opt->GiveStringValue("output").c_str(), outputindex++), FT_VTK);
         }
         GetListOfVolumes(CurrentVolumes, PhaseList);
         PhaseVolumes.push_back(CurrentVolumes);
@@ -1099,11 +1103,11 @@ void Voxel2TetClass::Process()
         PhaseVolumes.push_back(CurrentVolumes);
 
         if (this->Opt->GiveBooleanValue("exportsteps")) {
-//            this->Mesh->ExportSurface(
-//                    strfmt("%s_step_%u.simple", this->Opt->GiveStringValue("output").c_str(), outputindex),
-//                    FT_SIMPLE);
+            //            this->Mesh->ExportSurface(
+            //                    strfmt("%s_step_%u.simple", this->Opt->GiveStringValue("output").c_str(), outputindex),
+            //                    FT_SIMPLE);
             this->Mesh->ExportSurface(
-                    strfmt("%s_step_%u.vtp", this->Opt->GiveStringValue("output").c_str(), outputindex++), FT_VTK);
+                        strfmt("%s_step_%u.vtp", this->Opt->GiveStringValue("output").c_str(), outputindex++), FT_VTK);
         }
 
         Timer.StartTimer("Smooth surfaces");
@@ -1114,11 +1118,11 @@ void Voxel2TetClass::Process()
         PhaseVolumes.push_back(CurrentVolumes);
 
         if (this->Opt->GiveBooleanValue("exportsteps")) {
-//            this->Mesh->ExportSurface(
-//                    strfmt("%s_step_%u.simple", this->Opt->GiveStringValue("output").c_str(), outputindex),
-//                    FT_SIMPLE);
+            //            this->Mesh->ExportSurface(
+            //                    strfmt("%s_step_%u.simple", this->Opt->GiveStringValue("output").c_str(), outputindex),
+            //                    FT_SIMPLE);
             this->Mesh->ExportSurface(
-                    strfmt("%s_step_%u.vtp", this->Opt->GiveStringValue("output").c_str(), outputindex++), FT_VTK);
+                        strfmt("%s_step_%u.vtp", this->Opt->GiveStringValue("output").c_str(), outputindex++), FT_VTK);
         }
 
     }
@@ -1131,10 +1135,10 @@ void Voxel2TetClass::Process()
     this->Mesh->FlipAll(false);
 
     if (this->Opt->GiveBooleanValue("exportsteps")) {
-//        this->Mesh->ExportSurface(
-//                strfmt("%s_step_%u.simple", this->Opt->GiveStringValue("output").c_str(), outputindex), FT_SIMPLE);
+        //        this->Mesh->ExportSurface(
+        //                strfmt("%s_step_%u.simple", this->Opt->GiveStringValue("output").c_str(), outputindex), FT_SIMPLE);
         this->Mesh->ExportSurface(
-                strfmt("%s_step_%u.vtp", this->Opt->GiveStringValue("output").c_str(), outputindex++), FT_VTK);
+                    strfmt("%s_step_%u.vtp", this->Opt->GiveStringValue("output").c_str(), outputindex++), FT_VTK);
     }
 
     this->UpdateSurfaces();
@@ -1149,38 +1153,42 @@ void Voxel2TetClass::Process()
     PhaseVolumes.push_back(CurrentVolumes);
 
     if (this->Opt->GiveBooleanValue("exportsteps")) {
-//        this->Mesh->ExportSurface(
-//                strfmt("%s_step_%u.simple", this->Opt->GiveStringValue("output").c_str(), outputindex), FT_SIMPLE);
+        //        this->Mesh->ExportSurface(
+        //                strfmt("%s_step_%u.simple", this->Opt->GiveStringValue("output").c_str(), outputindex), FT_SIMPLE);
         this->Mesh->ExportSurface(
-                strfmt("%s_step_%u.vtp", this->Opt->GiveStringValue("output").c_str(), outputindex++), FT_VTK);
+                    strfmt("%s_step_%u.vtp", this->Opt->GiveStringValue("output").c_str(), outputindex++), FT_VTK);
     }
 
-    Timer.StartTimer("Coarsen mesh");
-    this->Mesh->CoarsenMesh();
-    Timer.StopTimer();
+    // Perform coarsening
 
-    this->UpdateSurfaces();
+    if (!this->Opt->GiveBooleanValue("nocoarsening")) {
+        Timer.StartTimer("Coarsen mesh");
+        this->Mesh->CoarsenMesh();
+        Timer.StopTimer();
+
+        this->UpdateSurfaces();
+
+        GetListOfVolumes(CurrentVolumes, PhaseList);
+        PhaseVolumes.push_back(CurrentVolumes);
+
+        if (this->Opt->GiveBooleanValue("exportsteps")) {
+            //        this->Mesh->ExportSurface(
+            //                strfmt("%s_step_%u.simple", this->Opt->GiveStringValue("output").c_str(), outputindex), FT_SIMPLE);
+            this->Mesh->ExportSurface(
+                        strfmt("%s_step_%u.vtp", this->Opt->GiveStringValue("output").c_str(), outputindex++), FT_VTK);
+        }
+        this->Mesh->FlipAll();
+        this->UpdateSurfaces();
+    }
 
     GetListOfVolumes(CurrentVolumes, PhaseList);
     PhaseVolumes.push_back(CurrentVolumes);
 
     if (this->Opt->GiveBooleanValue("exportsteps")) {
-//        this->Mesh->ExportSurface(
-//                strfmt("%s_step_%u.simple", this->Opt->GiveStringValue("output").c_str(), outputindex), FT_SIMPLE);
+        //        this->Mesh->ExportSurface(
+        //                strfmt("%s_step_%u.simple", this->Opt->GiveStringValue("output").c_str(), outputindex), FT_SIMPLE);
         this->Mesh->ExportSurface(
-                strfmt("%s_step_%u.vtp", this->Opt->GiveStringValue("output").c_str(), outputindex++), FT_VTK);
-    }
-    this->Mesh->FlipAll();
-    this->UpdateSurfaces();
-
-    GetListOfVolumes(CurrentVolumes, PhaseList);
-    PhaseVolumes.push_back(CurrentVolumes);
-
-    if (this->Opt->GiveBooleanValue("exportsteps")) {
-//        this->Mesh->ExportSurface(
-//                strfmt("%s_step_%u.simple", this->Opt->GiveStringValue("output").c_str(), outputindex), FT_SIMPLE);
-        this->Mesh->ExportSurface(
-                strfmt("%s_step_%u.vtp", this->Opt->GiveStringValue("output").c_str(), outputindex++), FT_VTK);
+                    strfmt("%s_step_%u.vtp", this->Opt->GiveStringValue("output").c_str(), outputindex++), FT_VTK);
     }
 
 #if EXPORT_MESH_COARSENING == 1
@@ -1273,7 +1281,7 @@ void Voxel2TetClass::ExportStatistics()
     StatFile << "\nMesh\n----\n";
     StatFile << "Number of input voxels: " << dimensions[0] * dimensions[1] * dimensions[2] << "\n";
     StatFile << "Number of input nodes: " << (dimensions[0] + 1) * (dimensions[1] + 1) * (dimensions[2] + 1)
-             << "\n";
+            << "\n";
     StatFile << "Number of output elements: " << this->Mesh->Tets.size() << "\n";
     StatFile << "Number of output nodes: " << this->Mesh->Vertices.size() << "\n";
 
@@ -1311,7 +1319,7 @@ void Voxel2TetClass::ExportStatistics()
 
     for (size_t i = 0; i < PhaseVolumes.at(0).size(); i++) {
         double ei = fabs(PhaseVolumes.at(0).at(i) - PhaseVolumes.at(PhaseVolumes.size() - 1).at(i)) *
-                    PhaseVolumes.at(0).at(i);
+                PhaseVolumes.at(0).at(i);
         E = E + ei / Vtot;
     }
 
