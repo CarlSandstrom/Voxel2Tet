@@ -14,9 +14,9 @@
  */
 int GiveMaterialIDByCoordinateSphere(double x, double y, double z)
 {
-    double r = 25;
+    double r = .4;
 
-    if (sqrt(pow(x - 50, 2) + pow(y - 50, 2) + pow(z - 50, 2)) < r) {
+    if (sqrt(pow(x - .50, 2) + pow(y - .50, 2) + pow(z - .50, 2)) < r) {
         return 1;
     } else {
         return 2;
@@ -28,18 +28,21 @@ int main(int argc, char *argv[])
     std::map<std::string, std::string> DefaultOptions;
     voxel2tet::Options *Options = new voxel2tet::Options(argc, argv, DefaultOptions, {});
 
+    Options->SetKey("spring_c_factor", 2.0);
+    Options->SetKey("spring_alpha", 4.0);
+
     voxel2tet::Voxel2TetClass v2t(Options);
 
-    double spacing = 5.0;
-    double length = 5.0*20;
+    int numberofvoxels = 20;
+    double length = 1.0;
+    double spacing = length/double(numberofvoxels);
     int dimensions = std::ceil(length / spacing);
 
     v2t.LoadCallback(&GiveMaterialIDByCoordinateSphere, {{0, 0, 0}}, {{spacing, spacing, spacing}},
                      {{dimensions, dimensions, dimensions}});
     v2t.Process();
     v2t.Tetrahedralize();
-    v2t.ExportSurface("/tmp/SingleSphere0.vtp", voxel2tet::FT_VTK);
-    v2t.ExportSurface("/tmp/SingleSphere1.vtp", voxel2tet::FT_VTK);
+    v2t.ExportSurface("/tmp/SingleSphere.vtp", voxel2tet::FT_VTK);
     v2t.ExportVolume("/tmp/SingleSphere.in", voxel2tet::FT_ABAQUS);
     v2t.ExportAllVolumes();
 
