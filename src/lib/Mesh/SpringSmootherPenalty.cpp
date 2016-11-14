@@ -12,6 +12,9 @@ SpringSmootherPenalty::SpringSmootherPenalty(double VoxelCharLength, double c, d
 
 void SpringSmootherPenalty::Smooth(std::vector<VertexType *> Vertices, MeshData *Mesh)
 {
+
+    STATUS("Smooth surface\n", 0);
+
     double MAXCHANGE = 1e-4 * charlength;
 
     std::vector<std::vector<VertexType *>> Connections = this->GetConnectivityVector(Vertices);
@@ -38,6 +41,7 @@ void SpringSmootherPenalty::Smooth(std::vector<VertexType *> Vertices, MeshData 
     this->CheckPenetration(&Vertices, (MeshManipulations *) Mesh);
 
     double deltamax = 1e8;
+    int iter=0;
 
     while (deltamax > MAXCHANGE) {
 
@@ -82,9 +86,12 @@ void SpringSmootherPenalty::Smooth(std::vector<VertexType *> Vertices, MeshData 
             }
 
             deltamax = std::max(delta, deltamax);
+            STATUS("%c[2K\r\tIteration %u end with deltamax=%f\r", 27, iter, deltamax);
             i++;
+            iter++;
         }
     }
+    STATUS("\n", 0);
 
 }
 
