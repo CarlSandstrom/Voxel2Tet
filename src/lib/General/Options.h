@@ -54,6 +54,18 @@ public:
     void AddRequiredKey(std::string keyname);
 
     /**
+     * @brief Set a key
+     * @param keyname Name of key
+     * @param value Value of key
+     */
+    void SetKey(std::string keyname, std::string value);
+
+    /**
+     * \copydoc Options::SetKey
+     */
+    void SetKey(std::string keyname, double value);
+
+    /**
      * @brief Checks if all required keys are specified. If not, an exception is raised.
      */
     void CheckRequiredFields();

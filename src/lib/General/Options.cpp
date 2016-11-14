@@ -77,6 +77,16 @@ void Options::AddRequiredKey(std::string keyname)
     this->CheckRequiredFields();
 }
 
+void Options::SetKey(std::string keyname, std::string value)
+{
+    this->OptionMap[keyname] = value;
+}
+
+void Options::SetKey(std::string keyname, double value)
+{
+    this->OptionMap[keyname] = strfmt("%f", value);
+}
+
 bool Options::has_key(std::string keyname)
 {
     if (this->OptionMap.find(keyname) == this->OptionMap.end()) {
