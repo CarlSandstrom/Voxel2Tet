@@ -14,9 +14,9 @@
  */
 int GiveMaterialIDByCoordinateSphere(double x, double y, double z)
 {
-    double r = 2.5;
+    double r = 25;
 
-    if (sqrt(pow(x - 5, 2) + pow(y - 5, 2) + pow(z - 5, 2)) < r) {
+    if (sqrt(pow(x - 50, 2) + pow(y - 50, 2) + pow(z - 50, 2)) < r) {
         return 1;
     } else {
         return 2;
@@ -30,8 +30,8 @@ int main(int argc, char *argv[])
 
     voxel2tet::Voxel2TetClass v2t(Options);
 
-    double spacing = 0.2;
-    double length = 10.0;
+    double spacing = 5.0;
+    double length = 5.0*20;
     int dimensions = std::ceil(length / spacing);
 
     v2t.LoadCallback(&GiveMaterialIDByCoordinateSphere, {{0, 0, 0}}, {{spacing, spacing, spacing}},

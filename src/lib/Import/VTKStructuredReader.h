@@ -22,6 +22,7 @@ private:
     std::string DataName;
     std::string TableName;
     int celldata;
+    bool IsCellData;
 public:
     VTKStructuredReader();
 

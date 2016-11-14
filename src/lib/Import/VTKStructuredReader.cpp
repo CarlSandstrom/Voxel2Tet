@@ -10,7 +10,7 @@ void VTKStructuredReader::LoadFile(std::string FileName)
     std::ifstream Input;
     Input.open(FileName, std::ios::in);
 
-    bool IsCellData = false;
+    IsCellData = false;
 
     if (!Input.is_open()) {
         STATUS("Cound not open input file %s\n", FileName.c_str());
@@ -96,8 +96,8 @@ void VTKStructuredReader::LoadFile(std::string FileName)
     if (!IsCellData) {
         for (int i=0; i<3; i++) {
             this->dimensions_data[i] = this->dimensions_data[i] + 1;
-            /*this->origin_data[i] = this->origin_data[i] - this->spacing_data[i]/2.0;
-            this->BoundingBox.maxvalues[i] = this->BoundingBox.maxvalues[i] - this->spacing_data[i]/2.0;
+            this->origin_data[i] = this->origin_data[i] - this->spacing_data[i]/2.0;
+/*            this->BoundingBox.maxvalues[i] = this->BoundingBox.maxvalues[i] - this->spacing_data[i]/2.0;
             this->BoundingBox.minvalues[i] = this->BoundingBox.minvalues[i] - this->spacing_data[i]/2.0;*/
         }
     }
