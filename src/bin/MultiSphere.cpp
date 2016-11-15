@@ -58,7 +58,7 @@ int main(int argc, char *argv[])
     v2t.Process();
     v2t.Tetrahedralize();
 
-    v2t.ExportSurface("/tmp/MultiSphere.vtp", voxel2tet::FT_VTK);
-    v2t.ExportVolume("/tmp/MultiSphere.vtu", voxel2tet::FT_VTK);
+    v2t.ExportSurface("MultiSphere.vtp", voxel2tet::FT_VTK);
+    v2t.ExportVolume("MultiSphere.vtu", voxel2tet::FT_VTK);
 
 }

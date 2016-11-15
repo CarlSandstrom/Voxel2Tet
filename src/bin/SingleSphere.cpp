@@ -42,8 +42,8 @@ int main(int argc, char *argv[])
                      {{dimensions, dimensions, dimensions}});
     v2t.Process();
     v2t.Tetrahedralize();
-    v2t.ExportSurface("/tmp/SingleSphere.vtp", voxel2tet::FT_VTK);
-    v2t.ExportVolume("/tmp/SingleSphere.in", voxel2tet::FT_ABAQUS);
+    v2t.ExportSurface("SingleSphere.vtp", voxel2tet::FT_VTK);
+    v2t.ExportVolume("SingleSphere.in", voxel2tet::FT_ABAQUS);
     v2t.ExportAllVolumes();
 
 }

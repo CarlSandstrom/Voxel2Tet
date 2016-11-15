@@ -44,7 +44,7 @@ int main(int argc, char *argv[])
                      {{dimensions, dimensions, dimensions}});
     v2t.Process();
     v2t.Tetrahedralize();
-    v2t.ExportSurface("/tmp/Cube.vtp", voxel2tet::FT_VTK);
-    v2t.ExportVolume("/tmp/Cube.vtu", voxel2tet::FT_VTK);
+    v2t.ExportSurface("Cube.vtp", voxel2tet::FT_VTK);
+    v2t.ExportVolume("Cube.vtu", voxel2tet::FT_VTK);
 
 }

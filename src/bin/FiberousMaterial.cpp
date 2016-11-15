@@ -71,7 +71,7 @@ int main(int argc, char *argv[])
     v2t.Process();
     v2t.Tetrahedralize();
 
-    v2t.ExportSurface("/tmp/FiberNetwork.vtp", voxel2tet::FT_VTK);
-    v2t.ExportVolume("/tmp/FiberNetwork.vtu", voxel2tet::FT_VTK);
+    v2t.ExportSurface("FiberNetwork.vtp", voxel2tet::FT_VTK);
+    v2t.ExportVolume("FiberNetwork.vtu", voxel2tet::FT_VTK);
 
 }
