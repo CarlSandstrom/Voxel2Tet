@@ -174,16 +174,17 @@ void SpringSmoother::Smooth(std::vector<VertexType *> Vertices, MeshData *Mesh)
     this->CheckPenetration(&Vertices, (MeshManipulations *) Mesh);
 
     double deltamax = 1e8;
+    size_t iter = 0;
 
     while (deltamax > MAXCHANGE) {
 
         deltamax = 0.0;
-        size_t iter = 0;
+        int j=0;
 
         for (VertexType *v: Vertices) {
 
             std::vector<arma::vec3> ConnectionCoords;
-            for (VertexType *cv: Connections[iter]) {
+            for (VertexType *cv: Connections[j]) {
                 ConnectionCoords.push_back(cv->get_c_vec());
             }
 
@@ -194,7 +195,7 @@ void SpringSmoother::Smooth(std::vector<VertexType *> Vertices, MeshData *Mesh)
             double err = arma::norm(R);
 
             while (err > 1e-5) {
-                arma::mat K = ComputeAnalyticalTangent(ConnectionCoords, xc, x0, alpha, c);
+                arma::mat K = ComputeNumericalTangent(ConnectionCoords, xc, x0, alpha, c);
                 arma::vec d = -arma::solve(K, R);
                 xc = xc + d;
                 R = ComputeOutOfBalance(ConnectionCoords, xc, x0, alpha, c);
@@ -218,10 +219,11 @@ void SpringSmoother::Smooth(std::vector<VertexType *> Vertices, MeshData *Mesh)
             }
 
             deltamax = std::max(delta, deltamax);
-            STATUS("%c[2K\r\tIteration %u end with deltamax=%f\r", 27, iter, deltamax);
-            fflush(stdout);
-            iter++;
+            j++;
         }
+        STATUS("%c[2K\r\tIteration %u end with deltamax=%f\r", 27, iter, deltamax);
+        fflush(stdout);
+        iter++;
     }
     STATUS("\n", 0);
 
