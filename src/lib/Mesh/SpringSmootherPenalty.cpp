@@ -46,12 +46,12 @@ void SpringSmootherPenalty::Smooth(std::vector<VertexType *> Vertices, MeshData 
     while (deltamax > MAXCHANGE) {
 
         deltamax = 0.0;
-        size_t i = 0;
+        size_t j = 0;
 
         for (VertexType *v: Vertices) {
 
             std::vector<arma::vec3> ConnectionCoords;
-            for (VertexType *cv: Connections[i]) {
+            for (VertexType *cv: Connections[j]) {
                 ConnectionCoords.push_back(cv->get_c_vec());
             }
 
@@ -86,7 +86,7 @@ void SpringSmootherPenalty::Smooth(std::vector<VertexType *> Vertices, MeshData 
             }
 
             deltamax = std::max(delta, deltamax);
-            i++;
+            j++;
         }
         STATUS("%c[2K\r\tIteration %u end with deltamax=%f\r", 27, iter, deltamax);
         iter++;
