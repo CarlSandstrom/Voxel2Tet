@@ -86,10 +86,10 @@ void SpringSmootherPenalty::Smooth(std::vector<VertexType *> Vertices, MeshData 
             }
 
             deltamax = std::max(delta, deltamax);
-            STATUS("%c[2K\r\tIteration %u end with deltamax=%f\r", 27, iter, deltamax);
             i++;
-            iter++;
         }
+        STATUS("%c[2K\r\tIteration %u end with deltamax=%f\r", 27, iter, deltamax);
+        iter++;
     }
     STATUS("\n", 0);
 
