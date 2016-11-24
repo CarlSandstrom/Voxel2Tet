@@ -1000,7 +1000,7 @@ void Voxel2TetClass::AddSurfaceSquare(std::vector<int> VertexIDs, std::vector<in
     }
 
     int pPhase;
-    pPhase = this->Imp->GiveMaterialIDByCoordinate(cm[0] + normal[0], cm[1] + normal[1], cm[2] + normal[2]);
+    pPhase = this->Imp->GiveMaterialIDByCoordinate(cm[0] + normal[0]*spacing[0]*0.5, cm[1] + normal[1]*spacing[1]*0.5, cm[2] + normal[2]*spacing[2]*0.5);
 
     triangle0->PosNormalMatID = triangle1->PosNormalMatID = pPhase;
 

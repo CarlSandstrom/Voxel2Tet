@@ -92,13 +92,13 @@ void VTKStructuredReader::LoadFile(std::string FileName)
         }
     }
 
-    // If we are given points, move origin and change dimensions
+    // If we are given points, move origin, change dimensions and recalculate boundingbox
     if (!IsCellData) {
         for (int i=0; i<3; i++) {
             this->dimensions_data[i] = this->dimensions_data[i] + 1;
             this->origin_data[i] = this->origin_data[i] - this->spacing_data[i]/2.0;
-/*            this->BoundingBox.maxvalues[i] = this->BoundingBox.maxvalues[i] - this->spacing_data[i]/2.0;
-            this->BoundingBox.minvalues[i] = this->BoundingBox.minvalues[i] - this->spacing_data[i]/2.0;*/
+            this->BoundingBox.minvalues[i] = this->origin_data[i];
+            this->BoundingBox.maxvalues[i] = this->origin_data[i] + this->spacing_data[i]*this->dimensions_data[i];
         }
     }
 
