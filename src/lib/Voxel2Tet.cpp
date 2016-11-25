@@ -252,16 +252,6 @@ void Voxel2TetClass::FinalizeLoad()
         SmoothSimultaneously = false;
     }
 
-    // Setup bounding box
-    BoundingBoxType bb;
-
-    bb = this->Imp->GiveBoundingBox();
-
-    for (int i = 0; i < 3; i++) {
-        bb.maxvalues[i] = bb.maxvalues[i] + cellspace[i];
-        bb.minvalues[i] = bb.minvalues[i] - cellspace[i];
-    }
-
     // Setup tolearances in options
     if (!this->Opt->has_key("TOL_FLIP_MAXAREACHANGE")) {
         this->Opt->AddDefaultMap("TOL_FLIP_MAXAREACHANGE", 99);
@@ -306,6 +296,16 @@ void Voxel2TetClass::FinalizeLoad()
         this->Opt->AddDefaultMap("TOL_COL_MAXERROR_ACCUMULATED", cellspace[0] * cellspace[1] * cellspace[2] *
                 this->Opt->GiveDoubleValue(
                     "TOL_COL_MAXERROR_ACCUMULATED_FACTOR"));
+    }
+
+    // Setup bounding box
+    BoundingBoxType bb;
+
+    bb = this->Imp->GiveBoundingBox();
+
+    for (int i = 0; i < 3; i++) {
+        bb.maxvalues[i] = bb.maxvalues[i] + cellspace[i];
+        bb.minvalues[i] = bb.minvalues[i] - cellspace[i];
     }
 
     // Create mesh managing object
@@ -409,7 +409,7 @@ void Voxel2TetClass::FindSurfaces()
                                                                  {1, 1, 0}};
                 // vindex is the indices of the coordinates
                 std::vector<std::vector<int> > vindex = {{1, 2},
-                                                         {0, 2},
+                                                         {2, 0},
                                                          {0, 1}};
 
                 // If we are on a boundary, we need to check what is outside of that boundary
@@ -421,7 +421,7 @@ void Voxel2TetClass::FindSurfaces()
                 if (j == 0) {
                     testdirections.push_back({0, -1, 0});
                     vdirections.push_back({1, 0, 1});
-                    vindex.push_back({0, 2});
+                    vindex.push_back({2, 0});
                 }
                 if (k == 0) {
                     testdirections.push_back({0, 0, -1});
@@ -964,8 +964,8 @@ void Voxel2TetClass::AddSurfaceSquare(std::vector<int> VertexIDs, std::vector<in
 
     // Create square (i.e. two triangles)
     TriangleType *triangle0, *triangle1;
-    triangle0 = Mesh->AddTriangle({VertexIDs.at(0), VertexIDs.at(1), VertexIDs.at(2)});
-    triangle1 = Mesh->AddTriangle({VertexIDs.at(2), VertexIDs.at(1), VertexIDs.at(3)});
+    triangle0 = Mesh->AddTriangle({VertexIDs.at(0), VertexIDs.at(2), VertexIDs.at(1)});
+    triangle1 = Mesh->AddTriangle({VertexIDs.at(2), VertexIDs.at(3), VertexIDs.at(1)});
 
     // Find the transverse edge and mark it. This edge should not have any stiffness since some vertices will be connected to more vertices than others, thus creating an unbalanced smoothing.
 
@@ -1000,7 +1000,7 @@ void Voxel2TetClass::AddSurfaceSquare(std::vector<int> VertexIDs, std::vector<in
     }
 
     int pPhase;
-    pPhase = this->Imp->GiveMaterialIDByCoordinate(cm[0] + normal[0]*spacing[0]*0.5, cm[1] + normal[1]*spacing[1]*0.5, cm[2] + normal[2]*spacing[2]*0.5);
+    pPhase = this->Imp->GiveMaterialIDByCoordinate(cm[0] + normal[0], cm[1] + normal[1], cm[2] + normal[2]);
 
     triangle0->PosNormalMatID = triangle1->PosNormalMatID = pPhase;
 
