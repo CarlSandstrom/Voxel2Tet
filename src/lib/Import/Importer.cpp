@@ -36,8 +36,8 @@ BoundingBoxType Importer::GiveBoundingBox()
         IntTriplet PsuedoDimensions;
         this->GiveDimensions(PsuedoDimensions);
         BoundingBoxType bb;
-        for (int i = 0; i < 3; i++) bb.minvalues[i] = (this->CutOut.minvalues[i]) * spacing_data[i];
-        for (int i = 0; i < 3; i++) bb.maxvalues[i] = (this->CutOut.maxvalues[i] + 1) * spacing_data[i];
+        for (int i = 0; i < 3; i++) bb.minvalues[i] = this->origin_data[i] + this->CutOut.minvalues[i] * spacing_data[i];
+        for (int i = 0; i < 3; i++) bb.maxvalues[i] = this->origin_data[i] + (this->CutOut.maxvalues[i] + 1) * spacing_data[i];
         return bb;
     } else {
         return this->BoundingBox;
