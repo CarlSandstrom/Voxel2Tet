@@ -221,11 +221,11 @@ void Voxel2TetClass::FinalizeLoad()
         if (this->Opt->has_key("spring_c")) {
             this->SurfaceSmoother = new SpringSmootherPenalty(cellspace[0], Opt->GiveDoubleValue("spring_c"),
                     Opt->GiveDoubleValue("spring_alpha"),
-                    Opt->GiveDoubleValue("spring_c_factor"), false);
+                    Opt->GiveDoubleValue("spring_c_factor"), &this->Volumes, false);
         } else {
             this->SurfaceSmoother = new SpringSmootherPenalty(cellspace[0], Opt->GiveDoubleValue("spring_c"),
                     Opt->GiveDoubleValue("spring_alpha"),
-                    Opt->GiveDoubleValue("spring_c_factor"), true);
+                    Opt->GiveDoubleValue("spring_c_factor"), &this->Volumes, true);
         }
 
     } else {

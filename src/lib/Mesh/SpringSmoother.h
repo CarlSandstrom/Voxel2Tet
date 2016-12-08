@@ -59,7 +59,7 @@ protected:
      * @param c See SpringSmoother::c
      * @return
      */
-    arma::vec
+    virtual arma::vec
     ComputeOutOfBalance(std::vector<arma::vec3> ConnectionCoords, arma::vec3 xc, arma::vec3 x0, double alpha, double c);
 
     /**
@@ -71,19 +71,9 @@ protected:
      * @param c See SpringSmoother::c
      * @return Tangent
      */
-    arma::mat
+    virtual arma::mat
     ComputeAnalyticalTangent(std::vector<arma::vec3> ConnectionCoords, arma::vec xc, arma::vec x0, double alpha,
                              double c);
-
-private:
-
-    /**
-     * Computes c such that the voxel can move a distance l from its original position
-     * @param l See SpringSmoother::charlength
-     * @param alpha See SpringSmoother::alpha
-     * @return Value of c
-     */
-    double Compute_c(double l, double alpha, double InitialGuess = 0);
 
     /**
      * Computes the tangent for the out-of-balance force using numerical differentiation
@@ -94,9 +84,19 @@ private:
      * @param c See SpringSmoother::c
      * @return Tangent
      */
-    arma::mat
+    virtual arma::mat
     ComputeNumericalTangent(std::vector<arma::vec3> ConnectionCoords, arma::vec xc, arma::vec x0, double alpha,
                             double c);
+private:
+
+    /**
+     * Computes c such that the voxel can move a distance l from its original position
+     * @param l See SpringSmoother::charlength
+     * @param alpha See SpringSmoother::alpha
+     * @return Value of c
+     */
+    double Compute_c(double l, double alpha);
+
 
 protected:
     std::string DoOutput() const;

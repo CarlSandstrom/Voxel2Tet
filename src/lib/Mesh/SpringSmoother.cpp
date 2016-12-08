@@ -12,39 +12,16 @@ SpringSmoother::SpringSmoother(double VoxelCharLength, double c, double alpha, d
     this->c_factor = c_factor;
 
     if (compute_c) {
-        this->c = this->Compute_c(VoxelCharLength * c_factor, this->alpha, VoxelCharLength);
+        this->c = this->Compute_c(VoxelCharLength * c_factor, this->alpha);
     } else {
         this->c = c;
     }
 
 }
 
-double SpringSmoother::Compute_c(double l, double alpha, double InitialGuess)
+double SpringSmoother::Compute_c(double l, double alpha)
 {
-    double c;
-
-    // Initial guess
-    if (InitialGuess!=0) {
-        c = InitialGuess;
-    } else {
-        c = l;
-    }
-    double R = exp(pow(l / c, alpha)) - 1 - l;
-    double err = fabs(R);
-    int iter = 0;
-
-    while (err > 1e-8) {
-        double tangent = -exp(pow(l / c, alpha)) * alpha * pow(l / c, alpha - 1) * l * pow(c, -2);
-        double deltac = -1 / tangent * R;
-        c = c + deltac;
-        R = exp(pow(l / c, alpha)) - 1 - l;
-        err = fabs(R);
-        iter++;
-        if (iter > 1000) {
-            STATUS("Unable to find a suitable c\n", 0);
-            throw (0);
-        }
-    }
+    double c = l*pow(log(l + 1),(-1/alpha));
 
     STATUS("\tUsing alpha=%f, c=%f\n", alpha, c);
 
