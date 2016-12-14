@@ -57,7 +57,7 @@ void Dream3DDataReader::LoadFile(std::string FileName)
     H5::DataSpace space = GrainIds.getSpace();
 
     int Ndims = space.getSimpleExtentNdims();
-    hsize_t dims[Ndims];
+    hsize_t *dims = new hsize_t[Ndims];
 
     space.getSimpleExtentDims(dims);
 

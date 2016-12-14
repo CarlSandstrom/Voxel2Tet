@@ -8,15 +8,17 @@ set(linkerlist Voxel2TetLib)
 
 #### hdf5 library
 
-find_package(HDF5)
+#set (HDF5_USE_STATIC_LIBRARIES ON)
+find_package(HDF5 COMPONENTS CXX)
 
 if (HDF5_FOUND)
   option(WITH_HDF5 "Use HDF5 library" ON)
   include_directories(${HDF5_INCLUDE_DIRS})
-  set(hdf5Lib ${hdf5Lib} ${HDF5_LIBRARIES})
+  set(hdf5Lib ${hdf5Lib} ${HDF5_CXX_LIBRARIES})
   set(linkerlist ${linkerlist} ${hdf5Lib})
-  set(linkerlist ${linkerlist} "hdf5_cpp")
-  message(STATUS "${linkerlist}")
+  #set(linkerlist ${linkerlist} "hdf5_cpp")
+  message(STATUS "Libraries: ${hdf5Lib}")
+  message(STATUS "LinkeList: ${linkerlist}")
 else (HDF5_FOUND)
   message(FATAL_ERROR "HDF5 library is required to compile this project")
   option(WITH_HDF5 "Use HDF5 library" OFF)

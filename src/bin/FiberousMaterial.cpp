@@ -1,4 +1,7 @@
 #include <iostream>
+
+#define ARMA_USE_CXX11
+
 #include <armadillo>
 
 #include "Options.h"
@@ -19,7 +22,7 @@ int GiveMaterialIDByCoordinateMultiSphere(double x, double y, double z)
 {
     double r = .1;
 
-    arma::vec x0 = {x, y, z};
+	arma::vec x0 = {x, y, z};
 
     for (size_t i = 0; i < Coordinates0.size(); i++) {
         arma::vec x1 = {Coordinates0[i][0], Coordinates0[i][1], Coordinates0[i][2]};

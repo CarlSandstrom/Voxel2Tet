@@ -3,7 +3,7 @@
 
 #include <vector>
 #include <array>
-
+#define ARMA_USE_CXX11
 #include <armadillo>
 #include "math.h"
 

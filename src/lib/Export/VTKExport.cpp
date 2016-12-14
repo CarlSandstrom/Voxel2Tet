@@ -1,4 +1,4 @@
-#include "VTKExporter.h"
+#include "VTKExport.h"
 
 namespace voxel2tet
 {

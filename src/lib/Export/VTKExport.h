@@ -1,5 +1,5 @@
-#ifndef VTKEXPORTER_H
-#define VTKEXPORTER_H
+#ifndef VTKEXPORT_H
+#define VTKEXPORT_H
 
 #include <string>
 #include <map>
@@ -59,4 +59,4 @@ public:
 };
 }
 
-#endif // VTKEXPORTER_H
+#endif // VTKEXPORT_H
