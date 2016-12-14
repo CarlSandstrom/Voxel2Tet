@@ -4,6 +4,7 @@
 #include <vector>
 #include <math.h>
 #include <sstream>
+#define ARMA_USE_CXX11
 #include <armadillo>
 
 #include "MeshComponents.h"

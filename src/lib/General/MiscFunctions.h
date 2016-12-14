@@ -13,10 +13,15 @@
 
 #define TEST_MESH_BETWEEN_STEPS_TETGEN 0
 
-#define SMOOTH_EDGES_INDIVIDUALLY 0
+#define SMOOTH_EDGES_INDIVIDUALLY 0 // Is this used?
 
-#define LOG(format, args ...) dolog(__FUNCTION__, format, args)
-#define STATUS(format, args ...) dooutputstat(format, args)
+#ifdef _MSC_VER 
+#define strncasecmp _strnicmp
+#define strcasecmp _stricmp
+#endif
+
+#define LOG(format, args, ...) dolog(__FUNCTION__, format, args)
+#define STATUS(format, args, ...) dooutputstat(format, args)
 
 #define EPS 1.0e-8
 

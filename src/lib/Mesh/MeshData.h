@@ -7,7 +7,7 @@
 
 #include "MeshComponents.h"
 #include "VertexOctreeNode.h"
-#include "VTKExporter.h"
+#include "VTKExport.h"
 #include "SimpleExporter.h"
 #include "TriTriIntersect.h"
 
