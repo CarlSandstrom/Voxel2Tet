@@ -20,8 +20,13 @@
 #define strcasecmp _stricmp
 #endif
 
+#ifdef _MSC_VER
 #define LOG(format, args, ...) dolog(__FUNCTION__, format, args)
 #define STATUS(format, args, ...) dooutputstat(format, args)
+#else
+#define LOG(format, args ...) dolog(__FUNCTION__, format, args)
+#define STATUS(format, args ...) dooutputstat(format, args)
+#endif
 
 #define EPS 1.0e-8
 
