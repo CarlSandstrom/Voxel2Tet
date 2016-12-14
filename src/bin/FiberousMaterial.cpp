@@ -39,6 +39,8 @@ int main(int argc, char *argv[])
     std::map<std::string, std::string> DefaultOptions;
     voxel2tet::Options *Options = new voxel2tet::Options(argc, argv, DefaultOptions, {});
 
+    Options->SetKey("spring_alpha", 10.0);
+
     voxel2tet::Voxel2TetClass v2t(Options);
 
     double spacing = 0.025;
@@ -48,7 +50,7 @@ int main(int argc, char *argv[])
         dimensions[i] = std::ceil(length[i] / spacing);
     }
 
-    // Generate random spheres
+    // Generate random coordinates on each opposite side of the box
     int NumberOfFibers = 5;
 
     srand(time(NULL));
