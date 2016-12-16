@@ -169,7 +169,7 @@ void Voxel2TetClass::LoadFile(std::string Filename)
 
     Importer *Import;
 
-    if ((strcasecmp(ext, "dream3d") == 0) | (strcasecmp(ext, "hdf5") == 0)) {
+	if ((strcasecmp(ext, "dream3d") == 0) | (strcasecmp(ext, "hdf5") == 0)) {
         Import = new Dream3DDataReader(this->Opt->GiveStringValue("DataContainer"),
                                        this->Opt->GiveStringValue("MaterialId"));
         Import->LoadFile(Filename);
