@@ -3,7 +3,7 @@ Introduction
 
 Voxel2Tet converts voxel representations to tetrahedral mesh with smooth interfaces. The Algorithm first generates a smooth surface using and then coarsens the fine mesh until no more coarsening is permitted. The coarse surface mesh is the used to create a tetrahedral mesh by calling the TetGen library. The purpose of the software is two-fold. First, smooth surfaces are desirable in many context, such as during investigations of interfaces between grains in micromechanics. Second, a reduction of degrees of freedom (i.e. vertices for describing the geometry) for decreasing the computational effort used in computational analysis. That being said, a decrease in degrees of freedom is not guaranteed and depends on the original voxel data and the geometry of the object. Typically a very coarse input yields more degrees of freedom. Then again, a coarse voxel description is ill-suited for computations anyway.
 
-The code is in C++ and is written in a modular way such that new features, such as new import and export filters, are easy to implement. It is text-based and should thus work on all common platforms.
+The code is in C++ and is written in a modular way such that new features, such as new import and export filters, are easy to implement. 
 
 The original intent was to allow for voxel representations of microstructures to be performed, but the software is general and in no way bound to microstructures.
 
@@ -53,16 +53,6 @@ The dependencies are the same as for Ubuntu. They can be installed by running
 To compile, enter the cloned directory and run
 
 	$ cmake ./src/ && make
-
-Windows
--------
-
-To do...
-
-Mac OS
-------
-
-To do...
 
 Files
 =====
