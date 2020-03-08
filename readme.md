@@ -87,6 +87,7 @@ Flag|Meaning
 -output _filename_  	| Here, _filename_ is the base filename for the output file without any extension. The extension is determined by the export flags (-export_XXXXX_).
 -exportvtksurface  | Export the final surface in VTK format
 -exportvtkvolume  	| Export the final volume in VTK format
+-exportstlphases    | Export phase boundaries into separate files in STL format
 -exportoff        	| Export the final surface in .OFF format
 -exportoofem      	| Export final volume as input file for OOFEM
 -exportabaqus     	| Export final volume as input file for Abaqus

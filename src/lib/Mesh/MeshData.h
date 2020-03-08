@@ -9,6 +9,7 @@
 #include "VertexOctreeNode.h"
 #include "VTKExport.h"
 #include "SimpleExporter.h"
+#include "STLExporter.h"
 #include "TriTriIntersect.h"
 
 namespace voxel2tet
@@ -81,9 +82,9 @@ public:
      * @brief Exports all Surface objects to file of preferred format
      * @param FileName Name of file
      * @param FileType Type of file
+     * @param VolumeID If set, ExportSurface exports the surface of volume VolumeID. Default is -1 which indicates all surfaces.
      */
-    void ExportSurface(std::string FileName, Exporter_FileTypes FileType);
-
+    void ExportSurface(std::string FileName, Exporter_FileTypes FileType, int VolumeID=-1);
 
     /**
      * @brief Exports all Volume objects to a file of preferred format

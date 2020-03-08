@@ -14,7 +14,7 @@ OFFExporter::OFFExporter(std::vector<TriangleType *> *Triangles, std::vector<Ver
     LOG("Create OFFExporter object\n", 0);
 }
 
-void OFFExporter::WriteSurfaceData(std::string Filename)
+void OFFExporter::WriteSurfaceData(std::string Filename, int VolumeID)
 {
     STATUS("Write .off file %s\n", Filename.c_str());
     std::ofstream OFFFile;

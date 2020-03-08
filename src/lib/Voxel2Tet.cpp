@@ -332,6 +332,15 @@ void Voxel2TetClass::ExportSurface(std::string FileName, Exporter_FileTypes File
     this->Mesh->ExportSurface(FileName, FileType);
 }
 
+void Voxel2TetClass::ExportPhases(std::string FileName, Exporter_FileTypes FileType)
+{
+    for (Volume *v: this->Volumes) {
+        std::stringstream ThisFileName;
+        ThisFileName << FileName << "." << v->Phase << ".stl";
+        this->Mesh->ExportSurface(ThisFileName.str(), FileType, v->Phase);
+    }
+}
+
 void Voxel2TetClass::Tetrahedralize()
 {
     Timer.StartTimer("Tetrahedralize");
@@ -1204,6 +1213,10 @@ void Voxel2TetClass::ExportAllSurfaces()
         this->Mesh->ExportSurface(strfmt("%s.surface.vtp", this->Opt->GiveStringValue("output").c_str()), FT_VTK);
     }
 
+    if (this->Opt->GiveBooleanValue("exportstlsurface")) {
+        this->Mesh->ExportSurface(strfmt("%s.surface.stl", this->Opt->GiveStringValue("output").c_str()), FT_STL);
+    }
+
     if (this->Opt->GiveBooleanValue("exportoff")) {
         this->Mesh->ExportSurface(strfmt("%s.surface.off", this->Opt->GiveStringValue("output").c_str()), FT_OFF);
     }
@@ -1226,6 +1239,13 @@ void Voxel2TetClass::ExportAllVolumes()
     }
     if (this->Opt->GiveBooleanValue("exportabaqusphon")) {
         this->Mesh->ExportVolume(strfmt("%s.inp", this->Opt->GiveStringValue("output").c_str()), FT_ABAQUSPHON);
+    }
+}
+
+void Voxel2TetClass::ExportAllPhases()
+{
+    if (this->Opt->GiveBooleanValue("exportstlphases")) {
+        this->ExportPhases(this->Opt->GiveStringValue("output").c_str(), FT_STL);
     }
 }
 

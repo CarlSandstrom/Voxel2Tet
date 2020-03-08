@@ -220,7 +220,7 @@ void MeshData::DoSanityCheck()
 
 }
 
-void MeshData::ExportSurface(std::string FileName, Exporter_FileTypes FileType)
+void MeshData::ExportSurface(std::string FileName, Exporter_FileTypes FileType, int VolumeID)
 {
     STATUS("Export surface to %s\n", FileName.c_str());
     Exporter *exporter;
@@ -241,12 +241,16 @@ void MeshData::ExportSurface(std::string FileName, Exporter_FileTypes FileType)
             exporter = new SimpleExporter(&this->Triangles, &this->Vertices, &this->Edges, &this->Tets);
             break;
         }
+        case FT_STL: {
+            exporter = new STLExporter(&this->Triangles, &this->Vertices, &this->Edges, &this->Tets);
+            break;
+        }
         default: {
             LOG("File type not supported!\n", 0);
             throw (0);
         }
     }
-    exporter->WriteSurfaceData(FileName);
+    exporter->WriteSurfaceData(FileName, VolumeID);
     free(exporter);
 }
 

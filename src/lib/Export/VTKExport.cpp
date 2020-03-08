@@ -102,7 +102,7 @@ vtkSmartPointer<vtkFloatArray> VTKExporter::SetupVertexField(std::string Name, d
     return VertexIDs;
 }
 
-void VTKExporter::WriteSurfaceData(std::string Filename)
+void VTKExporter::WriteSurfaceData(std::string Filename, int VolumeID)
 {
     vtkSmartPointer<vtkPoints> Points = this->SetupVertices();
     vtkSmartPointer<vtkCellArray> TriangleArrays = this->SetupTriangles();

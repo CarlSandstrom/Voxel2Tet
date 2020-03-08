@@ -28,6 +28,7 @@ int main(int argc, char *argv[])
     clock_t tstopprocess = clock();
 
     v2t.ExportAllSurfaces();
+    v2t.ExportAllPhases();
 
     v2t.Tetrahedralize();
 

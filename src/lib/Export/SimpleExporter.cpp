@@ -14,7 +14,7 @@ SimpleExporter::SimpleExporter(std::vector<TriangleType *> *Triangles, std::vect
 
 }
 
-void SimpleExporter::WriteSurfaceData(std::string Filename)
+void SimpleExporter::WriteSurfaceData(std::string Filename, int VolumeID)
 {
     STATUS("Write .simple file %s\n", Filename.c_str());
     std::ofstream SimpleFile;

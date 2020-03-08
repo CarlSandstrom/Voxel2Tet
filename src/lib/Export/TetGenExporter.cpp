@@ -12,7 +12,7 @@ TetGenExporter::TetGenExporter(std::vector<TriangleType *> *Triangles, std::vect
     LOG("Create TetGenExporter object\n", 0);
 }
 
-void TetGenExporter::WriteSurfaceData(std::string Filename)
+void TetGenExporter::WriteSurfaceData(std::string Filename, int VolumeID)
 {
     STATUS("Write TetGen file %s\n", Filename.c_str());
     std::ofstream TetGenFile;

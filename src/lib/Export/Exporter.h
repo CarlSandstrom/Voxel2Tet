@@ -12,7 +12,7 @@ namespace voxel2tet
 {
 enum Exporter_FileTypes
 {
-    FT_VTK, FT_Poly, FT_OFF, FT_OOFEM, FT_SIMPLE, FT_ABAQUS, FT_ABAQUSPHON
+    FT_VTK, FT_Poly, FT_OFF, FT_OOFEM, FT_SIMPLE, FT_ABAQUS, FT_ABAQUSPHON, FT_STL
 };
 
 /**
@@ -155,8 +155,9 @@ public:
     /**
      * @brief Exports a surface mesh. I.e. interfaces between different material IDs. Tetrahedrons will be ignored.
      * @param Filename String. File name of target file.
+     * @param VolumeID Int. If set, the function only exports surface elements of volume with ID VolumeID
      */
-    virtual void WriteSurfaceData(std::string Filename) = 0;
+    virtual void WriteSurfaceData(std::string Filename, int VolumeID=-1) = 0;
 
     /**
      * @brief Exports a volume mesh.

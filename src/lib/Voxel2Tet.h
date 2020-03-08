@@ -107,6 +107,13 @@ public:
     void ExportSurface(std::string FileName, Exporter_FileTypes FileType);
 
     /**
+     * @brief Exports all phase boundaries to file
+     * @param FileName File name of output file
+     * @param FileType File type
+     */
+    void ExportPhases(std::string FileName, Exporter_FileTypes FileType);
+
+    /**
      * @brief Perform tetrahedralization.
      */
     void Tetrahedralize();
@@ -156,6 +163,11 @@ public:
      * @brief Exports volumes according to flags in Opt member
      */
     void ExportAllVolumes();
+
+    /**
+     * @brief Exports phse boundaries to separate files
+     */
+    void ExportAllPhases();
 
     /**
      * @brief Exports statistics on current (finished) job

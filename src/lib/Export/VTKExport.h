@@ -53,7 +53,7 @@ public:
     VTKExporter(std::vector<TriangleType *> *Triangles, std::vector<VertexType *> *Vertices,
                 std::vector<EdgeType *> *Edges, std::vector<TetType *> *Tets);
 
-    void WriteSurfaceData(std::string Filename);
+    void WriteSurfaceData(std::string Filename, int VolumeID=-1);
 
     void WriteVolumeData(std::string Filename);
 };
