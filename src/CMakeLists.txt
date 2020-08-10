@@ -42,14 +42,19 @@ endif (VTK_FOUND)
 
 #### TetGen
 
+set(TETGEN_NAMES ${TETGEN_NAMES} libtetgen tetgen libtet libtet.so)
+find_library(TETGEN_LIB NAMES ${TETGEN_NAMES}
+            DOC "The TetGen library")
+MESSAGE( STATUS "Tetgen library found in ${TETGEN_LIB}")
+set(linkerlist ${linkerlist} ${TETGEN_LIB})
+
 find_path(TETGEN_H tetgen.h)
 MESSAGE( STATUS "Include file tetgen.h found in ${TETGEN_H}" )
 include_directories (${TETGEN_H})
 
-find_library(TETGEN_LIB libtet)
+#find_library(TETGEN_LIBRARY libtet)
 #set (TETGEN_LIB ${TETGEN_LIB}/libtet.a)
-MESSAGE( STATUS "Tetgen library found in ${TETGEN_LIB}")
-set(linkerlist ${linkerlist} ${TETGEN_LIB})
+#set(TETGEN_LIB "/usr/lib/x86_64-linux-gnu/libtet.so")
 
 #### Project files
 
