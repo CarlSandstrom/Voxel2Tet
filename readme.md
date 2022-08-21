@@ -23,6 +23,7 @@ Requirements:
  - VTK development library (for VTK import and export)
  - hdf5-dev (for importing Dream3D files)
  - libproj-dev (required by VTK)
+ - build-essential (for building, not installed by default when running Ubuntu on WSL)
 
 To install all dependencies, simply run
 
