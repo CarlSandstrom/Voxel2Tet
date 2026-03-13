@@ -80,6 +80,14 @@ This plan assumes:
   Started: `2026-03-13`  
   Completed: `2026-03-13`  
   Notes: `InputLoaderPipeline` now owns importer selection, file loading, callback importer construction, and optional voxel cutout setup.
+- [x] `R-014` Add a Codex skill shortcut for "what is next in the refactor plan?".  
+  Started: `2026-03-13`  
+  Completed: `2026-03-13`  
+  Notes: Added `.agents/skills/next-refactor/SKILL.md` to provide a reusable trigger for next-task lookup.
+- [x] `R-015` Add skill UI metadata and troubleshooting guidance for `next-refactor` triggering.  
+  Started: `2026-03-13`  
+  Completed: `2026-03-13`  
+  Notes: Added `.agents/skills/next-refactor/agents/openai.yaml` and documented reload conditions for skill discovery.
 
 ## Activity Log
 
@@ -93,3 +101,5 @@ This plan assumes:
 - `2026-03-13` - `R-012` - Completed validation write-up with cross-build parity data; confirmed reproducible CLI segfault for Dream3D input and logged follow-up task `R-013`.
 - `2026-03-13` - `R-013` - Fixed chord-collapse null/invalid neighbor handling in coarsening; verified Dream3D CLI path completes without segfault in `build_check`.
 - `2026-03-13` - `R-003` - Moved import selection/load and callback importer setup into `InputLoaderPipeline`; `Voxel2TetClass` now finalizes returned importers.
+- `2026-03-13` - `R-014` - Added repo-local Codex skill `next-refactor` for fast next-task lookup from `REFRACTOR_PLAN.md`.
+- `2026-03-13` - `R-015` - Added `agents/openai.yaml` for `next-refactor` and captured trigger troubleshooting steps.

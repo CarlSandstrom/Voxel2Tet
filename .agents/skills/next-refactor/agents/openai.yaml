@@ -1,0 +1,4 @@
+interface:
+  display_name: "Next Refactor Task"
+  short_description: "Report the next actionable refactor task."
+  default_prompt: "Use $next-refactor to report the next actionable item from docs/peripheral/REFRACTOR_PLAN.md."
