@@ -2,9 +2,10 @@
 #define TETGENCALLER_H
 
 #include <algorithm>
+#include <map>
 
 // This is for telling tetgen.h to use library definitions
-#define TETLIBRARY = 1
+#define TETLIBRARY 1
 
 #include "tetgen.h"
 #include "MeshGenerator3D.h"

@@ -37,7 +37,6 @@ This plan assumes:
 - [ ] `R-009` Remove `exit(...)` from library code paths; use exceptions/status propagation.
 - [ ] `R-010` Modernize CMake target boundaries (target includes/libs, reduce global state).
 - [ ] `R-011` Add/expand regression coverage using existing `src/bin` examples.
-- [ ] `R-013` Investigate and fix CLI segmentation fault in `Voxel2Tet` Dream3D flow (`ExampleInput/16x16x16.dream3d`).
 
 ## Migration Phases
 
@@ -74,6 +73,10 @@ This plan assumes:
   Started: `2026-03-13`  
   Completed: `2026-03-13`  
   Notes: See `docs/peripheral/R012_VALIDATION_2026-03-13.md` (CLI Dream3D segfault reproduced in both `build_check` and `build`).
+- [x] `R-013` Investigate and fix CLI segmentation fault in `Voxel2Tet` Dream3D flow (`ExampleInput/16x16x16.dream3d`).  
+  Started: `2026-03-13`  
+  Completed: `2026-03-13`  
+  Notes: Added chord-topology guard in `MeshManipulations::CheckCoarsenChord`; Dream3D CLI case now exits `0` and exports output files.
 
 ## Activity Log
 
@@ -85,3 +88,4 @@ This plan assumes:
 - `2026-03-06` - `R-UNPLANNED-003` - Added robust VTK include path discovery in CMake and verified full build success.
 - `2026-03-13` - `R-012` - Started validation phase; full build succeeds after VTK include-path fix, parity write-up still pending.
 - `2026-03-13` - `R-012` - Completed validation write-up with cross-build parity data; confirmed reproducible CLI segfault for Dream3D input and logged follow-up task `R-013`.
+- `2026-03-13` - `R-013` - Fixed chord-collapse null/invalid neighbor handling in coarsening; verified Dream3D CLI path completes without segfault in `build_check`.

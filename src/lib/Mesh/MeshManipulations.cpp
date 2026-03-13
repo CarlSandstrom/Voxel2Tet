@@ -826,16 +826,15 @@ FC_MESH MeshManipulations::CheckCoarsenChord(EdgeType *EdgeToCollapse, VertexTyp
 
     // Find the other edge connected to RemoveVertex (the one connected to the same PhaseEdge)
     std::vector<VertexType *> ConnectedVertices = RemoveVertexPhaseEdge->GiveVerticesConnectedToVertex(RemoveVertex);
-    if (ConnectedVertices.size() == 1) {
-        // This should be ok if the edge is small. This simply removes the (very small) chord.
-        // Note that this can imply duplicate triangles and it is quite cumbersome to solve this. Thus, we push this feature forward
-        double EdgeLength = EdgeToCollapse->GiveLength();
-        LOG("EdgeLength = %f\n", EdgeLength);
-        if (EdgeLength > .25) {
-            return FC_CHORD;
-        }
+    ConnectedVertices.erase(std::remove(ConnectedVertices.begin(), ConnectedVertices.end(), SaveVertex),
+                            ConnectedVertices.end());
+
+    // Degenerate/open/branched edge configurations cannot be safely collapsed here.
+    // Treat them as blocked chord collapses instead of dereferencing invalid neighbors.
+    if (ConnectedVertices.size() != 1 || ConnectedVertices[0] == NULL) {
+        return FC_CHORD;
     }
-    VertexType *OtherVertex = (ConnectedVertices[0] == SaveVertex) ? ConnectedVertices[1] : ConnectedVertices[0];
+    VertexType *OtherVertex = ConnectedVertices[0];
     NewEdge = {{SaveVertex, OtherVertex}};
     OtherEdge = {{RemoveVertex, OtherVertex}};
 
