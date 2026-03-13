@@ -55,6 +55,20 @@ To compile, enter the cloned directory and run
 
 	$ cmake ./src/ && make
 
+Rocky 9
+-------
+Install build tools and dependencies using the commands below:
+
+	$ sudo dnf groupinstall "Development Tools" -y
+	$ sudo dnf install epel-release -y
+	$ sudo dnf install \
+	    cmake \
+	    armadillo-devel \
+	    vtk-devel \
+	    hdf5-devel \
+	    proj-devel -y
+	$ sudo dnf install tetgen tetgen-devel -y
+
 Files
 =====
 
