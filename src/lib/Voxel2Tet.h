@@ -3,6 +3,7 @@
 
 #include <vector>
 #include <string>
+#include <memory>
 
 #include "Options.h"
 
@@ -21,6 +22,11 @@
 #include "MeshGenerator3D.h"
 #include "TimeStamp.h"
 #include "Smoother.h"
+#include "InputLoaderPipeline.h"
+#include "SurfaceBuilderPipeline.h"
+#include "SmoothingPipeline.h"
+#include "TetPipeline.h"
+#include "ExportPipeline.h"
 
 namespace voxel2tet
 {
@@ -52,6 +58,19 @@ private:
 
     void UpdateSurfaces();
 
+    void LoadFileImpl(std::string FileName);
+
+    void LoadCallbackImpl(cbMaterialIDByCoordinate MaterialIDByCoordinate, std::array<double, 3> origin,
+                          std::array<double, 3> spacing, std::array<int, 3> dimensions);
+
+    void TetrahedralizeImpl();
+
+    void ExportAllSurfacesImpl();
+
+    void ExportAllVolumesImpl();
+
+    void ExportAllPhasesImpl();
+
     double eps = 1e-6;
 
     TimeStamp Timer;
@@ -65,6 +84,12 @@ private:
     bool SmoothSimultaneously;
 
     void UpdateFixed();
+
+    std::unique_ptr<InputLoaderPipeline> InputLoader;
+    std::unique_ptr<SurfaceBuilderPipeline> SurfaceBuilder;
+    std::unique_ptr<SmoothingPipeline> SmootherPipeline;
+    std::unique_ptr<TetPipeline> TetrahedralizationPipeline;
+    std::unique_ptr<ExportPipeline> OutputPipeline;
 
 public:
 

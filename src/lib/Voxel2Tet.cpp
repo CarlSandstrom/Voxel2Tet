@@ -19,6 +19,43 @@ Voxel2TetClass::Voxel2TetClass(Options *Opt)
 {
     this->Opt = Opt;
 
+    this->InputLoader = std::unique_ptr<InputLoaderPipeline>(new InputLoaderPipeline(
+            [this](const std::string &FileName) {
+                this->LoadFileImpl(FileName);
+            },
+            [this](cbMaterialIDByCoordinate MaterialIDByCoordinate, std::array<double, 3> origin,
+                   std::array<double, 3> spacing, std::array<int, 3> dimensions) {
+                this->LoadCallbackImpl(MaterialIDByCoordinate, origin, spacing, dimensions);
+            }));
+    this->SurfaceBuilder = std::unique_ptr<SurfaceBuilderPipeline>(new SurfaceBuilderPipeline(
+            [this]() {
+                this->FindSurfaces();
+            },
+            [this]() {
+                this->FindEdges();
+            }));
+    this->SmootherPipeline = std::unique_ptr<SmoothingPipeline>(new SmoothingPipeline(
+            [this]() {
+                this->SmoothEdgesSimultaneously();
+            },
+            [this]() {
+                this->SmoothSurfaces();
+            }));
+    this->TetrahedralizationPipeline = std::unique_ptr<TetPipeline>(new TetPipeline(
+            [this]() {
+                this->TetrahedralizeImpl();
+            }));
+    this->OutputPipeline = std::unique_ptr<ExportPipeline>(new ExportPipeline(
+            [this]() {
+                this->ExportAllSurfacesImpl();
+            },
+            [this]() {
+                this->ExportAllVolumesImpl();
+            },
+            [this]() {
+                this->ExportAllPhasesImpl();
+            }));
+
     // Set defult options
 
     // Smoothing options
@@ -153,6 +190,12 @@ void Voxel2TetClass::PrintHelp()
 void Voxel2TetClass::LoadCallback(cbMaterialIDByCoordinate MaterialIDByCoordinate, std::array<double, 3> origin,
                                   std::array<double, 3> spacing, std::array<int, 3> dimensions)
 {
+    this->InputLoader->LoadCallback(MaterialIDByCoordinate, origin, spacing, dimensions);
+}
+
+void Voxel2TetClass::LoadCallbackImpl(cbMaterialIDByCoordinate MaterialIDByCoordinate, std::array<double, 3> origin,
+                                      std::array<double, 3> spacing, std::array<int, 3> dimensions)
+{
     STATUS("Setup callback functions\n", 0);
     CallbackImporter *DataReader = new CallbackImporter(MaterialIDByCoordinate, origin, spacing, dimensions);
     this->Imp = DataReader;
@@ -160,6 +203,11 @@ void Voxel2TetClass::LoadCallback(cbMaterialIDByCoordinate MaterialIDByCoordinat
 }
 
 void Voxel2TetClass::LoadFile(std::string Filename)
+{
+    this->InputLoader->LoadFile(Filename);
+}
+
+void Voxel2TetClass::LoadFileImpl(std::string Filename)
 {
     STATUS("Load file %s\n", Filename.c_str());
 
@@ -342,6 +390,11 @@ void Voxel2TetClass::ExportPhases(std::string FileName, Exporter_FileTypes FileT
 }
 
 void Voxel2TetClass::Tetrahedralize()
+{
+    this->TetrahedralizationPipeline->Tetrahedralize();
+}
+
+void Voxel2TetClass::TetrahedralizeImpl()
 {
     Timer.StartTimer("Tetrahedralize");
     TetGenCaller Generator;
@@ -1060,7 +1113,7 @@ void Voxel2TetClass::Process()
 
     // Find surface
     Timer.StartTimer("Find surfaces");
-    this->FindSurfaces();
+    this->SurfaceBuilder->FindSurfaces();
     Timer.StopTimer();
 
     // Compute volumes enclosed by surfaces
@@ -1079,7 +1132,7 @@ void Voxel2TetClass::Process()
     }
 
     Timer.StartTimer("Find edges");
-    this->FindEdges();
+    this->SurfaceBuilder->FindEdges();
     Timer.StopTimer();
 
     Timer.StartTimer("Smooth edges");
@@ -1099,7 +1152,7 @@ void Voxel2TetClass::Process()
         PhaseVolumes.push_back(CurrentVolumes);
 
     } else {
-        this->SmoothEdgesSimultaneously();
+        this->SmootherPipeline->SmoothEdges();
         Timer.StopTimer();
 
 #if TEST_MESH_BETWEEN_STEPS_TETGEN == 1
@@ -1120,7 +1173,7 @@ void Voxel2TetClass::Process()
         }
 
         Timer.StartTimer("Smooth surfaces");
-        this->SmoothSurfaces();
+        this->SmootherPipeline->SmoothSurfaces();
         Timer.StopTimer();
 
         GetListOfVolumes(CurrentVolumes, PhaseList);
@@ -1208,6 +1261,11 @@ void Voxel2TetClass::Process()
 
 void Voxel2TetClass::ExportAllSurfaces()
 {
+    this->OutputPipeline->ExportSurfaces();
+}
+
+void Voxel2TetClass::ExportAllSurfacesImpl()
+{
     // Surfaces
     if (this->Opt->GiveBooleanValue("exportvtksurface")) {
         this->Mesh->ExportSurface(strfmt("%s.surface.vtp", this->Opt->GiveStringValue("output").c_str()), FT_VTK);
@@ -1223,6 +1281,11 @@ void Voxel2TetClass::ExportAllSurfaces()
 }
 
 void Voxel2TetClass::ExportAllVolumes()
+{
+    this->OutputPipeline->ExportVolumes();
+}
+
+void Voxel2TetClass::ExportAllVolumesImpl()
 {
     // Volumes
     if (this->Opt->GiveBooleanValue("exportvtkvolume")) {
@@ -1243,6 +1306,11 @@ void Voxel2TetClass::ExportAllVolumes()
 }
 
 void Voxel2TetClass::ExportAllPhases()
+{
+    this->OutputPipeline->ExportPhases();
+}
+
+void Voxel2TetClass::ExportAllPhasesImpl()
 {
     if (this->Opt->GiveBooleanValue("exportstlphases")) {
         this->ExportPhases(this->Opt->GiveStringValue("output").c_str(), FT_STL);

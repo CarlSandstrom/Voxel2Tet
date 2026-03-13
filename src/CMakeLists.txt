@@ -1,5 +1,5 @@
 cmake_minimum_required (VERSION 2.6)
-project (Voxel2Tet CXX)
+project(Voxel2Tet LANGUAGES C CXX)
 
 set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -Wall -std=c++11 -Wno-comment")
 set(linkerlist Voxel2TetLib)
@@ -34,7 +34,14 @@ endif (ARMADILLO_FOUND)
 
 find_package(VTK REQUIRED NO_MODULE)
 if (VTK_FOUND)
-  include(${VTK_USE_FILE})
+  if (VTK_INCLUDE_DIRS)
+    include_directories(${VTK_INCLUDE_DIRS})
+  else ()
+    find_path(VTK_HEADERS_DIR vtkSmartPointer.h PATH_SUFFIXES vtk vtk-9.3 vtk-9.2 vtk-9.1 vtk-9.0)
+    if (VTK_HEADERS_DIR)
+      include_directories(${VTK_HEADERS_DIR})
+    endif ()
+  endif ()
   set(linkerlist ${linkerlist} ${VTK_LIBRARIES})
 else (VTK_FOUND)
   message(ERROR "VTK not found")
@@ -58,7 +65,7 @@ include_directories (${TETGEN_H})
 
 #### Project files
 
-include_directories(lib lib/Export lib/Import lib/Mesh lib/General)
+include_directories(lib lib/Export lib/Import lib/Mesh lib/General lib/Pipeline)
 add_subdirectory(lib)
 
 get_property(inc_dirs DIRECTORY PROPERTY INCLUDE_DIRECTORIES)

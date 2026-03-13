@@ -37,6 +37,7 @@ This plan assumes:
 - [ ] `R-009` Remove `exit(...)` from library code paths; use exceptions/status propagation.
 - [ ] `R-010` Modernize CMake target boundaries (target includes/libs, reduce global state).
 - [ ] `R-011` Add/expand regression coverage using existing `src/bin` examples.
+- [ ] `R-013` Investigate and fix CLI segmentation fault in `Voxel2Tet` Dream3D flow (`ExampleInput/16x16x16.dream3d`).
 
 ## Migration Phases
 
@@ -47,9 +48,7 @@ This plan assumes:
 
 ## In Progress
 
-- [ ] `R-012` Run validation build and document behavior/performance parity.  
-  Started: `2026-03-13`  
-  Status: Full build now passes in `build_check`; behavior/performance parity documentation is pending.
+- None.
 
 ## Completed Tasks
 
@@ -71,6 +70,10 @@ This plan assumes:
 - [x] `R-UNPLANNED-003` Fix VTK header resolution in CMake (`vtkSmartPointer.h` include failure).  
   Started: `2026-03-06`  
   Completed: `2026-03-06`
+- [x] `R-012` Run validation build and document behavior/performance parity.  
+  Started: `2026-03-13`  
+  Completed: `2026-03-13`  
+  Notes: See `docs/peripheral/R012_VALIDATION_2026-03-13.md` (CLI Dream3D segfault reproduced in both `build_check` and `build`).
 
 ## Activity Log
 
@@ -81,3 +84,4 @@ This plan assumes:
 - `2026-03-06` - `R-UNPLANNED-002` - Added mandatory use of `docs/peripheral/CODING_STANDARDS.md` in `AGENTS.md`.
 - `2026-03-06` - `R-UNPLANNED-003` - Added robust VTK include path discovery in CMake and verified full build success.
 - `2026-03-13` - `R-012` - Started validation phase; full build succeeds after VTK include-path fix, parity write-up still pending.
+- `2026-03-13` - `R-012` - Completed validation write-up with cross-build parity data; confirmed reproducible CLI segfault for Dream3D input and logged follow-up task `R-013`.

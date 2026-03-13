@@ -5,7 +5,7 @@ set(Voxel2TetLibList
         Volume.cpp
         )
 
-set(subdirs Export General Import Mesh)
+set(subdirs Export General Import Mesh Pipeline)
 
 foreach (subdir ${subdirs})
     set(thisdir "${subdir}")
