@@ -28,7 +28,6 @@ This plan assumes:
 
 ## Planned Tasks
 
-- [ ] `R-004` Move surface/edge discovery into `SurfaceBuilder`.
 - [ ] `R-005` Move smoothing logic into `SmoothingPipeline`.
 - [ ] `R-006` Move tetrahedralization flow into `TetPipeline`.
 - [ ] `R-007` Move export routing from `MeshData`/facade into `ExportPipeline`.
@@ -88,6 +87,10 @@ This plan assumes:
   Started: `2026-03-13`  
   Completed: `2026-03-13`  
   Notes: Added `.agents/skills/next-refactor/agents/openai.yaml` and documented reload conditions for skill discovery.
+- [x] `R-004` Move surface/edge discovery into `SurfaceBuilder`.  
+  Started: `2026-03-13`  
+  Completed: `2026-03-13`  
+  Notes: `SurfaceBuilderPipeline` now owns surface/edge extraction (`FindSurfaces`, `FindEdges`) and their helper routines; `Voxel2TetClass` delegates through the pipeline configured in `FinalizeLoad`.
 
 ## Activity Log
 
@@ -103,3 +106,4 @@ This plan assumes:
 - `2026-03-13` - `R-003` - Moved import selection/load and callback importer setup into `InputLoaderPipeline`; `Voxel2TetClass` now finalizes returned importers.
 - `2026-03-13` - `R-014` - Added repo-local Codex skill `next-refactor` for fast next-task lookup from `REFRACTOR_PLAN.md`.
 - `2026-03-13` - `R-015` - Added `agents/openai.yaml` for `next-refactor` and captured trigger troubleshooting steps.
+- `2026-03-13` - `R-004` - Moved surface/edge discovery and helper routines from `Voxel2TetClass` into `SurfaceBuilderPipeline`.

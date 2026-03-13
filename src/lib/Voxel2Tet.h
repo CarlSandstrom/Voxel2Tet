@@ -40,17 +40,9 @@ private:
     std::vector<Volume *> Volumes;
     std::vector<PhaseEdge *> PhaseEdges;
 
-    void FindSurfaces();
-
-    void FindEdges();
-
     void SmoothEdgesSimultaneously();
 
     void SmoothSurfaces();
-
-    void AddSurfaceSquare(std::vector<int> VoxelIDs, std::vector<int> phases, int normalphase);
-
-    PhaseEdge *AddPhaseEdge(std::vector<VertexType *> EdgeSegment, std::vector<int> Phases);
 
     void FinalizeLoad();
 
