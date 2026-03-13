@@ -2,30 +2,28 @@
 #define INPUTLOADERPIPELINE_H
 
 #include <array>
-#include <functional>
 #include <string>
 
 #include "CallbackImporter.h"
+#include "Importer.h"
+#include "Options.h"
 
 namespace voxel2tet
 {
 class InputLoaderPipeline
 {
 public:
-    typedef std::function<void(const std::string &)> LoadFileDelegate;
-    typedef std::function<void(cbMaterialIDByCoordinate, std::array<double, 3>,
-                               std::array<double, 3>, std::array<int, 3>)> LoadCallbackDelegate;
+    explicit InputLoaderPipeline(Options *Opt);
 
-    InputLoaderPipeline(LoadFileDelegate LoadFileStep, LoadCallbackDelegate LoadCallbackStep);
+    Importer *LoadFile(const std::string &FileName) const;
 
-    void LoadFile(const std::string &FileName) const;
-
-    void LoadCallback(cbMaterialIDByCoordinate MaterialIDByCoordinate, std::array<double, 3> origin,
-                      std::array<double, 3> spacing, std::array<int, 3> dimensions) const;
+    Importer *LoadCallback(cbMaterialIDByCoordinate MaterialIDByCoordinate, std::array<double, 3> origin,
+                           std::array<double, 3> spacing, std::array<int, 3> dimensions) const;
 
 private:
-    LoadFileDelegate LoadFileStep;
-    LoadCallbackDelegate LoadCallbackStep;
+    void ApplyVoxelCutOut(Importer *Import) const;
+
+    Options *Opt;
 };
 }
 

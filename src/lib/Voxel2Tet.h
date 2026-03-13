@@ -9,8 +9,6 @@
 
 #include "Importer.h"
 #include "CallbackImporter.h"
-#include "Dream3DDataReader.h"
-#include "VTKStructuredReader.h"
 
 #include "MiscFunctions.h"
 #include "MeshComponents.h"
@@ -57,11 +55,6 @@ private:
     void FinalizeLoad();
 
     void UpdateSurfaces();
-
-    void LoadFileImpl(std::string FileName);
-
-    void LoadCallbackImpl(cbMaterialIDByCoordinate MaterialIDByCoordinate, std::array<double, 3> origin,
-                          std::array<double, 3> spacing, std::array<int, 3> dimensions);
 
     void TetrahedralizeImpl();
 

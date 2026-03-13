@@ -6,9 +6,6 @@
 #include <fstream>
 
 #include "Voxel2Tet.h"
-#include "Importer.h"
-#include "Dream3DDataReader.h"
-#include "CallbackImporter.h"
 #include "TetGenCaller.h"
 #include "SpringSmoother.h"
 #include "SpringSmootherPenalty.h"
@@ -19,14 +16,7 @@ Voxel2TetClass::Voxel2TetClass(Options *Opt)
 {
     this->Opt = Opt;
 
-    this->InputLoader = std::unique_ptr<InputLoaderPipeline>(new InputLoaderPipeline(
-            [this](const std::string &FileName) {
-                this->LoadFileImpl(FileName);
-            },
-            [this](cbMaterialIDByCoordinate MaterialIDByCoordinate, std::array<double, 3> origin,
-                   std::array<double, 3> spacing, std::array<int, 3> dimensions) {
-                this->LoadCallbackImpl(MaterialIDByCoordinate, origin, spacing, dimensions);
-            }));
+    this->InputLoader = std::unique_ptr<InputLoaderPipeline>(new InputLoaderPipeline(this->Opt));
     this->SurfaceBuilder = std::unique_ptr<SurfaceBuilderPipeline>(new SurfaceBuilderPipeline(
             [this]() {
                 this->FindSurfaces();
@@ -190,63 +180,13 @@ void Voxel2TetClass::PrintHelp()
 void Voxel2TetClass::LoadCallback(cbMaterialIDByCoordinate MaterialIDByCoordinate, std::array<double, 3> origin,
                                   std::array<double, 3> spacing, std::array<int, 3> dimensions)
 {
-    this->InputLoader->LoadCallback(MaterialIDByCoordinate, origin, spacing, dimensions);
-}
-
-void Voxel2TetClass::LoadCallbackImpl(cbMaterialIDByCoordinate MaterialIDByCoordinate, std::array<double, 3> origin,
-                                      std::array<double, 3> spacing, std::array<int, 3> dimensions)
-{
-    STATUS("Setup callback functions\n", 0);
-    CallbackImporter *DataReader = new CallbackImporter(MaterialIDByCoordinate, origin, spacing, dimensions);
-    this->Imp = DataReader;
+    this->Imp = this->InputLoader->LoadCallback(MaterialIDByCoordinate, origin, spacing, dimensions);
     FinalizeLoad();
 }
 
 void Voxel2TetClass::LoadFile(std::string Filename)
 {
-    this->InputLoader->LoadFile(Filename);
-}
-
-void Voxel2TetClass::LoadFileImpl(std::string Filename)
-{
-    STATUS("Load file %s\n", Filename.c_str());
-
-    // Find extension for input file
-    char *ext;
-    ext = strrchr((char *) Filename.c_str(), '.') + 1;
-
-    Importer *Import;
-
-	if ((strcasecmp(ext, "dream3d") == 0) | (strcasecmp(ext, "hdf5") == 0)) {
-        Import = new Dream3DDataReader(this->Opt->GiveStringValue("DataContainer"),
-                                       this->Opt->GiveStringValue("MaterialId"));
-        Import->LoadFile(Filename);
-    } else if (strcasecmp(ext, "vtk") == 0) {
-        Import = new VTKStructuredReader();
-        Import->LoadFile(Filename);
-    } else {
-        STATUS("File extension %s not recognized\n", ext);
-        exit(-1);
-    }
-
-    this->Imp = Import;
-
-    // If specified, use cut-out argument
-    if (this->Opt->has_key("voxelcutout")) {
-        std::vector<int> VoxelCutOut = this->Opt->GiveIntegerList("voxelcutout");
-        if (VoxelCutOut.size() != 6) {
-            STATUS("VoxelCutOut should be specified as a bounding box consisting of integers for the indices", 0);
-            exit(-1);
-        }
-        this->Imp->UseCutOut = true;
-        this->Imp->CutOut.minvalues[0] = VoxelCutOut[0];
-        this->Imp->CutOut.minvalues[1] = VoxelCutOut[1];
-        this->Imp->CutOut.minvalues[2] = VoxelCutOut[2];
-        this->Imp->CutOut.maxvalues[0] = VoxelCutOut[3];
-        this->Imp->CutOut.maxvalues[1] = VoxelCutOut[4];
-        this->Imp->CutOut.maxvalues[2] = VoxelCutOut[5];
-    }
-
+    this->Imp = this->InputLoader->LoadFile(Filename);
     FinalizeLoad();
 }
 

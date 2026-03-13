@@ -4,3 +4,6 @@ Makefile
 cmake_install.cmake
 build/
 build_check/
+build_debug/
+build_release/
+build_test/

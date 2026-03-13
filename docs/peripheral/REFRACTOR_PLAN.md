@@ -28,7 +28,6 @@ This plan assumes:
 
 ## Planned Tasks
 
-- [ ] `R-003` Move import logic from `Voxel2TetClass` into `InputLoader`.
 - [ ] `R-004` Move surface/edge discovery into `SurfaceBuilder`.
 - [ ] `R-005` Move smoothing logic into `SmoothingPipeline`.
 - [ ] `R-006` Move tetrahedralization flow into `TetPipeline`.
@@ -77,6 +76,10 @@ This plan assumes:
   Started: `2026-03-13`  
   Completed: `2026-03-13`  
   Notes: Added chord-topology guard in `MeshManipulations::CheckCoarsenChord`; Dream3D CLI case now exits `0` and exports output files.
+- [x] `R-003` Move import logic from `Voxel2TetClass` into `InputLoader`.  
+  Started: `2026-03-13`  
+  Completed: `2026-03-13`  
+  Notes: `InputLoaderPipeline` now owns importer selection, file loading, callback importer construction, and optional voxel cutout setup.
 
 ## Activity Log
 
@@ -89,3 +92,4 @@ This plan assumes:
 - `2026-03-13` - `R-012` - Started validation phase; full build succeeds after VTK include-path fix, parity write-up still pending.
 - `2026-03-13` - `R-012` - Completed validation write-up with cross-build parity data; confirmed reproducible CLI segfault for Dream3D input and logged follow-up task `R-013`.
 - `2026-03-13` - `R-013` - Fixed chord-collapse null/invalid neighbor handling in coarsening; verified Dream3D CLI path completes without segfault in `build_check`.
+- `2026-03-13` - `R-003` - Moved import selection/load and callback importer setup into `InputLoaderPipeline`; `Voxel2TetClass` now finalizes returned importers.
