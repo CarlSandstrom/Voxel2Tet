@@ -1,4 +1,5 @@
-set(MeshLibList
+target_sources(Voxel2TetLib
+        PRIVATE
         ${CMAKE_CURRENT_SOURCE_DIR}/MeshData.cpp
         ${CMAKE_CURRENT_SOURCE_DIR}/MeshManipulations.cpp
         ${CMAKE_CURRENT_SOURCE_DIR}/MeshComponents.cpp
@@ -9,5 +10,3 @@ set(MeshLibList
         ${CMAKE_CURRENT_SOURCE_DIR}/SpringSmootherPenalty.cpp
         ${CMAKE_CURRENT_SOURCE_DIR}/LaplaceSmoother.cpp
         )
-
-set(Voxel2TetLibList ${Voxel2TetLibList} ${MeshLibList} PARENT_SCOPE)

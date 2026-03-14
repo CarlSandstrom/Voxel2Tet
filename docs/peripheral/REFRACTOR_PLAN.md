@@ -28,7 +28,6 @@ This plan assumes:
 
 ## Planned Tasks
 
-- [ ] `R-010` Modernize CMake target boundaries (target includes/libs, reduce global state).
 - [ ] `R-011` Add/expand regression coverage using existing `src/bin` examples.
 
 ## Migration Phases
@@ -106,6 +105,10 @@ This plan assumes:
   Started: `2026-03-14`  
   Completed: `2026-03-14`  
   Notes: Added `Voxel2TetException` and replaced all `src/lib` `exit(...)` paths with exception throws in options validation and import/input loading; CLI now catches exceptions and returns status `1`.
+- [x] `R-010` Modernize CMake target boundaries (target includes/libs, reduce global state).  
+  Started: `2026-03-14`  
+  Completed: `2026-03-14`  
+  Notes: Removed directory-global include/link state, moved `Voxel2TetLib` source aggregation to `target_sources`, and linked executables directly against `Voxel2TetLib` with dependency propagation through target properties.
 
 ## Activity Log
 
@@ -127,3 +130,4 @@ This plan assumes:
 - `2026-03-14` - `R-007` - Moved export routing into `ExportPipeline` and routed facade/mesh export entrypoints through pipeline methods.
 - `2026-03-14` - `R-008` - Replaced owning raw pointers with `std::unique_ptr` in refactored orchestration flow and CLI examples.
 - `2026-03-14` - `R-009` - Replaced library `exit(...)` paths with propagated exceptions and added CLI exception-to-exit-code handling.
+- `2026-03-14` - `R-010` - Modernized CMake to target-scoped includes/libs and removed shared linker/include global state.
