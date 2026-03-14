@@ -44,8 +44,6 @@ private:
 
     void UpdateSurfaces();
 
-    void TetrahedralizeImpl();
-
     void ExportAllSurfacesImpl();
 
     void ExportAllVolumesImpl();

@@ -1,21 +1,31 @@
 #ifndef TETPIPELINE_H
 #define TETPIPELINE_H
 
-#include <functional>
+#include <array>
+#include <vector>
 
 namespace voxel2tet
 {
+class Importer;
+class MeshManipulations;
+class Volume;
+
 class TetPipeline
 {
 public:
-    typedef std::function<void(void)> TetrahedralizeDelegate;
-
-    explicit TetPipeline(TetrahedralizeDelegate TetrahedralizeStep);
+    TetPipeline(Importer *Imp, MeshManipulations **Mesh, std::vector<Volume *> *Volumes, double eps);
 
     void Tetrahedralize() const;
 
 private:
-    TetrahedralizeDelegate TetrahedralizeStep;
+    Volume *FindVolumeContainingPoint(std::array<double, 3> P) const;
+
+    void UpdateFixed() const;
+
+    Importer *Imp;
+    MeshManipulations **Mesh;
+    std::vector<Volume *> *Volumes;
+    double eps;
 };
 }
 

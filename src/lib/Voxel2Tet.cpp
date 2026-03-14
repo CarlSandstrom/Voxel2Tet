@@ -19,10 +19,7 @@ Voxel2TetClass::Voxel2TetClass(Options *Opt)
     this->InputLoader = std::unique_ptr<InputLoaderPipeline>(new InputLoaderPipeline(this->Opt));
     this->SurfaceBuilder = nullptr;
     this->SmootherPipeline = nullptr;
-    this->TetrahedralizationPipeline = std::unique_ptr<TetPipeline>(new TetPipeline(
-            [this]() {
-                this->TetrahedralizeImpl();
-            }));
+    this->TetrahedralizationPipeline = nullptr;
     this->OutputPipeline = std::unique_ptr<ExportPipeline>(new ExportPipeline(
             [this]() {
                 this->ExportAllSurfacesImpl();
@@ -295,6 +292,8 @@ void Voxel2TetClass::FinalizeLoad()
             &this->Surfaces, &this->Volumes, &this->PhaseEdges, this->TreatZeroAsVoid));
     this->SmootherPipeline = std::unique_ptr<SmoothingPipeline>(new SmoothingPipeline(
             this->Imp, this->Mesh, this->EdgeSmoother, &this->Surfaces, &this->PhaseEdges, this->eps));
+    this->TetrahedralizationPipeline = std::unique_ptr<TetPipeline>(new TetPipeline(
+            this->Imp, &this->Mesh, &this->Volumes, this->eps));
 
 }
 
@@ -325,47 +324,8 @@ void Voxel2TetClass::ExportPhases(std::string FileName, Exporter_FileTypes FileT
 
 void Voxel2TetClass::Tetrahedralize()
 {
-    this->TetrahedralizationPipeline->Tetrahedralize();
-}
-
-void Voxel2TetClass::TetrahedralizeImpl()
-{
     Timer.StartTimer("Tetrahedralize");
-    TetGenCaller Generator;
-    Generator.Mesh = this->Mesh;
-#if TEST_MESH_BETWEEN_STEPS_TETGEN == 1
-    Generator.TestMesh();
-#endif
-
-    MeshData *Mesh = Generator.Execute();
-
-    MeshManipulations *NewMesh;
-    NewMesh = static_cast< MeshManipulations * >( Mesh );
-
-    // Update tetrahedrons with material information
-
-    // Create mapping
-    std::map<int, int> Tetgen2Self; // first: Tetgen material ID, second: Phase
-    std::map<int, int>::iterator MapIter;
-
-    for (TetType *t : NewMesh->Tets) {
-        // Check if tetgen ID is already handled
-        MapIter = Tetgen2Self.find(t->MaterialID);
-
-        if (MapIter == Tetgen2Self.end()) { // Material not yet mapped
-            std::array<double, 3> cm = t->GiveCenterOfMass();
-            Volume *v = this->FindVolumeContainingPoint(cm);
-            Tetgen2Self[t->MaterialID] = v->Phase;
-        }
-
-        t->MaterialID = Tetgen2Self[t->MaterialID];
-    }
-    free(this->Mesh);
-
-    this->Mesh = NewMesh;
-
-    UpdateFixed();
-
+    this->TetrahedralizationPipeline->Tetrahedralize();
     Timer.StopTimer();
 }
 
