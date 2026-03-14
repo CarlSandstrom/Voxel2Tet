@@ -328,23 +328,15 @@ void SurfaceBuilderPipeline::FindEdges() const
     // Ensure that only have inner connected edges. I.e. max two vertices not connected to any other vertex on the edge
     unsigned int i = 0;
     while (i < this->PhaseEdges->size()) {
-        std::vector<PhaseEdge *> *FixedEdges = new std::vector<PhaseEdge *>;
+        std::vector<PhaseEdge *> FixedEdges;
 
-        this->PhaseEdges->at(i)->SortAndFixBrokenEdge(FixedEdges);
+        this->PhaseEdges->at(i)->SortAndFixBrokenEdge(&FixedEdges);
 
         // Erase current PhaseEdge and replace it with the ones in FixedEdges
-        // TODO: Should really delete this...
-        //delete this->PhaseEdges->at(i);
         this->PhaseEdges->erase(this->PhaseEdges->begin() + i);
-        this->PhaseEdges->insert(this->PhaseEdges->begin() + i, FixedEdges->begin(), FixedEdges->end());
+        this->PhaseEdges->insert(this->PhaseEdges->begin() + i, FixedEdges.begin(), FixedEdges.end());
 
-        i = i + FixedEdges->size();
-
-        // Cleanup
-        /*for (auto fe: *FixedEdges) {
-         *  delete fe;
-         * }
-         * delete FixedEdges;*/
+        i = i + FixedEdges.size();
     }
 
     LOG("Phase edges:\n", 0);

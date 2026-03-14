@@ -16,6 +16,12 @@ Voxel2TetClass::Voxel2TetClass(Options *Opt)
 {
     this->Opt = Opt;
 
+    this->Imp = nullptr;
+    this->Mesh = nullptr;
+    this->MeshOwner = nullptr;
+    this->SurfaceSmoother = nullptr;
+    this->EdgeSmoother = nullptr;
+
     this->InputLoader = std::unique_ptr<InputLoaderPipeline>(new InputLoaderPipeline(this->Opt));
     this->SurfaceBuilder = nullptr;
     this->SmootherPipeline = nullptr;
@@ -68,7 +74,7 @@ Voxel2TetClass::Voxel2TetClass(Options *Opt)
 
 Voxel2TetClass::~Voxel2TetClass()
 {
-    for (unsigned int i = 0; i < PhaseEdges.size(); i++) {
+    for (unsigned int i = 0; i < this->PhaseEdges.size(); i++) {
         delete this->PhaseEdges.at(i);
     }
 
@@ -76,11 +82,11 @@ Voxel2TetClass::~Voxel2TetClass()
         delete s;
     }
 
-    delete this->Mesh;
+    for (auto v : this->Volumes) {
+        delete v;
+    }
 
-    //delete this->Imp;
-
-    //for (auto p: this->PhaseEdges) delete p;
+    this->Mesh = nullptr;
 }
 
 void Voxel2TetClass::PrintHelp()
@@ -177,41 +183,65 @@ void Voxel2TetClass::FinalizeLoad()
     STATUS("\tVoxel dimensions are %f * %f * %f\n", cellspace[0], cellspace[1], cellspace[2]);
     STATUS("\tNumber of voxels are %u * %u * %u = %u\n", dim[0], dim[1], dim[2], dim[0] * dim[1] * dim[2]);
 
-    this->EdgeSmoother = 0;
+    this->EdgeSmoother.reset();
 
     if (this->Opt->has_key("smoothpenalty")) {
         SmoothSimultaneously = true;
 
         if (this->Opt->has_key("spring_c")) {
-            this->SurfaceSmoother = new SpringSmootherPenalty(cellspace[0], Opt->GiveDoubleValue("spring_c"),
-                    Opt->GiveDoubleValue("spring_alpha"),
-                    Opt->GiveDoubleValue("spring_c_factor"), &this->Volumes, false);
+            this->SurfaceSmoother = std::unique_ptr<Smoother>(new SpringSmootherPenalty(cellspace[0],
+                                                                                          Opt->GiveDoubleValue(
+                                                                                              "spring_c"),
+                                                                                          Opt->GiveDoubleValue(
+                                                                                              "spring_alpha"),
+                                                                                          Opt->GiveDoubleValue(
+                                                                                              "spring_c_factor"),
+                                                                                          &this->Volumes, false));
         } else {
-            this->SurfaceSmoother = new SpringSmootherPenalty(cellspace[0], Opt->GiveDoubleValue("spring_c"),
-                    Opt->GiveDoubleValue("spring_alpha"),
-                    Opt->GiveDoubleValue("spring_c_factor"), &this->Volumes, true);
+            this->SurfaceSmoother = std::unique_ptr<Smoother>(new SpringSmootherPenalty(cellspace[0],
+                                                                                          Opt->GiveDoubleValue(
+                                                                                              "spring_c"),
+                                                                                          Opt->GiveDoubleValue(
+                                                                                              "spring_alpha"),
+                                                                                          Opt->GiveDoubleValue(
+                                                                                              "spring_c_factor"),
+                                                                                          &this->Volumes, true));
         }
 
     } else {
         // Setup smoothing classes
         if (this->Opt->has_key("spring_c")) {
-            this->SurfaceSmoother = new SpringSmoother(cellspace[0], Opt->GiveDoubleValue("spring_c"),
-                    Opt->GiveDoubleValue("spring_alpha"),
-                    Opt->GiveDoubleValue("spring_c_factor"), false);
+            this->SurfaceSmoother = std::unique_ptr<Smoother>(new SpringSmoother(cellspace[0],
+                                                                                   Opt->GiveDoubleValue("spring_c"),
+                                                                                   Opt->GiveDoubleValue("spring_alpha"),
+                                                                                   Opt->GiveDoubleValue(
+                                                                                       "spring_c_factor"),
+                                                                                   false));
         } else {
-            this->SurfaceSmoother = new SpringSmoother(cellspace[0], Opt->GiveDoubleValue("spring_c"),
-                    Opt->GiveDoubleValue("spring_alpha"),
-                    Opt->GiveDoubleValue("spring_c_factor"), true);
+            this->SurfaceSmoother = std::unique_ptr<Smoother>(new SpringSmoother(cellspace[0],
+                                                                                   Opt->GiveDoubleValue("spring_c"),
+                                                                                   Opt->GiveDoubleValue("spring_alpha"),
+                                                                                   Opt->GiveDoubleValue(
+                                                                                       "spring_c_factor"),
+                                                                                   true));
         }
 
         if (this->Opt->has_key("edge_spring_c")) {
-            this->EdgeSmoother = new SpringSmoother(cellspace[0], Opt->GiveDoubleValue("edge_spring_c"),
-                    Opt->GiveDoubleValue("edge_spring_alpha"),
-                    Opt->GiveDoubleValue("edge_spring_c_factor"), false);
+            this->EdgeSmoother = std::unique_ptr<Smoother>(new SpringSmoother(cellspace[0],
+                                                                                Opt->GiveDoubleValue("edge_spring_c"),
+                                                                                Opt->GiveDoubleValue(
+                                                                                    "edge_spring_alpha"),
+                                                                                Opt->GiveDoubleValue(
+                                                                                    "edge_spring_c_factor"),
+                                                                                false));
         } else {
-            this->EdgeSmoother = new SpringSmoother(cellspace[0], Opt->GiveDoubleValue("edge_spring_c"),
-                    Opt->GiveDoubleValue("edge_spring_alpha"),
-                    Opt->GiveDoubleValue("edge_spring_c_factor"), true);
+            this->EdgeSmoother = std::unique_ptr<Smoother>(new SpringSmoother(cellspace[0],
+                                                                                Opt->GiveDoubleValue("edge_spring_c"),
+                                                                                Opt->GiveDoubleValue(
+                                                                                    "edge_spring_alpha"),
+                                                                                Opt->GiveDoubleValue(
+                                                                                    "edge_spring_c_factor"),
+                                                                                true));
         }
         SmoothSimultaneously = false;
     }
@@ -273,7 +303,8 @@ void Voxel2TetClass::FinalizeLoad()
     }
 
     // Create mesh managing object
-    Mesh = new MeshManipulations(bb);
+    this->MeshOwner = std::unique_ptr<MeshManipulations>(new MeshManipulations(bb));
+    this->Mesh = this->MeshOwner.get();
     this->OutputPipeline->SetMesh(this->Mesh);
     this->OutputPipeline->SetVolumes(&this->Volumes);
 
@@ -281,12 +312,12 @@ void Voxel2TetClass::FinalizeLoad()
     this->Mesh->TOL_COL_MAXERROR_ACCUMULATED = this->Opt->GiveDoubleValue("TOL_COL_MAXERROR_ACCUMULATED");
 
     this->SurfaceBuilder = std::unique_ptr<SurfaceBuilderPipeline>(new SurfaceBuilderPipeline(
-            this->Imp, this->Mesh, this->Opt, this->SurfaceSmoother, this->EdgeSmoother,
+            this->Imp.get(), this->Mesh, this->Opt, this->SurfaceSmoother.get(), this->EdgeSmoother.get(),
             &this->Surfaces, &this->Volumes, &this->PhaseEdges, this->TreatZeroAsVoid));
     this->SmootherPipeline = std::unique_ptr<SmoothingPipeline>(new SmoothingPipeline(
-            this->Imp, this->Mesh, this->EdgeSmoother, &this->Surfaces, &this->PhaseEdges, this->eps));
+            this->Imp.get(), this->Mesh, this->EdgeSmoother.get(), &this->Surfaces, &this->PhaseEdges, this->eps));
     this->TetrahedralizationPipeline = std::unique_ptr<TetPipeline>(new TetPipeline(
-            this->Imp, &this->Mesh, &this->Volumes, this->eps));
+            this->Imp.get(), &this->MeshOwner, &this->Volumes, this->eps));
 
 }
 
@@ -315,6 +346,8 @@ void Voxel2TetClass::Tetrahedralize()
 {
     Timer.StartTimer("Tetrahedralize");
     this->TetrahedralizationPipeline->Tetrahedralize();
+    this->Mesh = this->MeshOwner.get();
+    this->OutputPipeline->SetMesh(this->Mesh);
     Timer.StopTimer();
 }
 
@@ -565,7 +598,7 @@ void Voxel2TetClass::ExportStatistics()
     StatFile << "Smoothing algorithm:\n";
     StatFile << "Surface smoother:\n";
     StatFile << *this->SurfaceSmoother;
-    if (this->EdgeSmoother != 0) {
+    if (this->EdgeSmoother != nullptr) {
         StatFile << "Edge smoother:\n";
         StatFile << *this->EdgeSmoother;
     }

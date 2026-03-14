@@ -2,6 +2,7 @@
 #define TETPIPELINE_H
 
 #include <array>
+#include <memory>
 #include <vector>
 
 namespace voxel2tet
@@ -13,7 +14,7 @@ class Volume;
 class TetPipeline
 {
 public:
-    TetPipeline(Importer *Imp, MeshManipulations **Mesh, std::vector<Volume *> *Volumes, double eps);
+    TetPipeline(Importer *Imp, std::unique_ptr<MeshManipulations> *Mesh, std::vector<Volume *> *Volumes, double eps);
 
     void Tetrahedralize() const;
 
@@ -23,7 +24,7 @@ private:
     void UpdateFixed() const;
 
     Importer *Imp;
-    MeshManipulations **Mesh;
+    std::unique_ptr<MeshManipulations> *Mesh;
     std::vector<Volume *> *Volumes;
     double eps;
 };

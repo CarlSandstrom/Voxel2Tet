@@ -40,11 +40,13 @@ void SmoothingPipeline::SmoothEdges() const
 
     struct by_vertexptr
     {
-        bool operator()(VertexConnectivity *a, VertexConnectivity *b)
-        { return (a->v < b->v); }
+        bool operator()(const VertexConnectivity &a, const VertexConnectivity &b) const
+        {
+            return (a.v < b.v);
+        }
     };
 
-    std::vector<VertexConnectivity *> VertexConnections;
+    std::vector<VertexConnectivity> VertexConnections;
 
     // Collect all vertices on phase edges
     for (PhaseEdge *p : *this->PhaseEdges) {
@@ -56,10 +58,10 @@ void SmoothingPipeline::SmoothEdges() const
 
         for (unsigned int i = 0; i < EdgeVertices.size(); i++) {
             VertexType *v = EdgeVertices.at(i);
-            VertexConnectivity *vc = new VertexConnectivity;
-            vc->v = v;
-            vc->Connections.insert(vc->Connections.begin(), Connections.at(i).begin(), Connections.at(i).end());
-            vc->FixedDirections = FixedDirectionsList.at(i);
+            VertexConnectivity vc;
+            vc.v = v;
+            vc.Connections.insert(vc.Connections.begin(), Connections.at(i).begin(), Connections.at(i).end());
+            vc.FixedDirections = FixedDirectionsList.at(i);
             VertexConnections.push_back(vc);
         }
     }
@@ -71,19 +73,19 @@ void SmoothingPipeline::SmoothEdges() const
     while (i < VertexConnections.size()) {
         // Compare element i to element i+1. If the elements points to the same vertex, merge connections and remove element i+1
         if (i < (VertexConnections.size() - 1)) {
-            if (VertexConnections.at(i)->v == VertexConnections.at(i + 1)->v) {
-                VertexConnectivity *thisvc = VertexConnections.at(i);
-                VertexConnectivity *nextvc = VertexConnections.at(i + 1);
+            if (VertexConnections.at(i).v == VertexConnections.at(i + 1).v) {
+                VertexConnectivity &thisvc = VertexConnections.at(i);
+                VertexConnectivity &nextvc = VertexConnections.at(i + 1);
 
-                thisvc->Connections.insert(thisvc->Connections.end(), nextvc->Connections.begin(),
-                                           nextvc->Connections.end());
+                thisvc.Connections.insert(thisvc.Connections.end(), nextvc.Connections.begin(),
+                                          nextvc.Connections.end());
 
                 // Uniqueify connections
-                std::sort(thisvc->Connections.begin(), thisvc->Connections.end());
+                std::sort(thisvc.Connections.begin(), thisvc.Connections.end());
                 std::vector<VertexType *>::iterator it;
-                it = std::unique(thisvc->Connections.begin(), thisvc->Connections.end());
-                if (it != thisvc->Connections.end()) {
-                    thisvc->Connections.erase(it);
+                it = std::unique(thisvc.Connections.begin(), thisvc.Connections.end());
+                if (it != thisvc.Connections.end()) {
+                    thisvc.Connections.erase(it);
                 }
 
                 // Erase next connection
@@ -102,10 +104,10 @@ void SmoothingPipeline::SmoothEdges() const
     std::vector<bool> FixedDirectionsList;
 
     for (unsigned int i = 0; i < VertexConnections.size(); i++) {
-        VertexType *v = VertexConnections.at(i)->v;
+        VertexType *v = VertexConnections.at(i).v;
 
         VertexList.push_back(v);
-        Connections.push_back(VertexConnections.at(i)->Connections);
+        Connections.push_back(VertexConnections.at(i).Connections);
 
         // Determine which directions are locked TODO: This should be done elsewhere
         for (int j = 0; j < 3; j++) {
@@ -117,10 +119,6 @@ void SmoothingPipeline::SmoothEdges() const
             }
         }
         FixedDirectionsList.push_back(false);
-    }
-
-    for (VertexConnectivity *v : VertexConnections) {
-        delete v;
     }
 
     this->EdgeSmoother->Smooth(VertexList, this->Mesh);

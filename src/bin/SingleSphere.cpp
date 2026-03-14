@@ -26,12 +26,12 @@ int GiveMaterialIDByCoordinateSphere(double x, double y, double z)
 int main(int argc, char *argv[])
 {
     std::map<std::string, std::string> DefaultOptions;
-    voxel2tet::Options *Options = new voxel2tet::Options(argc, argv, DefaultOptions, {});
+    voxel2tet::Options Options(argc, argv, DefaultOptions, {});
 
-    Options->SetKey("spring_c_factor", 2.0);
-    Options->SetKey("spring_alpha", 4.0);
+    Options.SetKey("spring_c_factor", 2.0);
+    Options.SetKey("spring_alpha", 4.0);
 
-    voxel2tet::Voxel2TetClass v2t(Options);
+    voxel2tet::Voxel2TetClass v2t(&Options);
 
     int numberofvoxels = 20;
     double length = 1.0;

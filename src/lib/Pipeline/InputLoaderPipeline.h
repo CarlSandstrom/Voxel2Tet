@@ -2,6 +2,7 @@
 #define INPUTLOADERPIPELINE_H
 
 #include <array>
+#include <memory>
 #include <string>
 
 #include "CallbackImporter.h"
@@ -15,10 +16,11 @@ class InputLoaderPipeline
 public:
     explicit InputLoaderPipeline(Options *Opt);
 
-    Importer *LoadFile(const std::string &FileName) const;
+    std::unique_ptr<Importer> LoadFile(const std::string &FileName) const;
 
-    Importer *LoadCallback(cbMaterialIDByCoordinate MaterialIDByCoordinate, std::array<double, 3> origin,
-                           std::array<double, 3> spacing, std::array<int, 3> dimensions) const;
+    std::unique_ptr<Importer> LoadCallback(cbMaterialIDByCoordinate MaterialIDByCoordinate,
+                                           std::array<double, 3> origin, std::array<double, 3> spacing,
+                                           std::array<int, 3> dimensions) const;
 
 private:
     void ApplyVoxelCutOut(Importer *Import) const;

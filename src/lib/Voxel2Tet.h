@@ -35,7 +35,8 @@ class Voxel2TetClass
 {
 private:
     Options *Opt;
-    Importer *Imp;
+    std::unique_ptr<Importer> Imp;
+    std::unique_ptr<MeshManipulations> MeshOwner;
     std::vector<Surface *> Surfaces;
     std::vector<Volume *> Volumes;
     std::vector<PhaseEdge *> PhaseEdges;
@@ -52,8 +53,8 @@ private:
     std::vector<double> CurrentVolumes;
     std::vector<int> PhaseList;
 
-    Smoother *SurfaceSmoother;
-    Smoother *EdgeSmoother;
+    std::unique_ptr<Smoother> SurfaceSmoother;
+    std::unique_ptr<Smoother> EdgeSmoother;
     bool SmoothSimultaneously;
 
     void UpdateFixed();

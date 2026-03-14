@@ -131,20 +131,15 @@ std::unique_ptr<Exporter> ExportPipeline::CreateSurfaceExporter(MeshData &Mesh, 
 {
     switch (FileType) {
         case FT_OFF:
-            return std::unique_ptr<Exporter>(
-                    new OFFExporter(&Mesh.Triangles, &Mesh.Vertices, &Mesh.Edges, &Mesh.Tets));
+            return std::unique_ptr<Exporter>(new OFFExporter(&Mesh.Triangles, &Mesh.Vertices, &Mesh.Edges, &Mesh.Tets));
         case FT_Poly:
-            return std::unique_ptr<Exporter>(
-                    new TetGenExporter(&Mesh.Triangles, &Mesh.Vertices, &Mesh.Edges, &Mesh.Tets));
+            return std::unique_ptr<Exporter>(new TetGenExporter(&Mesh.Triangles, &Mesh.Vertices, &Mesh.Edges, &Mesh.Tets));
         case FT_VTK:
-            return std::unique_ptr<Exporter>(
-                    new VTKExporter(&Mesh.Triangles, &Mesh.Vertices, &Mesh.Edges, &Mesh.Tets));
+            return std::unique_ptr<Exporter>(new VTKExporter(&Mesh.Triangles, &Mesh.Vertices, &Mesh.Edges, &Mesh.Tets));
         case FT_SIMPLE:
-            return std::unique_ptr<Exporter>(
-                    new SimpleExporter(&Mesh.Triangles, &Mesh.Vertices, &Mesh.Edges, &Mesh.Tets));
+            return std::unique_ptr<Exporter>(new SimpleExporter(&Mesh.Triangles, &Mesh.Vertices, &Mesh.Edges, &Mesh.Tets));
         case FT_STL:
-            return std::unique_ptr<Exporter>(
-                    new STLExporter(&Mesh.Triangles, &Mesh.Vertices, &Mesh.Edges, &Mesh.Tets));
+            return std::unique_ptr<Exporter>(new STLExporter(&Mesh.Triangles, &Mesh.Vertices, &Mesh.Edges, &Mesh.Tets));
         default:
             LOG("File type not supported for surface export\n", 0);
             throw(0);
@@ -155,17 +150,13 @@ std::unique_ptr<Exporter> ExportPipeline::CreateVolumeExporter(MeshData &Mesh, E
 {
     switch (FileType) {
         case FT_OFF:
-            return std::unique_ptr<Exporter>(
-                    new OFFExporter(&Mesh.Triangles, &Mesh.Vertices, &Mesh.Edges, &Mesh.Tets));
+            return std::unique_ptr<Exporter>(new OFFExporter(&Mesh.Triangles, &Mesh.Vertices, &Mesh.Edges, &Mesh.Tets));
         case FT_Poly:
-            return std::unique_ptr<Exporter>(
-                    new TetGenExporter(&Mesh.Triangles, &Mesh.Vertices, &Mesh.Edges, &Mesh.Tets));
+            return std::unique_ptr<Exporter>(new TetGenExporter(&Mesh.Triangles, &Mesh.Vertices, &Mesh.Edges, &Mesh.Tets));
         case FT_VTK:
-            return std::unique_ptr<Exporter>(
-                    new VTKExporter(&Mesh.Triangles, &Mesh.Vertices, &Mesh.Edges, &Mesh.Tets));
+            return std::unique_ptr<Exporter>(new VTKExporter(&Mesh.Triangles, &Mesh.Vertices, &Mesh.Edges, &Mesh.Tets));
         case FT_OOFEM:
-            return std::unique_ptr<Exporter>(
-                    new OOFEMExporter(&Mesh.Triangles, &Mesh.Vertices, &Mesh.Edges, &Mesh.Tets));
+            return std::unique_ptr<Exporter>(new OOFEMExporter(&Mesh.Triangles, &Mesh.Vertices, &Mesh.Edges, &Mesh.Tets));
         case FT_ABAQUS:
             return std::unique_ptr<Exporter>(
                     new AbaqusExporter(&Mesh.Triangles, &Mesh.Vertices, &Mesh.Edges, &Mesh.Tets, false));

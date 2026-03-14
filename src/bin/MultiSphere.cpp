@@ -30,9 +30,9 @@ int GiveMaterialIDByCoordinateMultiSphere(double x, double y, double z)
 int main(int argc, char *argv[])
 {
     std::map<std::string, std::string> DefaultOptions;
-    voxel2tet::Options *Options = new voxel2tet::Options(argc, argv, DefaultOptions, {});
+    voxel2tet::Options Options(argc, argv, DefaultOptions, {});
 
-    voxel2tet::Voxel2TetClass v2t(Options);
+    voxel2tet::Voxel2TetClass v2t(&Options);
 
     double spacing = 0.05;
     std::array<double, 3> length = {3.0, 2.0, 1.0};

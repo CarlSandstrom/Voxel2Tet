@@ -31,9 +31,9 @@ int main(int argc, char *argv[])
 
     // The Options object is created with the command line arguments, thus, we can use the same
     // arguments as for the Voxel2Tet binary.
-    voxel2tet::Options *Options = new voxel2tet::Options(argc, argv, DefaultOptions, {});
+    voxel2tet::Options Options(argc, argv, DefaultOptions, {});
 
-    voxel2tet::Voxel2TetClass v2t(Options);
+    voxel2tet::Voxel2TetClass v2t(&Options);
 
     // Set dimensions
     double spacing = 0.4;

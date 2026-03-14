@@ -1,4 +1,5 @@
 #include "TetGenCaller.h"
+#include "MeshManipulations.h"
 
 namespace voxel2tet
 {
@@ -85,7 +86,7 @@ void TetGenCaller::CopyMeshFromSelf(tetgenio *in)
 
 MeshData *TetGenCaller::CopyTetMesh(tetgenio *io)
 {
-    MeshData *NewMesh = new MeshData(this->Mesh->BoundingBox);
+    MeshData *NewMesh = new MeshManipulations(this->Mesh->BoundingBox);
 
     // Add vertices
     for (int i = 0; i < io->numberofpoints; i++) {

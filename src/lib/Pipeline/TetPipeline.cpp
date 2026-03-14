@@ -10,7 +10,8 @@
 
 namespace voxel2tet
 {
-TetPipeline::TetPipeline(Importer *Imp, MeshManipulations **Mesh, std::vector<Volume *> *Volumes, double eps)
+TetPipeline::TetPipeline(Importer *Imp, std::unique_ptr<MeshManipulations> *Mesh, std::vector<Volume *> *Volumes,
+                         double eps)
 {
     this->Imp = Imp;
     this->Mesh = Mesh;
@@ -21,7 +22,7 @@ TetPipeline::TetPipeline(Importer *Imp, MeshManipulations **Mesh, std::vector<Vo
 void TetPipeline::Tetrahedralize() const
 {
     TetGenCaller Generator;
-    Generator.Mesh = *this->Mesh;
+    Generator.Mesh = this->Mesh->get();
 #if TEST_MESH_BETWEEN_STEPS_TETGEN == 1
     Generator.TestMesh();
 #endif
@@ -41,8 +42,7 @@ void TetPipeline::Tetrahedralize() const
         t->MaterialID = Tetgen2Self[t->MaterialID];
     }
 
-    free(*this->Mesh);
-    *this->Mesh = NewMesh;
+    this->Mesh->reset(NewMesh);
 
     this->UpdateFixed();
 }
@@ -60,7 +60,7 @@ Volume *TetPipeline::FindVolumeContainingPoint(std::array<double, 3> P) const
 
 void TetPipeline::UpdateFixed() const
 {
-    for (VertexType *v: (*this->Mesh)->Vertices) {
+    for (VertexType *v : this->Mesh->get()->Vertices) {
         for (int j = 0; j < 3; j++) {
             if ((v->get_c(j) > (this->Imp->GiveBoundingBox().maxvalues[j] - this->eps)) |
                     (v->get_c(j) < (this->Imp->GiveBoundingBox().minvalues[j] + this->eps))) {

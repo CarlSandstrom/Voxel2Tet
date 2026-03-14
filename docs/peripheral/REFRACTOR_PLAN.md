@@ -28,7 +28,6 @@ This plan assumes:
 
 ## Planned Tasks
 
-- [ ] `R-008` Replace owning raw pointers with `std::unique_ptr` in refactored flows.
 - [ ] `R-009` Remove `exit(...)` from library code paths; use exceptions/status propagation.
 - [ ] `R-010` Modernize CMake target boundaries (target includes/libs, reduce global state).
 - [ ] `R-011` Add/expand regression coverage using existing `src/bin` examples.
@@ -100,6 +99,10 @@ This plan assumes:
   Started: `2026-03-14`  
   Completed: `2026-03-14`  
   Notes: `ExportPipeline` now owns exporter selection and option-driven export routing; `Voxel2TetClass` delegates all export entrypoints through the pipeline and `MeshData` export methods delegate to pipeline routing.
+- [x] `R-008` Replace owning raw pointers with `std::unique_ptr` in refactored flows.  
+  Started: `2026-03-14`  
+  Completed: `2026-03-14`  
+  Notes: Refactored flow ownership now uses `std::unique_ptr` for importer, smoother objects, mesh owner handoff, and pipeline return types; CLI examples now avoid heap-allocating `Options`.
 
 ## Activity Log
 
@@ -119,3 +122,4 @@ This plan assumes:
 - `2026-03-14` - `R-005` - Moved edge/surface smoothing implementations into `SmoothingPipeline` and wired pipeline construction in `FinalizeLoad`.
 - `2026-03-14` - `R-006` - Moved tetrahedralization flow from `Voxel2TetClass` into `TetPipeline` and wired facade delegation.
 - `2026-03-14` - `R-007` - Moved export routing into `ExportPipeline` and routed facade/mesh export entrypoints through pipeline methods.
+- `2026-03-14` - `R-008` - Replaced owning raw pointers with `std::unique_ptr` in refactored orchestration flow and CLI examples.
