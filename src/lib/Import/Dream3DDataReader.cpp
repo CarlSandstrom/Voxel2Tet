@@ -5,6 +5,7 @@
 
 #include "Dream3DDataReader.h"
 #include "MiscFunctions.h"
+#include "Voxel2TetException.h"
 
 namespace voxel2tet
 {
@@ -27,9 +28,11 @@ void Dream3DDataReader::LoadFile(std::string FileName)
 
     try {
         file = new H5::H5File (FileName, H5F_ACC_RDONLY);
-    } catch (...) {
+    } catch (const H5::Exception &e) {
         STATUS("Cound not open input file %s\n", FileName.c_str());
-        exit(-1);
+        throw Voxel2TetException(strfmt("Could not open Dream3D input file '%s': %s",
+                                        FileName.c_str(),
+                                        e.getDetailMsg().c_str()));
     }
     H5::Group DataContainers;
 

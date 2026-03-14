@@ -1,4 +1,5 @@
 #include "VTKStructuredReader.h"
+#include "Voxel2TetException.h"
 
 namespace voxel2tet
 {
@@ -14,7 +15,7 @@ void VTKStructuredReader::LoadFile(std::string FileName)
 
     if (!Input.is_open()) {
         STATUS("Cound not open input file %s\n", FileName.c_str());
-        exit(-1);
+        throw Voxel2TetException(strfmt("Could not open VTK input file '%s'", FileName.c_str()));
     }
 
     int linecount = 0;

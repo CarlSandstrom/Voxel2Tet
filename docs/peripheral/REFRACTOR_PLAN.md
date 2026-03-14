@@ -28,7 +28,6 @@ This plan assumes:
 
 ## Planned Tasks
 
-- [ ] `R-009` Remove `exit(...)` from library code paths; use exceptions/status propagation.
 - [ ] `R-010` Modernize CMake target boundaries (target includes/libs, reduce global state).
 - [ ] `R-011` Add/expand regression coverage using existing `src/bin` examples.
 
@@ -103,6 +102,10 @@ This plan assumes:
   Started: `2026-03-14`  
   Completed: `2026-03-14`  
   Notes: Refactored flow ownership now uses `std::unique_ptr` for importer, smoother objects, mesh owner handoff, and pipeline return types; CLI examples now avoid heap-allocating `Options`.
+- [x] `R-009` Remove `exit(...)` from library code paths; use exceptions/status propagation.  
+  Started: `2026-03-14`  
+  Completed: `2026-03-14`  
+  Notes: Added `Voxel2TetException` and replaced all `src/lib` `exit(...)` paths with exception throws in options validation and import/input loading; CLI now catches exceptions and returns status `1`.
 
 ## Activity Log
 
@@ -123,3 +126,4 @@ This plan assumes:
 - `2026-03-14` - `R-006` - Moved tetrahedralization flow from `Voxel2TetClass` into `TetPipeline` and wired facade delegation.
 - `2026-03-14` - `R-007` - Moved export routing into `ExportPipeline` and routed facade/mesh export entrypoints through pipeline methods.
 - `2026-03-14` - `R-008` - Replaced owning raw pointers with `std::unique_ptr` in refactored orchestration flow and CLI examples.
+- `2026-03-14` - `R-009` - Replaced library `exit(...)` paths with propagated exceptions and added CLI exception-to-exit-code handling.

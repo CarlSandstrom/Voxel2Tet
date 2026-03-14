@@ -7,6 +7,7 @@
 
 #include "Dream3DDataReader.h"
 #include "VTKStructuredReader.h"
+#include "Voxel2TetException.h"
 
 namespace voxel2tet
 {
@@ -20,8 +21,11 @@ std::unique_ptr<Importer> InputLoaderPipeline::LoadFile(const std::string &FileN
     STATUS("Load file %s\n", FileName.c_str());
 
     // Find extension for input file
-    char *ext;
-    ext = strrchr((char *) FileName.c_str(), '.') + 1;
+    char *extPos = strrchr((char *) FileName.c_str(), '.');
+    if (extPos == nullptr || *(extPos + 1) == '\0') {
+        throw Voxel2TetException(strfmt("Input file '%s' has no recognized extension", FileName.c_str()));
+    }
+    char *ext = extPos + 1;
 
     std::unique_ptr<Importer> Import;
 
@@ -32,7 +36,7 @@ std::unique_ptr<Importer> InputLoaderPipeline::LoadFile(const std::string &FileN
         Import = std::unique_ptr<Importer>(new VTKStructuredReader());
     } else {
         STATUS("File extension %s not recognized\n", ext);
-        exit(-1);
+        throw Voxel2TetException(strfmt("File extension '%s' not recognized", ext));
     }
 
     Import->LoadFile(FileName);
@@ -57,7 +61,8 @@ void InputLoaderPipeline::ApplyVoxelCutOut(Importer *Import) const
         std::vector<int> VoxelCutOut = this->Opt->GiveIntegerList("voxelcutout");
         if (VoxelCutOut.size() != 6) {
             STATUS("VoxelCutOut should be specified as a bounding box consisting of integers for the indices", 0);
-            exit(-1);
+            throw Voxel2TetException(
+                    "VoxelCutOut should be specified as a bounding box with 6 integer indices");
         }
         Import->UseCutOut = true;
         Import->CutOut.minvalues[0] = VoxelCutOut[0];

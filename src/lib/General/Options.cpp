@@ -3,6 +3,7 @@
 
 #include "Options.h"
 #include "MiscFunctions.h"
+#include "Voxel2TetException.h"
 
 namespace voxel2tet
 {
@@ -57,7 +58,7 @@ void Options::CheckRequiredFields()
         }
     }
     if (!FieldsOk) {
-        exit(-1);
+        throw Voxel2TetException("Required command line options were not provided");
     }
 }
 
