@@ -5,11 +5,9 @@
 #include <string>
 #include <algorithm>
 
+#include "Exporter.h"
 #include "MeshComponents.h"
 #include "VertexOctreeNode.h"
-#include "VTKExport.h"
-#include "SimpleExporter.h"
-#include "STLExporter.h"
 #include "TriTriIntersect.h"
 
 namespace voxel2tet

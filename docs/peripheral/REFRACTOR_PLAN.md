@@ -28,7 +28,6 @@ This plan assumes:
 
 ## Planned Tasks
 
-- [ ] `R-007` Move export routing from `MeshData`/facade into `ExportPipeline`.
 - [ ] `R-008` Replace owning raw pointers with `std::unique_ptr` in refactored flows.
 - [ ] `R-009` Remove `exit(...)` from library code paths; use exceptions/status propagation.
 - [ ] `R-010` Modernize CMake target boundaries (target includes/libs, reduce global state).
@@ -97,6 +96,10 @@ This plan assumes:
   Started: `2026-03-14`  
   Completed: `2026-03-14`  
   Notes: `TetPipeline` now owns TetGen execution, tet-material remapping, mesh replacement, and fixed-node updates; `Voxel2TetClass` delegates and times the pipeline step.
+- [x] `R-007` Move export routing from `MeshData`/facade into `ExportPipeline`.  
+  Started: `2026-03-14`  
+  Completed: `2026-03-14`  
+  Notes: `ExportPipeline` now owns exporter selection and option-driven export routing; `Voxel2TetClass` delegates all export entrypoints through the pipeline and `MeshData` export methods delegate to pipeline routing.
 
 ## Activity Log
 
@@ -115,3 +118,4 @@ This plan assumes:
 - `2026-03-13` - `R-004` - Moved surface/edge discovery and helper routines from `Voxel2TetClass` into `SurfaceBuilderPipeline`.
 - `2026-03-14` - `R-005` - Moved edge/surface smoothing implementations into `SmoothingPipeline` and wired pipeline construction in `FinalizeLoad`.
 - `2026-03-14` - `R-006` - Moved tetrahedralization flow from `Voxel2TetClass` into `TetPipeline` and wired facade delegation.
+- `2026-03-14` - `R-007` - Moved export routing into `ExportPipeline` and routed facade/mesh export entrypoints through pipeline methods.

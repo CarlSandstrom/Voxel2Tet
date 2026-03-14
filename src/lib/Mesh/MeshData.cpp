@@ -1,10 +1,7 @@
 #include <vector>
 #include "MeshData.h"
 #include "MiscFunctions.h"
-#include "TetGenExporter.h"
-#include "OFFExporter.h"
-#include "OOFEMExporter.h"
-#include "AbaqusExporter.h"
+#include "ExportPipeline.h"
 
 namespace voxel2tet
 {
@@ -222,73 +219,12 @@ void MeshData::DoSanityCheck()
 
 void MeshData::ExportSurface(std::string FileName, Exporter_FileTypes FileType, int VolumeID)
 {
-    STATUS("Export surface to %s\n", FileName.c_str());
-    Exporter *exporter;
-    switch (FileType) {
-        case FT_OFF: {
-            exporter = new OFFExporter(&this->Triangles, &this->Vertices, &this->Edges, &this->Tets);
-            break;
-        }
-        case FT_Poly: {
-            exporter = new TetGenExporter(&this->Triangles, &this->Vertices, &this->Edges, &this->Tets);
-            break;
-        }
-        case FT_VTK: {
-            exporter = new VTKExporter(&this->Triangles, &this->Vertices, &this->Edges, &this->Tets);
-            break;
-        }
-        case FT_SIMPLE: {
-            exporter = new SimpleExporter(&this->Triangles, &this->Vertices, &this->Edges, &this->Tets);
-            break;
-        }
-        case FT_STL: {
-            exporter = new STLExporter(&this->Triangles, &this->Vertices, &this->Edges, &this->Tets);
-            break;
-        }
-        default: {
-            LOG("File type not supported!\n", 0);
-            throw (0);
-        }
-    }
-    exporter->WriteSurfaceData(FileName, VolumeID);
-    free(exporter);
+    ExportPipeline::ExportSurface(*this, FileName, FileType, VolumeID);
 }
 
 void MeshData::ExportVolume(std::string FileName, Exporter_FileTypes FileType)
 {
-    STATUS("Export volume to %s\n", FileName.c_str());
-    Exporter *exporter;
-    switch (FileType) {
-        case FT_OFF: {
-            exporter = new OFFExporter(&this->Triangles, &this->Vertices, &this->Edges, &this->Tets);
-            break;
-        }
-        case FT_Poly: {
-            exporter = new TetGenExporter(&this->Triangles, &this->Vertices, &this->Edges, &this->Tets);
-            break;
-        }
-        case FT_VTK: {
-            exporter = new VTKExporter(&this->Triangles, &this->Vertices, &this->Edges, &this->Tets);
-            break;
-        }
-        case FT_OOFEM: {
-            exporter = new OOFEMExporter(&this->Triangles, &this->Vertices, &this->Edges, &this->Tets);
-            break;
-        }
-        case FT_ABAQUS: {
-            exporter = new AbaqusExporter(&this->Triangles, &this->Vertices, &this->Edges, &this->Tets, false);
-            break;
-        }
-        case FT_ABAQUSPHON: {
-            exporter = new AbaqusExporter(&this->Triangles, &this->Vertices, &this->Edges, &this->Tets, true);
-            break;
-        }
-        default:
-            STATUS("No export filter found for %s\n", FileName.c_str());
-            return;
-    }
-    exporter->WriteVolumeData(FileName);
-    free(exporter);
+    ExportPipeline::ExportVolume(*this, FileName, FileType);
 }
 
 EdgeType *MeshData::AddEdge(std::array<int, 2> VertexIDs)

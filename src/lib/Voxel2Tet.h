@@ -44,12 +44,6 @@ private:
 
     void UpdateSurfaces();
 
-    void ExportAllSurfacesImpl();
-
-    void ExportAllVolumesImpl();
-
-    void ExportAllPhasesImpl();
-
     double eps = 1e-6;
 
     TimeStamp Timer;
