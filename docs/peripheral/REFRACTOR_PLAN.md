@@ -28,7 +28,6 @@ This plan assumes:
 
 ## Planned Tasks
 
-- [ ] `R-005` Move smoothing logic into `SmoothingPipeline`.
 - [ ] `R-006` Move tetrahedralization flow into `TetPipeline`.
 - [ ] `R-007` Move export routing from `MeshData`/facade into `ExportPipeline`.
 - [ ] `R-008` Replace owning raw pointers with `std::unique_ptr` in refactored flows.
@@ -91,6 +90,10 @@ This plan assumes:
   Started: `2026-03-13`  
   Completed: `2026-03-13`  
   Notes: `SurfaceBuilderPipeline` now owns surface/edge extraction (`FindSurfaces`, `FindEdges`) and their helper routines; `Voxel2TetClass` delegates through the pipeline configured in `FinalizeLoad`.
+- [x] `R-005` Move smoothing logic into `SmoothingPipeline`.  
+  Started: `2026-03-14`  
+  Completed: `2026-03-14`  
+  Notes: `SmoothingPipeline` now owns `SmoothEdges`/`SmoothSurfaces` implementations; `Voxel2TetClass` builds the pipeline in `FinalizeLoad` and delegates smoothing calls through it.
 
 ## Activity Log
 
@@ -107,3 +110,4 @@ This plan assumes:
 - `2026-03-13` - `R-014` - Added repo-local Codex skill `next-refactor` for fast next-task lookup from `REFRACTOR_PLAN.md`.
 - `2026-03-13` - `R-015` - Added `agents/openai.yaml` for `next-refactor` and captured trigger troubleshooting steps.
 - `2026-03-13` - `R-004` - Moved surface/edge discovery and helper routines from `Voxel2TetClass` into `SurfaceBuilderPipeline`.
+- `2026-03-14` - `R-005` - Moved edge/surface smoothing implementations into `SmoothingPipeline` and wired pipeline construction in `FinalizeLoad`.

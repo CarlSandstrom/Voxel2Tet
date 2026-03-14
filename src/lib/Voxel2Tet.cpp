@@ -18,13 +18,7 @@ Voxel2TetClass::Voxel2TetClass(Options *Opt)
 
     this->InputLoader = std::unique_ptr<InputLoaderPipeline>(new InputLoaderPipeline(this->Opt));
     this->SurfaceBuilder = nullptr;
-    this->SmootherPipeline = std::unique_ptr<SmoothingPipeline>(new SmoothingPipeline(
-            [this]() {
-                this->SmoothEdgesSimultaneously();
-            },
-            [this]() {
-                this->SmoothSurfaces();
-            }));
+    this->SmootherPipeline = nullptr;
     this->TetrahedralizationPipeline = std::unique_ptr<TetPipeline>(new TetPipeline(
             [this]() {
                 this->TetrahedralizeImpl();
@@ -299,6 +293,8 @@ void Voxel2TetClass::FinalizeLoad()
     this->SurfaceBuilder = std::unique_ptr<SurfaceBuilderPipeline>(new SurfaceBuilderPipeline(
             this->Imp, this->Mesh, this->Opt, this->SurfaceSmoother, this->EdgeSmoother,
             &this->Surfaces, &this->Volumes, &this->PhaseEdges, this->TreatZeroAsVoid));
+    this->SmootherPipeline = std::unique_ptr<SmoothingPipeline>(new SmoothingPipeline(
+            this->Imp, this->Mesh, this->EdgeSmoother, &this->Surfaces, &this->PhaseEdges, this->eps));
 
 }
 
@@ -378,110 +374,6 @@ void Voxel2TetClass::ExportVolume(std::string FileName, Exporter_FileTypes FileT
     this->Mesh->ExportVolume(FileName, FileType);
 }
 
-void Voxel2TetClass::SmoothEdgesSimultaneously()
-{
-
-    //TODO: This does far too much stuff. A lot of thing has moved to the Smoother class. Clean this up.
-    STATUS("Smooth edges (simultaneously)\n", 0);
-
-    // We want to sort several lists according to one list. (http://stackoverflow.com/questions/1723066/c-stl-custom-sorting-one-vector-based-on-contents-of-another)
-    struct VertexConnectivity
-    {
-        VertexType *v;
-        std::vector<VertexType *> Connections;
-        std::array<bool, 3> FixedDirections;
-    };
-
-    struct by_vertexptr
-    {
-        bool operator()(VertexConnectivity *a, VertexConnectivity *b)
-        { return (a->v < b->v); }
-    };
-
-    std::vector<VertexConnectivity *> VertexConnections;
-
-    // Collect all vertices on phase edges
-    int j = 0;
-    for (PhaseEdge *p : this->PhaseEdges) {
-        std::vector<std::vector<VertexType *> > Connections;
-        std::vector<std::array<bool, 3> > FixedDirectionsList;
-
-        std::vector<VertexType *> EdgeVertices = p->GetFlatListOfVertices();
-        p->GiveTopologyLists(&Connections, &FixedDirectionsList);
-
-        for (unsigned int i = 0; i < EdgeVertices.size(); i++) {
-            VertexType *v = EdgeVertices.at(i);
-            VertexConnectivity *vc = new VertexConnectivity;
-            vc->v = v;
-            vc->Connections.insert(vc->Connections.begin(), Connections.at(i).begin(), Connections.at(i).end());
-            vc->FixedDirections = FixedDirectionsList.at(i);
-            VertexConnections.push_back(vc);
-        }
-        j++;
-    }
-
-    // Sort list by VertexType address and merge information of duplicate vertices
-    std::sort(VertexConnections.begin(), VertexConnections.end(), by_vertexptr());
-
-    unsigned int i = 0;
-    while (i < VertexConnections.size()) {
-        // Compare element i to element i+1. If the elements points to the same vertex, merge connections and remove element i+1
-        if (i < (VertexConnections.size() - 1)) {
-            if (VertexConnections.at(i)->v == VertexConnections.at(i + 1)->v) {
-                VertexConnectivity *thisvc = VertexConnections.at(i);
-                VertexConnectivity *nextvc = VertexConnections.at(i + 1);
-
-                thisvc->Connections.insert(thisvc->Connections.end(), nextvc->Connections.begin(),
-                                           nextvc->Connections.end());
-
-                // Uniqueify connections
-                std::sort(thisvc->Connections.begin(), thisvc->Connections.end());
-                std::vector<VertexType *>::iterator it;
-                it = std::unique(thisvc->Connections.begin(), thisvc->Connections.end());
-                if (it != thisvc->Connections.end()) {
-                    thisvc->Connections.erase(it);
-                }
-
-                // Erase next connection
-                VertexConnections.erase(VertexConnections.begin() + i + 1);
-            } else {
-                i++;
-            }
-        } else {
-            i++;
-        }
-    }
-
-    // Build connectivity and FixedDirectionsLists
-    std::vector<VertexType *> VertexList;
-    std::vector<std::vector<VertexType *> > Connections;
-    std::vector<bool> FixedDirectionsList;
-
-    for (unsigned int i = 0; i < VertexConnections.size(); i++) {
-        VertexType *v = VertexConnections.at(i)->v;
-
-        VertexList.push_back(v);
-        Connections.push_back(VertexConnections.at(i)->Connections);
-
-        // Determine which directions are locked TODO: This should be done elsewhere
-        for (int j = 0; j < 3; j++) {
-            if ((v->get_c(j) > (this->Imp->GiveBoundingBox().maxvalues[j] - eps)) |
-                    (v->get_c(j) < (this->Imp->GiveBoundingBox().minvalues[j] + eps))) {
-                v->Fixed[j] = true;
-            } else {
-                v->Fixed[j] = false;
-            }
-        }
-        FixedDirectionsList.push_back(false);
-    }
-
-    for (VertexConnectivity *v : VertexConnections) {
-        delete v;
-    }
-
-    this->EdgeSmoother->Smooth(VertexList, this->Mesh);
-}
-
 void Voxel2TetClass::UpdateFixed()
 {
     for (VertexType *v: this->Mesh->Vertices) {
@@ -501,18 +393,6 @@ void Voxel2TetClass::UpdateFixed()
             for (int i = 0; i < 3; i++) v->Fixed[i] = true;
         }
 
-    }
-}
-
-void Voxel2TetClass::SmoothSurfaces()
-{
-    STATUS("Smooth surfaces\n", 0);
-
-    int i = 1;
-    for (Surface *s : this->Surfaces) {
-        STATUS("Smoothing surface %i (%i)\n", i, this->Surfaces.size());
-        s->Smooth(this->Mesh);
-        i++;
     }
 }
 

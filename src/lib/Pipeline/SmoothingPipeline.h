@@ -1,24 +1,33 @@
 #ifndef SMOOTHINGPIPELINE_H
 #define SMOOTHINGPIPELINE_H
 
-#include <functional>
+#include <vector>
 
 namespace voxel2tet
 {
+class Importer;
+class MeshManipulations;
+class PhaseEdge;
+class Smoother;
+class Surface;
+
 class SmoothingPipeline
 {
 public:
-    typedef std::function<void(void)> StepDelegate;
-
-    SmoothingPipeline(StepDelegate SmoothEdgesStep, StepDelegate SmoothSurfacesStep);
+    SmoothingPipeline(Importer *Imp, MeshManipulations *Mesh, Smoother *EdgeSmoother,
+                      std::vector<Surface *> *Surfaces, std::vector<PhaseEdge *> *PhaseEdges, double eps);
 
     void SmoothEdges() const;
 
     void SmoothSurfaces() const;
 
 private:
-    StepDelegate SmoothEdgesStep;
-    StepDelegate SmoothSurfacesStep;
+    Importer *Imp;
+    MeshManipulations *Mesh;
+    Smoother *EdgeSmoother;
+    std::vector<Surface *> *Surfaces;
+    std::vector<PhaseEdge *> *PhaseEdges;
+    double eps;
 };
 }
 

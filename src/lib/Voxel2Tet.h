@@ -40,10 +40,6 @@ private:
     std::vector<Volume *> Volumes;
     std::vector<PhaseEdge *> PhaseEdges;
 
-    void SmoothEdgesSimultaneously();
-
-    void SmoothSurfaces();
-
     void FinalizeLoad();
 
     void UpdateSurfaces();
