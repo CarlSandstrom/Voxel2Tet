@@ -28,7 +28,7 @@ This plan assumes:
 
 ## Planned Tasks
 
-- [ ] `R-011` Add/expand regression coverage using existing `src/bin` examples.
+- None.
 
 ## Migration Phases
 
@@ -109,6 +109,10 @@ This plan assumes:
   Started: `2026-03-14`  
   Completed: `2026-03-14`  
   Notes: Removed directory-global include/link state, moved `Voxel2TetLib` source aggregation to `target_sources`, and linked executables directly against `Voxel2TetLib` with dependency propagation through target properties.
+- [x] `R-011` Add/expand regression coverage using existing `src/bin` examples.  
+  Started: `2026-03-14`  
+  Completed: `2026-03-14`  
+  Notes: Added CTest regression coverage for `Cube` API example and `Voxel2Tet` CLI (`ExampleInput/16x16x16.dream3d`) with output-file assertions via `src/bin/RunExampleRegression.cmake`.
 
 ## Activity Log
 
@@ -131,3 +135,4 @@ This plan assumes:
 - `2026-03-14` - `R-008` - Replaced owning raw pointers with `std::unique_ptr` in refactored orchestration flow and CLI examples.
 - `2026-03-14` - `R-009` - Replaced library `exit(...)` paths with propagated exceptions and added CLI exception-to-exit-code handling.
 - `2026-03-14` - `R-010` - Modernized CMake to target-scoped includes/libs and removed shared linker/include global state.
+- `2026-03-14` - `R-011` - Added CTest regression runs for `Cube` and `Voxel2Tet` (`16x16x16.dream3d`) including expected output file checks.
